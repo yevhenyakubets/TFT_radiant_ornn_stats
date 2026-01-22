@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.services.champion_service import get_champion_data
 
 app = FastAPI()
 
@@ -16,8 +17,4 @@ def root():
 
 @app.get("/champion/{name}")
 def get_champion(name: str):
-    return {
-        "champion": name,
-        "radiant_items": ["Radiant Rabadon", "Radiant Guinsoo"],
-        "artifacts": ["Infinity Force", "Death's Dance"]
-    }
+     return get_champion_data(name)
