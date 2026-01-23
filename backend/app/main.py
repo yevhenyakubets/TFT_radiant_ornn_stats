@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.services.champion_service import get_champion_data
-from app.services.riot_service import get_match
+from app.services.riot_service import get_match, extract_units
 
 app = FastAPI()
 
@@ -23,3 +23,8 @@ def get_champion(name: str):
 @app.get("/riot/test")
 def riot_test():
     return get_match("EUW1_7682122066")
+
+@app.get("/riot/units")
+def riot_units():
+    match = get_match("EUW1_7682122066")
+    return extract_units(match)
