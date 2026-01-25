@@ -1,5 +1,6 @@
 import os
 import requests
+from typing import List
 
 API_KEY = os.getenv("RIOT_API_KEY")
 
@@ -13,7 +14,14 @@ def get_match(match_id: str):
     headers = {"X-Riot-Token": API_KEY}
     url = f"https://europe.api.riotgames.com/tft/match/v1/matches/{match_id}"
     r = requests.get(url, headers=headers)
+    r.raise_for_status()
     return r.json()
+
+def get_matches(match_ids: List[str]) -> List[dict]:
+    matches = []
+    for match_id in match_ids:
+        matches.append(get_match(match_id))
+    return matches
 
 def extract_units(match_json):
     result = []
