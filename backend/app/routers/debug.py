@@ -24,5 +24,5 @@ def debug_units():
 
     return {
         "units_found": len(units),
-        "sample": units[:5]
+        "sample": units[:20]
     }
