@@ -7,6 +7,8 @@ def extract_units(matches: List[dict]) -> List[Dict]:
 
     for match in matches:
         for player in match["info"]["participants"]:
+            player_placement = player["placement"]  # get placement from the player
+
             for unit in player.get("units", []):
                 classified_items = [
                     {
@@ -19,7 +21,8 @@ def extract_units(matches: List[dict]) -> List[Dict]:
                 units.append({
                     "character_id": unit["character_id"],
                     "tier": unit["tier"],
-                    "items": classified_items
+                    "items": classified_items,
+                    "placement": player_placement  # <-- MUST assign this
                 })
 
     return units
@@ -36,12 +39,14 @@ def count_special_items(grouped_units: dict[str, list[dict]]) -> dict:
     result = {}
 
     for champion, units in grouped_units.items():
-        item_counts = defaultdict(int)
+        item_counts = defaultdict(lambda: {"count": 0, "placements": []})
 
         for unit in units:
             for item in unit["items"]:
                 if item["type"] in ("radiant", "artifact"):
-                    item_counts[item["item_id"]] += 1
+                    item_data = item_counts[item["item_id"]]
+                    item_data["count"] += 1
+                    item_data["placements"].append(unit["placement"])
 
         if item_counts:
             result[champion] = dict(item_counts)
