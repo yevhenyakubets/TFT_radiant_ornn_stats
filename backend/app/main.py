@@ -1,9 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.services.champion_service import get_champion_data
-from app.services.riot_service import get_match, extract_units
+from app.services.riot_service import get_match, get_matches
+from app.routers import debug
 
 app = FastAPI()
+
+app.include_router(debug.router)
 
 app.add_middleware(
     CORSMiddleware,
