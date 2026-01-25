@@ -23,25 +23,6 @@ def get_matches(match_ids: List[str]) -> List[dict]:
         matches.append(get_match(match_id))
     return matches
 
-def extract_units(match_json):
-    result = []
-
-    for player in match_json["info"]["participants"]:
-        for unit in player["units"]:
-            result.append({
-                "champion": unit["character_id"],
-                "items": [
-                    {
-                        "name": item,
-                        "type": classify_item(item)
-                    }
-                    for item in unit["itemNames"]
-                ],
-                "tier": unit["tier"]
-            })
-
-    return result
-
 def classify_item(item_id: str) -> str:
     if "Radiant" in item_id:
         return "radiant"
