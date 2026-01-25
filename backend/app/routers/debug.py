@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from app.services.riot_service import get_matches
 from app.utils.match_ids import load_match_ids
 from app.services.stats_service import extract_units
+from app.services.stats_service import group_units_by_champion
 
 router = APIRouter(prefix="/debug", tags=["debug"])
 
@@ -25,4 +26,19 @@ def debug_units():
     return {
         "units_found": len(units),
         "sample": units[:20]
+    }
+
+@router.get("/champions")
+def debug_champions():
+    match_ids = load_match_ids()
+    matches = get_matches(match_ids)
+    units = extract_units(matches)
+    grouped = group_units_by_champion(units)
+
+    return {
+        "champion_count": len(grouped),
+        "sample": {
+            champ: grouped[champ][:2]
+            for champ in list(grouped.keys())[:3]
+        }
     }
