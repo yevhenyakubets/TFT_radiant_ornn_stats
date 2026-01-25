@@ -31,3 +31,19 @@ def group_units_by_champion(units: list[dict]) -> dict[str, list[dict]]:
         grouped[unit["character_id"]].append(unit)
 
     return grouped
+
+def count_special_items(grouped_units: dict[str, list[dict]]) -> dict:
+    result = {}
+
+    for champion, units in grouped_units.items():
+        item_counts = defaultdict(int)
+
+        for unit in units:
+            for item in unit["items"]:
+                if item["type"] in ("radiant", "artifact"):
+                    item_counts[item["item_id"]] += 1
+
+        if item_counts:
+            result[champion] = dict(item_counts)
+
+    return result
