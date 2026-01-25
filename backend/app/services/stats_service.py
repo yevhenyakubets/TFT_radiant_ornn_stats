@@ -1,4 +1,5 @@
 from typing import List, Dict
+from collections import defaultdict
 from app.services.riot_service import classify_item
 
 def extract_units(matches: List[dict]) -> List[Dict]:
@@ -22,3 +23,11 @@ def extract_units(matches: List[dict]) -> List[Dict]:
                 })
 
     return units
+
+def group_units_by_champion(units: list[dict]) -> dict[str, list[dict]]:
+    grouped = defaultdict(list)
+
+    for unit in units:
+        grouped[unit["character_id"]].append(unit)
+
+    return grouped
