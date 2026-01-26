@@ -39,19 +39,32 @@ def count_special_items(grouped_units: dict[str, list[dict]]) -> dict:
     result = {}
 
     for champion, units in grouped_units.items():
-        item_counts = defaultdict(lambda: {"count": 0, "placements": []})
+        champion_items = {}
 
         for unit in units:
-            for item in unit["items"]:
-                if item["type"] in ("radiant", "artifact"):
-                    item_data = item_counts[item["item_id"]]
-                    item_data["count"] += 1
-                    item_data["placements"].append(unit["placement"])
+            placement = unit["placement"]
 
-        if item_counts:
-            result[champion] = dict(item_counts)
+            for item in unit["items"]:
+                if item["type"] not in ("radiant", "artifact"):
+                    continue
+
+                item_id = item["item_id"]
+
+                if item_id not in champion_items:
+                    champion_items[item_id] = {
+                        "count": 0,
+                        "placements": [],
+                        "type": item["type"]
+                    }
+
+                champion_items[item_id]["count"] += 1
+                champion_items[item_id]["placements"].append(placement)
+
+        if champion_items:
+            result[champion] = champion_items
 
     return result
+
 
 def calculate_average_placement(special_items: dict) -> dict:
     """
@@ -68,7 +81,8 @@ def calculate_average_placement(special_items: dict) -> dict:
             champion_result[item_id] = {
                 "count": item_data["count"],
                 "placements": placements,
-                "average_placement": avg
+                "average_placement": avg,
+                "type": item_data["type"]
             }
         result[champion] = champion_result
 
@@ -99,3 +113,34 @@ def sort_items_by_performance(
         ]
 
     return sorted_result
+
+def split_special_items_by_type(
+    special_items: dict[str, dict]
+) -> dict[str, dict]:
+    """
+    Splits special items per champion into:
+    {
+      champion_id: {
+        "artifact": { item_id: data },
+        "radiant": { item_id: data }
+      }
+    }
+    """
+    result = {}
+
+    for champion, items in special_items.items():
+        by_type = {
+            "artifact": {},
+            "radiant": {}
+        }
+
+        for item_id, data in items.items():
+            item_type = data.get("type")
+            if item_type in by_type:
+                by_type[item_type][item_id] = data
+
+        # only keep champion if it has at least one item
+        if by_type["artifact"] or by_type["radiant"]:
+            result[champion] = by_type
+
+    return result
