@@ -52,3 +52,24 @@ def count_special_items(grouped_units: dict[str, list[dict]]) -> dict:
             result[champion] = dict(item_counts)
 
     return result
+
+def calculate_average_placement(special_items: dict) -> dict:
+    """
+    For each champion, calculate the average placement of each special item.
+    Returns a similar dict, but each item has an additional 'average_placement' key.
+    """
+    result = {}
+
+    for champion, items in special_items.items():
+        champion_result = {}
+        for item_id, item_data in items.items():
+            placements = item_data["placements"]
+            avg = sum(placements) / len(placements) if placements else None
+            champion_result[item_id] = {
+                "count": item_data["count"],
+                "placements": placements,
+                "average_placement": avg
+            }
+        result[champion] = champion_result
+
+    return result

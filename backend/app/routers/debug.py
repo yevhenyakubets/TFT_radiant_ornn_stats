@@ -5,6 +5,7 @@ from app.utils.match_ids import load_match_ids
 from app.services.stats_service import extract_units
 from app.services.stats_service import group_units_by_champion
 from app.services.stats_service import count_special_items
+from app.services.stats_service import calculate_average_placement
 
 router = APIRouter(prefix="/debug", tags=["debug"])
 
@@ -52,8 +53,9 @@ def debug_special_items():
     units = extract_units(matches)
     grouped = group_units_by_champion(units)
     counts = count_special_items(grouped)
+    special_with_avg = calculate_average_placement(counts)
 
     return {
         "champions_with_special_items": len(counts),
-        "sample": dict(list(counts.items())[:3])
+        "sample": dict(list(special_with_avg.items())[:3])
     }
