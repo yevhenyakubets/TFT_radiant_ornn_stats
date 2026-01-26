@@ -73,3 +73,29 @@ def calculate_average_placement(special_items: dict) -> dict:
         result[champion] = champion_result
 
     return result
+
+def sort_items_by_performance(
+    special_items: dict[str, dict[str, dict]]
+) -> dict[str, list[dict]]:
+    """
+    Sort items for each champion by average placement (ascending).
+    Best item = lowest average placement.
+    """
+
+    sorted_result = {}
+
+    for champion, items in special_items.items():
+        sorted_items = sorted(
+            items.items(),
+            key=lambda x: x[1]["average_placement"]
+        )
+
+        sorted_result[champion] = [
+            {
+                "item_id": item_id,
+                **data
+            }
+            for item_id, data in sorted_items
+        ]
+
+    return sorted_result
