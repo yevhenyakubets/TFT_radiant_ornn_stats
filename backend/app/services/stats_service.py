@@ -88,32 +88,6 @@ def calculate_average_placement(special_items: dict) -> dict:
 
     return result
 
-def sort_items_by_performance(
-    special_items: dict[str, dict[str, dict]]
-) -> dict[str, list[dict]]:
-    """
-    Sort items for each champion by average placement (ascending).
-    Best item = lowest average placement.
-    """
-
-    sorted_result = {}
-
-    for champion, items in special_items.items():
-        sorted_items = sorted(
-            items.items(),
-            key=lambda x: x[1]["average_placement"]
-        )
-
-        sorted_result[champion] = [
-            {
-                "item_id": item_id,
-                **data
-            }
-            for item_id, data in sorted_items
-        ]
-
-    return sorted_result
-
 def split_special_items_by_type(
     special_items: dict[str, dict]
 ) -> dict[str, dict]:
@@ -142,5 +116,34 @@ def split_special_items_by_type(
         # only keep champion if it has at least one item
         if by_type["artifact"] or by_type["radiant"]:
             result[champion] = by_type
+
+    return result
+
+def sort_special_items_by_avg_placement(
+    split_items: dict[str, dict]
+) -> dict[str, dict]:
+    """
+    Sorts artifact and radiant items per champion
+    by ascending average placement.
+    """
+
+    result = {}
+
+    for champion, types in split_items.items():
+        sorted_types = {}
+
+        for item_type, items in types.items():
+            # items is a dict: item_id -> data
+            sorted_items = sorted(
+                items.items(),
+                key=lambda x: x[1]["average_placement"]
+            )
+
+            # convert back to dict, preserving order
+            sorted_types[item_type] = {
+                item_id: data for item_id, data in sorted_items
+            }
+
+        result[champion] = sorted_types
 
     return result
