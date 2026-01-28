@@ -27,6 +27,32 @@ def extract_units(matches: List[dict]) -> List[Dict]:
 
     return units
 
+def extract_all_items(matches: list[dict]) -> dict:
+    """
+    Returns all items found in the sample, grouped by raw item_id
+    """
+    items = {}
+
+    for match in matches:
+        for player in match["info"]["participants"]:
+            for unit in player.get("units", []):
+                for item_id in unit.get("itemNames", []):
+                    if item_id not in items:
+                        items[item_id] = {
+                            "count": 0,
+                            "champions": set()
+                        }
+
+                    items[item_id]["count"] += 1
+                    items[item_id]["champions"].add(unit["character_id"])
+
+    # convert sets to lists for JSON
+    for item in items.values():
+        item["champions"] = sorted(item["champions"])
+
+    return dict(sorted(items.items()))
+
+
 def group_units_by_champion(units: list[dict]) -> dict[str, list[dict]]:
     grouped = defaultdict(list)
 
