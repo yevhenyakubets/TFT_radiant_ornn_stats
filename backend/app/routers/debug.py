@@ -2,12 +2,15 @@ from fastapi import APIRouter
 
 from app.services.riot_service import get_matches
 from app.utils.match_ids import load_match_ids
-from app.services.stats_service import extract_units
-from app.services.stats_service import group_units_by_champion
-from app.services.stats_service import count_special_items
-from app.services.stats_service import calculate_average_placement
-from app.services.stats_service import split_special_items_by_type
-from app.services.stats_service import sort_special_items_by_avg_placement
+from app.services.stats_service import (
+    extract_units,
+    group_units_by_champion,
+    count_special_items,
+    calculate_average_placement,
+    split_special_items_by_type,
+    sort_special_items_by_avg_placement,
+    extract_all_items,
+)
 
 router = APIRouter(prefix="/debug", tags=["debug"])
 
@@ -62,4 +65,16 @@ def debug_special_items():
     return {
         "champions_with_special_items": len(split_sorted),
         "sample": dict(list(split_sorted.items())[:10])
+    }
+
+@router.get("/all-items")
+def debug_all_items():
+    match_ids = load_match_ids()
+    matches = get_matches(match_ids)
+
+    all_items = extract_all_items(matches)
+
+    return {
+        "total_unique_items": len(all_items),
+        "items": all_items
     }
