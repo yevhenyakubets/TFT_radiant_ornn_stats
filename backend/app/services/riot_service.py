@@ -4,10 +4,13 @@ from typing import List
 
 API_KEY = os.getenv("RIOT_API_KEY")
 
-DARKIN_ARTIFACTS = {
+exceptions = {
     "TFT16_TheDarkinStaff",
     "TFT16_TheDarkinBow",
     "TFT16_TheDarkinScythe",
+    "TFT16_TheDarkinAegis",
+    "TFT7_Item_ShimmerscaleGamblersBlade",
+    "TFT7_Item_ShimmerscaleMogulsMail",
 }
 
 def get_match(match_id: str):
@@ -27,7 +30,7 @@ def classify_item(item_id: str) -> str:
     if "Radiant" in item_id:
         return "radiant"
 
-    if "Artifact" in item_id or item_id in DARKIN_ARTIFACTS:
+    if "Artifact" in item_id or item_id in exceptions or "Ornn" in item_id:
         return "artifact"
 
     return "normal"
