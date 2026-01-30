@@ -4,6 +4,10 @@ from app.services.riot_service import classify_item
 from app.data.radiant_items import CHAMPION_RADIANT_ITEMS
 from app.data.artifacts import CHAMPION_ARTIFACTS
 
+def champion_id_to_name(champion_id: str) -> str:
+    return champion_id.split("_", 1)[1]
+
+
 def extract_units(matches: List[dict]) -> List[Dict]:
     units = []
 
@@ -73,7 +77,19 @@ def count_special_items(grouped_units: dict[str, list[dict]]) -> dict:
             placement = unit["placement"]
 
             for item in unit["items"]:
-                if item["type"] not in ("radiant", "artifact"):
+                item_type = item["type"]
+                if item_type not in ("radiant", "artifact"):
+                    continue
+
+                item_id = item["item_id"]
+
+                # eligibility filter
+                if item_type == "radiant":
+                    allowed = CHAMPION_RADIANT_ITEMS.get(champion, [])
+                else:  # artifact
+                    allowed = CHAMPION_ARTIFACTS.get(champion, [])
+
+                if item_id not in allowed:
                     continue
 
                 item_id = item["item_id"]
@@ -92,7 +108,6 @@ def count_special_items(grouped_units: dict[str, list[dict]]) -> dict:
             result[champion] = champion_items
 
     return result
-
 
 def calculate_average_placement(special_items: dict) -> dict:
     """
@@ -175,3 +190,16 @@ def sort_special_items_by_avg_placement(
         result[champion] = sorted_types
 
     return result
+
+def get_champion_special_items(split_sorted_items: dict, champion_name: str):
+    normalized = champion_name.lower()
+
+    for champion_id, data in split_sorted_items.items():
+        if champion_id_to_name(champion_id).lower() == normalized:
+            return {
+                "champion": champion_id_to_name(champion_id),
+                "artifact": data.get("artifact", {}),
+                "radiant": data.get("radiant", {})
+            }
+
+    return None
