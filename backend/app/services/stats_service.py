@@ -7,6 +7,14 @@ from app.data.artifacts import CHAMPION_ARTIFACTS
 def champion_id_to_name(champion_id: str) -> str:
     return champion_id.split("_", 1)[1]
 
+def normalize_item_name(item_id: str) -> str:
+    """
+    Converts item id like:
+    TFT9_Item_OrnnHullbreaker -> OrnnHullbreaker
+    TFT5_Item_WarmogsArmorRadiant -> WarmogsArmorRadiant
+    """
+    return item_id.split("_")[-1]
+
 
 def extract_units(matches: List[dict]) -> List[Dict]:
     units = []
@@ -203,3 +211,40 @@ def get_champion_special_items(split_sorted_items: dict, champion_name: str):
             }
 
     return None
+
+def group_special_items_by_item(
+    split_items: dict[str, dict]
+) -> dict[str, dict]:
+    """
+    Inverts the structure to:
+    {
+      item_name: {
+        "type": "artifact" | "radiant",
+        "champions": {
+          champion_id: {
+            "count": int,
+            "average_placement": float
+          }
+        }
+      }
+    }
+    """
+    result = {}
+
+    for champion, types in split_items.items():
+        for item_type, items in types.items():
+            for item_id, data in items.items():
+                item_name = normalize_item_name(item_id)
+
+                if item_name not in result:
+                    result[item_name] = {
+                        "type": item_type,
+                        "champions": {}
+                    }
+
+                result[item_name]["champions"][champion] = {
+                    "count": data["count"],
+                    "average_placement": data["average_placement"]
+                }
+
+    return result
