@@ -1,6 +1,8 @@
 from typing import List, Dict
 from collections import defaultdict
 from app.services.riot_service import classify_item
+from app.data.radiant_items import CHAMPION_RADIANT_ITEMS
+from app.data.artifacts import CHAMPION_ARTIFACTS
 
 def extract_units(matches: List[dict]) -> List[Dict]:
     units = []

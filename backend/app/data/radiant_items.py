@@ -290,6 +290,3 @@ for champ in CHAMPION_RADIANT_ITEMS:
 CHAMPION_RADIANT_ITEMS["TFT16_Singed"].append("TFT5_Item_MorellonomiconRadiant")
 CHAMPION_RADIANT_ITEMS["TFT16_Singed"].append("TFT5_Item_StatikkShivRadiant")
 CHAMPION_RADIANT_ITEMS["TFT16_Singed"].append("TFT5_Item_RapidFirecannonRadiant")
-
-
-print(CHAMPION_RADIANT_ITEMS["TFT16_Singed"])
