@@ -3,6 +3,39 @@ from collections import defaultdict
 from app.services.riot_service import classify_item
 from app.data.radiant_items import CHAMPION_RADIANT_ITEMS
 from app.data.artifacts import CHAMPION_ARTIFACTS
+from app.services.cache import CACHE
+from app.services.riot_service import get_matches
+from app.utils.match_ids import load_match_ids
+
+def build_stats():
+    """
+    Builds and caches all derived stats used by endpoints.
+    """
+    cache_key = "FULL_STATS"
+
+    if cache_key in CACHE:
+        return CACHE[cache_key]
+
+    match_ids = load_match_ids()
+    matches = get_matches(match_ids)
+
+    units = extract_units(matches)
+    grouped = group_units_by_champion(units)
+    counts = count_special_items(grouped)
+    with_avg = calculate_average_placement(counts)
+    split_items = split_special_items_by_type(with_avg)
+    split_sorted = sort_special_items_by_avg_placement(split_items)
+
+    data = {
+        "matches": matches,
+        "units": units,
+        "grouped": grouped,
+        "special_items": split_sorted,
+    }
+
+    CACHE[cache_key] = data
+    return data
+
 
 def champion_id_to_name(champion_id: str) -> str:
     return champion_id.split("_", 1)[1]
