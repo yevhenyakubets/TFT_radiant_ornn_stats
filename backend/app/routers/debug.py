@@ -11,6 +11,7 @@ from app.services.stats_service import (
     sort_special_items_by_avg_placement,
     extract_all_items,
     get_champion_special_items,
+    group_special_items_by_item,
 )
 
 router = APIRouter(prefix="/debug", tags=["debug"])
@@ -101,3 +102,24 @@ def get_champion_items(champion_name: str):
         return {"error": "Champion not found"}
 
     return champion_data
+
+@router.get("/items/{item_name}")
+def debug_item(item_name: str):
+    match_ids = load_match_ids()
+    matches = get_matches(match_ids)
+    units = extract_units(matches)
+    grouped = group_units_by_champion(units)
+    counts = count_special_items(grouped)
+    special_with_avg = calculate_average_placement(counts)
+    split_items = split_special_items_by_type(special_with_avg)
+    split_sorted = sort_special_items_by_avg_placement(split_items)
+
+    items_index = group_special_items_by_item(split_sorted)
+
+    if item_name not in items_index:
+        return {"error": "Item not found"}
+
+    return {
+        "item": item_name,
+        **items_index[item_name]
+    }
