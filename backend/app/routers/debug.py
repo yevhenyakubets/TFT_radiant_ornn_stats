@@ -12,38 +12,35 @@ from app.services.stats_service import (
     extract_all_items,
     get_champion_special_items,
     group_special_items_by_item,
+    build_stats,
 )
 
 router = APIRouter(prefix="/debug", tags=["debug"])
 
 @router.get("/matches")
 def debug_matches():
-    match_ids = load_match_ids()
-    matches = get_matches(match_ids[:2])  # only 2 for safety
+    stats = build_stats()
 
     return {
-        "match_ids_loaded": len(match_ids),
-        "matches_fetched": len(matches),
-        "first_match_keys": list(matches[0].keys())
+        "matches_fetched": len(stats["matches"]),
+        "first_match_keys": list(stats["matches"][0].keys())
     }
+
 
 @router.get("/units")
 def debug_units():
-    match_ids = load_match_ids()
-    matches = get_matches(match_ids[:2])
-    units = extract_units(matches)
+    stats = build_stats()
 
     return {
-        "units_found": len(units),
-        "sample": units[:20]
+        "units_found": len(stats["units"]),
+        "sample": stats["units"][:20]
     }
+
 
 @router.get("/champions")
 def debug_champions():
-    match_ids = load_match_ids()
-    matches = get_matches(match_ids)
-    units = extract_units(matches)
-    grouped = group_units_by_champion(units)
+    stats = build_stats()
+    grouped = stats["grouped"]
 
     return {
         "champion_count": len(grouped),
@@ -53,48 +50,34 @@ def debug_champions():
         }
     }
 
+
 @router.get("/special-items")
 def debug_special_items():
-    match_ids = load_match_ids()
-    matches = get_matches(match_ids)
-    units = extract_units(matches)
-    grouped = group_units_by_champion(units)
-    counts = count_special_items(grouped)
-    special_with_avg = calculate_average_placement(counts)
-    split_items = split_special_items_by_type(special_with_avg)
-    split_sorted = sort_special_items_by_avg_placement(split_items)
+    stats = build_stats()
 
     return {
-        "champions_with_special_items": len(split_sorted),
-        "sample": dict(list(split_sorted.items())[:10])
+        "champions_with_special_items": len(stats["special_items"]),
+        "sample": dict(list(stats["special_items"].items())[:10])
     }
+
 
 @router.get("/all-items")
 def debug_all_items():
-    match_ids = load_match_ids()
-    matches = get_matches(match_ids)
-
-    all_items = extract_all_items(matches)
+    stats = build_stats()
+    all_items = extract_all_items(stats["matches"])
 
     return {
         "total_unique_items": len(all_items),
         "items": all_items
     }
 
+
 @router.get("/champions/{champion_name}")
 def get_champion_items(champion_name: str):
-    match_ids = load_match_ids()
-    matches = get_matches(match_ids)
-
-    units = extract_units(matches)
-    grouped = group_units_by_champion(units)
-    counts = count_special_items(grouped)
-    with_avg = calculate_average_placement(counts)
-    split_items = split_special_items_by_type(with_avg)
-    split_sorted = sort_special_items_by_avg_placement(split_items)
+    stats = build_stats()
 
     champion_data = get_champion_special_items(
-        split_sorted,
+        stats["special_items"],
         champion_name
     )
 
@@ -103,18 +86,14 @@ def get_champion_items(champion_name: str):
 
     return champion_data
 
+
 @router.get("/items/{item_name}")
 def debug_item(item_name: str):
-    match_ids = load_match_ids()
-    matches = get_matches(match_ids)
-    units = extract_units(matches)
-    grouped = group_units_by_champion(units)
-    counts = count_special_items(grouped)
-    special_with_avg = calculate_average_placement(counts)
-    split_items = split_special_items_by_type(special_with_avg)
-    split_sorted = sort_special_items_by_avg_placement(split_items)
+    stats = build_stats()
 
-    items_index = group_special_items_by_item(split_sorted)
+    items_index = group_special_items_by_item(
+        stats["special_items"]
+    )
 
     if item_name not in items_index:
         return {"error": "Item not found"}
