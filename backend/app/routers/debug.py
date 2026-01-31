@@ -1,14 +1,6 @@
 from fastapi import APIRouter
 
-from app.services.riot_service import get_matches
-from app.utils.match_ids import load_match_ids
 from app.services.stats_service import (
-    extract_units,
-    group_units_by_champion,
-    count_special_items,
-    calculate_average_placement,
-    split_special_items_by_type,
-    sort_special_items_by_avg_placement,
     extract_all_items,
     get_champion_special_items,
     group_special_items_by_item,
