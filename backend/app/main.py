@@ -1,8 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.services.champion_service import get_champion_data
-from app.services.riot_service import get_match, get_matches
 from app.routers import debug
+
+from app.services.stats_service import (
+    get_champion_special_items,
+    group_special_items_by_item,
+    build_stats,
+)
 
 app = FastAPI()
 
@@ -19,15 +23,33 @@ app.add_middleware(
 def root():
     return {"status": "ok"}
 
-@app.get("/champion/{name}")
-def get_champion(name: str):
-     return get_champion_data(name)
+@app.get("/champions/{champion_name}")
+def get_champion_items(champion_name: str):
+    stats = build_stats()
 
-@app.get("/riot/test")
-def riot_test():
-    return get_match("EUW1_7682122066")
+    champion_data = get_champion_special_items(
+        stats["special_items"],
+        champion_name
+    )
 
-@app.get("/riot/units")
-def riot_units():
-    match = get_match("EUW1_7682122066")
-    return extract_units(match)
+    if champion_data is None:
+        return {"error": "Champion not found"}
+
+    return champion_data
+
+
+@app.get("/items/{item_name}")
+def debug_item(item_name: str):
+    stats = build_stats()
+
+    items_index = group_special_items_by_item(
+        stats["special_items"]
+    )
+
+    if item_name not in items_index:
+        return {"error": "Item not found"}
+
+    return {
+        "item": item_name,
+        **items_index[item_name]
+    }
