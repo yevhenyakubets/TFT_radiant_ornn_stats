@@ -1,7 +1,12 @@
-import ChampionPage from "./pages/ChampionPage.jsx";
+import { Routes, Route } from "react-router-dom";
+import ChampionPage from "./pages/ChampionPage";
 
 function App() {
-  return <ChampionPage />;
+  return (
+    <Routes>
+      <Route path="/champions/:championName" element={<ChampionPage />} />
+    </Routes>
+  );
 }
 
 export default App;

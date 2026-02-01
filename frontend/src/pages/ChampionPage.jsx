@@ -1,21 +1,22 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 function ChampionPage() {
+  const { championName } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/champions/Ornn")
+    fetch(`http://127.0.0.1:8000/champions/${championName}`)
       .then(res => res.json())
       .then(json => {
         setData(json);
         setLoading(false);
       });
-  }, []);
+  }, [championName]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (data.error) return <div>{data.error}</div>;
 
   return (
     <div style={{ padding: "20px" }}>
