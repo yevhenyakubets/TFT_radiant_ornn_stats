@@ -38,7 +38,7 @@ def debug_champions():
         "champion_count": len(grouped),
         "sample": {
             champ: grouped[champ][:2]
-            for champ in list(grouped.keys())[:3]
+            for champ in list(grouped.keys())[:100]
         }
     }
 

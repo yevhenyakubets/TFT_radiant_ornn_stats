@@ -2,11 +2,10 @@ from typing import List, Dict
 from collections import defaultdict
 
 from app.services.riot_service import classify_item
-from app.data.radiant_items import CHAMPION_RADIANT_ITEMS
-from app.data.artifacts import CHAMPION_ARTIFACTS
 from app.services.cache import CACHE
 from app.services.riot_service import get_matches
 from app.utils.match_ids import load_match_ids
+from app.data.champions import champions, get_champion_roles, get_allowed_radiant_items, get_allowed_artifact_items
 
 def build_stats():
     """
@@ -126,10 +125,19 @@ def count_special_items(grouped_units: dict[str, list[dict]]) -> dict:
                 item_id = item["item_id"]
 
                 # eligibility filter
+                champ_data = champions.get(champion)
+                if not champ_data:
+                    continue
+
+                roles = champ_data["roles"]
+
                 if item_type == "radiant":
-                    allowed = CHAMPION_RADIANT_ITEMS.get(champion, [])
-                else:  # artifact
-                    allowed = CHAMPION_ARTIFACTS.get(champion, [])
+                    allowed = get_allowed_radiant_items(roles)
+                else:
+                    allowed = get_allowed_artifact_items(roles)
+
+                if item_id not in allowed:
+                    continue
 
                 if item_id not in allowed:
                     continue
