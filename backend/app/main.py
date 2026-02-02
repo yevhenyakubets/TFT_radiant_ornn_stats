@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import debug
+from app.data.champions import CHAMPIONS
 
 from app.services.stats_service import (
     get_champion_special_items,
@@ -23,6 +24,17 @@ app.add_middleware(
 @app.get("/")
 def root():
     return {"status": "ok"}
+
+@app.get("/champions")
+def get_champions():
+    return {
+        "count": len(CHAMPIONS),
+        "champions": sorted(
+            CHAMPIONS.values(),
+            key=lambda c: c["name"]
+        )
+    }
+
 
 @app.get("/champions/{champion_name}")
 def get_champion_items(champion_name: str):
@@ -54,3 +66,4 @@ def debug_item(item_name: str):
         "item": item_name,
         **items_index[item_name]
     }
+
