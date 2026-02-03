@@ -1,3 +1,15 @@
+import json
+from pathlib import Path
+
+exceptions = {
+    "TFT16_TheDarkinStaff",
+    "TFT16_TheDarkinBow",
+    "TFT16_TheDarkinScythe",
+    "TFT16_TheDarkinAegis",
+    "TFT7_Item_ShimmerscaleGamblersBlade",
+    "TFT7_Item_ShimmerscaleMogulsMail",
+}
+
 ARTIFACTS_BY_ROLE = {
     "tank": [
         "TFT_Item_Artifact_AegisOfDawn",
@@ -122,3 +134,50 @@ ARTIFACTS_BY_ROLE = {
         "TFT9_Item_OrnnHorizonFocus",
     ],
 }
+
+ITEM_JSON_PATH = Path(__file__).parent / "tft-item.json"
+
+with open(ITEM_JSON_PATH, encoding="utf-8") as f:
+    raw = json.load(f)
+
+ARTIFACT_ITEMS: dict[str, dict] = {}
+
+def is_artifact_item(item_id: str) -> bool:
+    return (
+        "Ornn" in item_id
+        or "Artifact" in item_id
+        or item_id in exceptions
+    )
+
+
+# build artifact items
+for entry in raw["data"].values():
+    item_id = entry["id"]
+
+    if not is_artifact_item(item_id):
+        continue
+
+    ARTIFACT_ITEMS[item_id] = {
+        "id": item_id,
+        "name": entry["name"],
+        "image": entry["image"]["full"],
+        "roles": []
+    }
+
+# layer roles
+for role, items in ARTIFACTS_BY_ROLE.items():
+    for item_id in items:
+        if item_id in ARTIFACT_ITEMS:
+            ARTIFACT_ITEMS[item_id]["roles"].append(role)
+
+# remove artifacts with no assigned roles
+ARTIFACT_ITEMS = {
+    item_id: data
+    for item_id, data in ARTIFACT_ITEMS.items()
+    if data["roles"]
+}
+
+def get_all_artifact_items() -> dict[str, dict]:
+    return ARTIFACT_ITEMS
+
+print(len(ARTIFACT_ITEMS))
