@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import debug
 from app.data.champions import champions
+from app.data.artifacts import get_all_artifact_items
+from app.data.radiant_items import get_all_radiant_items
 
 from app.services.stats_service import (
     get_champion_special_items,
@@ -50,6 +52,16 @@ def get_champion_items(champion_name: str):
 
     return champion_data
 
+@app.get("/radiant-items")
+def get_radiant_items():
+    from app.data.radiant_items import get_all_radiant_items
+    return get_all_radiant_items()
+
+@app.get("/artifacts")
+def get_artifact_items():
+    from app.data.artifacts import get_all_artifact_items
+    return get_all_artifact_items()
+
 
 @app.get("/items/{item_name}")
 def debug_item(item_name: str):
@@ -66,4 +78,3 @@ def debug_item(item_name: str):
         "item": item_name,
         **items_index[item_name]
     }
-
