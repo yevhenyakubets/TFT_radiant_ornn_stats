@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import debug
 from app.data.champions import champions
@@ -7,8 +7,8 @@ from app.data.radiant_items import get_all_radiant_items
 
 from app.services.stats_service import (
     get_champion_special_items,
-    group_special_items_by_item,
     build_stats,
+    get_artifact_stats_by_name,
 )
 
 app = FastAPI()
@@ -63,18 +63,16 @@ def get_artifact_items():
     return get_all_artifact_items()
 
 
-@app.get("/items/{item_name}")
-def debug_item(item_name: str):
+@app.get("/artifacts/{artifact_name}")
+def get_artifact_page(artifact_name: str):
     stats = build_stats()
 
-    items_index = group_special_items_by_item(
-        stats["special_items"]
+    data = get_artifact_stats_by_name(
+        stats["special_items"],
+        artifact_name
     )
 
-    if item_name not in items_index:
-        return {"error": "Item not found"}
+    if not data:
+        raise HTTPException(status_code=404, detail="Artifact not found")
 
-    return {
-        "item": item_name,
-        **items_index[item_name]
-    }
+    return data

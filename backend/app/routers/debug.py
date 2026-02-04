@@ -3,7 +3,6 @@ from fastapi import APIRouter
 from app.services.stats_service import (
     extract_all_items,
     get_champion_special_items,
-    group_special_items_by_item,
     build_stats,
 )
 
@@ -77,20 +76,3 @@ def get_champion_items(champion_name: str):
         return {"error": "Champion not found"}
 
     return champion_data
-
-
-@router.get("/items/{item_name}")
-def debug_item(item_name: str):
-    stats = build_stats()
-
-    items_index = group_special_items_by_item(
-        stats["special_items"]
-    )
-
-    if item_name not in items_index:
-        return {"error": "Item not found"}
-
-    return {
-        "item": item_name,
-        **items_index[item_name]
-    }
