@@ -32,7 +32,7 @@ function ArtifactListPage() {
               cursor: "pointer"
             }}
             onClick={() => {
-              window.location.href = `/items/${artifact.name}`;
+              window.location.href = `/artifacts/${artifact.name}`;
             }}
           >
             <strong>{artifact.name}</strong>
