@@ -273,3 +273,30 @@ def get_artifact_stats_by_id(split_items: dict, artifact_id: str):
         },
         "champions": result
     }
+
+def get_radiant_stats_by_id(split_items: dict, radiant_id: str):
+    """
+    Returns all champion stats for a given radiant id.
+    """
+    result = {}
+
+    for champion_id, types in split_items.items():
+        for item_id, data in types.get("radiant", {}).items():
+            if item_id == radiant_id:
+                result[champion_id] = {
+                    "name": champions[champion_id]["name"],
+                    "count": data["count"],
+                    "average_placement": data["average_placement"]
+                }
+
+    if not radiant_id:
+        return None
+
+    return {
+        "item": {
+            "id": radiant_id,
+            "name": RADIANT_ITEMS[radiant_id]["name"],
+            "type": "artifact"
+        },
+        "champions": result
+    }
