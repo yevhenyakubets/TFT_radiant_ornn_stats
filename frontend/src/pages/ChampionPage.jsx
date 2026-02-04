@@ -20,21 +20,21 @@ function ChampionPage() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>{data.champion}</h1>
+      <h1>{championName}</h1>
 
       <h2>Artifacts</h2>
       <table border="1" cellPadding="6">
         <thead>
           <tr>
             <th>Item</th>
-            <th>Count</th>
+            <th>Frequency</th>
             <th>Avg placement</th>
           </tr>
         </thead>
         <tbody>
           {Object.entries(data.artifact).map(([item, info]) => (
             <tr key={item}>
-              <td>{item}</td>
+              <td>{info.name}</td>
               <td>{info.count}</td>
               <td>{info.average_placement}</td>
             </tr>
@@ -47,14 +47,14 @@ function ChampionPage() {
         <thead>
           <tr>
             <th>Item</th>
-            <th>Count</th>
+            <th>Frequency</th>
             <th>Avg placement</th>
           </tr>
         </thead>
         <tbody>
           {Object.entries(data.radiant).map(([item, info]) => (
             <tr key={item}>
-              <td>{item}</td>
+              <td>{info.name}</td>
               <td>{info.count}</td>
               <td>{info.average_placement}</td>
             </tr>
