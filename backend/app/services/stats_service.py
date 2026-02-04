@@ -38,18 +38,8 @@ def build_stats():
     CACHE[cache_key] = data
     return data
 
-
 def champion_id_to_name(champion_id: str) -> str:
     return champion_id.split("_", 1)[1]
-
-def normalize_item_name(item_id: str) -> str:
-    """
-    Converts item id like:
-    TFT9_Item_OrnnHullbreaker -> OrnnHullbreaker
-    TFT5_Item_WarmogsArmorRadiant -> WarmogsArmorRadiant
-    """
-    return item_id.split("_")[-1]
-
 
 def extract_units(matches: List[dict]) -> List[Dict]:
     units = []
@@ -100,7 +90,6 @@ def extract_all_items(matches: list[dict]) -> dict:
         item["champions"] = sorted(item["champions"])
 
     return dict(sorted(items.items()))
-
 
 def group_units_by_champion(units: list[dict]) -> dict[str, list[dict]]:
     grouped = defaultdict(list)
@@ -258,39 +247,31 @@ def get_champion_special_items(split_sorted_items: dict, champion_name: str):
 
     return None
 
-def group_special_items_by_item(
-    split_items: dict[str, dict]
-) -> dict[str, dict]:
+def get_artifact_stats_by_name(split_items: dict, artifact_name: str):
     """
-    Inverts the structure to:
-    {
-      item_name: {
-        "type": "artifact" | "radiant",
-        "champions": {
-          champion_id: {
-            "count": int,
-            "average_placement": float
-          }
-        }
-      }
-    }
+    Returns all champion stats for a given artifact (by readable name).
     """
     result = {}
+    artifact_id = None
 
-    for champion, types in split_items.items():
-        for item_type, items in types.items():
-            for item_id, data in items.items():
-                item_name = normalize_item_name(item_id)
-
-                if item_name not in result:
-                    result[item_name] = {
-                        "type": item_type,
-                        "champions": {}
-                    }
-
-                result[item_name]["champions"][champion] = {
+    for champion_id, types in split_items.items():
+        for item_id, data in types.get("artifact", {}).items():
+            if item_id.endswith(artifact_name):
+                artifact_id = item_id
+                result[champion_id] = {
+                    "name": champions[champion_id]["name"],
                     "count": data["count"],
                     "average_placement": data["average_placement"]
                 }
 
-    return result
+    if not artifact_id:
+        return None
+
+    return {
+        "item": {
+            "id": artifact_id,
+            "name": artifact_name,
+            "type": "artifact"
+        },
+        "champions": result
+    }
