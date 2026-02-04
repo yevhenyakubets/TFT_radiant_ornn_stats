@@ -174,4 +174,7 @@ RADIANT_ITEMS = {
 def get_all_radiant_items() -> dict[str, dict]:
     return RADIANT_ITEMS
 
-print(len(RADIANT_ITEMS))
+for item in RADIANT_ITEMS:
+    print(RADIANT_ITEMS[item]["name"])
+
+# print(RADIANT_ITEMS)

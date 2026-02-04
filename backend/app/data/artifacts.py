@@ -179,5 +179,3 @@ ARTIFACT_ITEMS = {
 
 def get_all_artifact_items() -> dict[str, dict]:
     return ARTIFACT_ITEMS
-
-print(len(ARTIFACT_ITEMS))

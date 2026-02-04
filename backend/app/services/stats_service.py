@@ -6,6 +6,8 @@ from app.services.cache import CACHE
 from app.services.riot_service import get_matches
 from app.utils.match_ids import load_match_ids
 from app.data.champions import champions, get_champion_roles, get_allowed_radiant_items, get_allowed_artifact_items
+from app.data.artifacts import ARTIFACT_ITEMS
+from app.data.radiant_items import RADIANT_ITEMS
 
 def build_stats():
     """
@@ -172,6 +174,7 @@ def calculate_average_placement(special_items: dict) -> dict:
             placements = item_data["placements"]
             avg = sum(placements) / len(placements) if placements else None
             champion_result[item_id] = {
+                "name": RADIANT_ITEMS[item_id]["name"] if item_data["type"] == "radiant" else ARTIFACT_ITEMS[item_id]["name"],
                 "count": item_data["count"],
                 "placements": placements,
                 "average_placement": avg,
@@ -247,7 +250,8 @@ def get_champion_special_items(split_sorted_items: dict, champion_name: str):
     for champion_id, data in split_sorted_items.items():
         if champion_id_to_name(champion_id).lower() == normalized:
             return {
-                "champion": champion_id_to_name(champion_id),
+                "champion": champion_id,
+                "name" : champions[champion_id]["name"],
                 "artifact": data.get("artifact", {}),
                 "radiant": data.get("radiant", {})
             }
