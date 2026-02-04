@@ -32,7 +32,7 @@ function ChampionsListPage() {
               cursor: "pointer"
             }}
             onClick={() => {
-              window.location.href = `/champions/${champ.name}`;
+              window.location.href = `/champions/${champ.id}`;
             }}
           >
             <strong>{champ.name}</strong>

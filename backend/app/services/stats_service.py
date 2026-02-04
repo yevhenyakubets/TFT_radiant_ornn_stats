@@ -233,31 +233,29 @@ def sort_special_items_by_avg_placement(
 
     return result
 
-def get_champion_special_items(split_sorted_items: dict, champion_name: str):
-    normalized = champion_name.lower()
+def get_champion_special_items(split_sorted_items: dict, champion_id: str):
 
-    for champion_id, data in split_sorted_items.items():
-        if champion_id_to_name(champion_id).lower() == normalized:
-            return {
-                "champion": champion_id,
-                "name" : champions[champion_id]["name"],
-                "artifact": data.get("artifact", {}),
-                "radiant": data.get("radiant", {})
-            }
+    for data_id, data in split_sorted_items.items():
+        if (data_id == champion_id):
+                    
+                    return {
+                        "champion": data_id,
+                        "name" : champions[data_id]["name"],
+                        "artifacts": data.get("artifact", {}),
+                        "radiants": data.get("radiant", {})
+        }
 
     return None
 
-def get_artifact_stats_by_name(split_items: dict, artifact_name: str):
+def get_artifact_stats_by_id(split_items: dict, artifact_id: str):
     """
-    Returns all champion stats for a given artifact (by readable name).
+    Returns all champion stats for a given artifact id.
     """
     result = {}
-    artifact_id = None
 
     for champion_id, types in split_items.items():
         for item_id, data in types.get("artifact", {}).items():
-            if item_id.endswith(artifact_name):
-                artifact_id = item_id
+            if item_id == artifact_id:
                 result[champion_id] = {
                     "name": champions[champion_id]["name"],
                     "count": data["count"],
@@ -270,7 +268,7 @@ def get_artifact_stats_by_name(split_items: dict, artifact_name: str):
     return {
         "item": {
             "id": artifact_id,
-            "name": artifact_name,
+            "name": ARTIFACT_ITEMS[artifact_id]["name"],
             "type": "artifact"
         },
         "champions": result

@@ -8,9 +8,9 @@ function App() {
   return (
     <Routes>
       <Route path="/champions" element={<ChampionsListPage />} />
-      <Route path="/champions/:championName" element={<ChampionPage />} />
+      <Route path="/champions/:championId" element={<ChampionPage />} />
       <Route path="/artifacts" element={<ArtifactListPage />} />
-      <Route path="/artifacts/:artifactName" element={<ArtifactPage />} />
+      <Route path="/artifacts/:artifactId" element={<ArtifactPage />} />
     </Routes>
   );
 }

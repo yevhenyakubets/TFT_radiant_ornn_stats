@@ -2,25 +2,25 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 function ArtifactPage() {
-  const { artifactName } = useParams();
+  const { artifactId } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/artifacts/${artifactName}`)
+    fetch(`http://127.0.0.1:8000/artifacts/${artifactId}`)
       .then(res => res.json())
       .then(json => {
         setData(json);
         setLoading(false);
       });
-  }, [artifactName]);
+  }, [artifactId]);
 
   if (loading) return <div>Loading...</div>;
   if (data.error) return <div>{data.error}</div>;
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>{artifactName}</h1>
+      <h1>{data.name}</h1>
 
       <h2>Champions</h2>
       <table border="1" cellPadding="6">

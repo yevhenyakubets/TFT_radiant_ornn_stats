@@ -8,7 +8,7 @@ from app.data.radiant_items import get_all_radiant_items
 from app.services.stats_service import (
     get_champion_special_items,
     build_stats,
-    get_artifact_stats_by_name,
+    get_artifact_stats_by_id,
 )
 
 app = FastAPI()
@@ -38,13 +38,13 @@ def get_champions():
     }
 
 
-@app.get("/champions/{champion_name}")
-def get_champion_items(champion_name: str):
+@app.get("/champions/{champion_id}")
+def get_champion_items(champion_id: str):
     stats = build_stats()
 
     champion_data = get_champion_special_items(
         stats["special_items"],
-        champion_name
+        champion_id
     )
 
     if champion_data is None:
@@ -63,13 +63,13 @@ def get_artifact_items():
     return get_all_artifact_items()
 
 
-@app.get("/artifacts/{artifact_name}")
-def get_artifact_page(artifact_name: str):
+@app.get("/artifacts/{artifact_id}")
+def get_artifact_page(artifact_id: str):
     stats = build_stats()
 
-    data = get_artifact_stats_by_name(
+    data = get_artifact_stats_by_id(
         stats["special_items"],
-        artifact_name
+        artifact_id
     )
 
     if not data:
