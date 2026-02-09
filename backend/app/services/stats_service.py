@@ -264,14 +264,20 @@ def get_artifact_stats_by_id(split_items: dict, artifact_id: str):
 
     if not artifact_id:
         return None
-
+    
+    sorted_result = dict(
+        sorted(
+            result.items(),
+            key=lambda item: item[1]["average_placement"]
+    )
+)
     return {
         "item": {
             "id": artifact_id,
             "name": ARTIFACT_ITEMS[artifact_id]["name"],
             "type": "artifact"
         },
-        "champions": result
+        "champions": sorted_result
     }
 
 def get_radiant_stats_by_id(split_items: dict, radiant_id: str):
@@ -291,6 +297,13 @@ def get_radiant_stats_by_id(split_items: dict, radiant_id: str):
 
     if not radiant_id:
         return None
+    
+    sorted_result = dict(
+        sorted(
+            result.items(),
+            key=lambda item: item[1]["average_placement"]
+        )
+    )
 
     return {
         "item": {
@@ -298,5 +311,5 @@ def get_radiant_stats_by_id(split_items: dict, radiant_id: str):
             "name": RADIANT_ITEMS[radiant_id]["name"],
             "type": "artifact"
         },
-        "champions": result
+        "champions": sorted_result
     }
