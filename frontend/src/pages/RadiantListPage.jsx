@@ -4,6 +4,8 @@ function RadiantListPage() {
   const [radiants, setRadiants] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const RADIANT_COLOR = "#31c1ca"; // The Radiant Cyan accent
+
   useEffect(() => {
     fetch("http://127.0.0.1:8000/radiant-items")
       .then(res => res.json())
@@ -14,50 +16,67 @@ function RadiantListPage() {
   }, []);
 
   if (loading) {
-    return <div>Loading radiant items...</div>;
+    return <div style={{ color: "white", padding: "20px" }}>Loading radiant items...</div>;
   }
 
   return (
-<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" }}>
-  {radiants.map(radiant => (
-    <div
-      key={radiant.id}
-      style={{
-        border: "1px solid #40101f",
-        padding: "12px",
-        borderRadius: "8px",
-        cursor: "pointer",
-        backgroundColor: "#09d509", // Added a dark bg to make the gold/red pop
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        textAlign: "center",
-        transition: "transform 0.2s",
-      }}
-      onClick={() => {
-        window.location.href = `/radiant-items/${radiant.id}`;
-      }}
-    >
-      {/* 1. The Icon */}
-      <img 
-        src={`/assets/radiant_items/${radiant.id}.png`}
-        alt={radiant.name}
-        style={{ 
-          width: "48px", 
-          height: "48px", 
-          marginBottom: "8px",
-          borderRadius: "4px",
-          border: "1px solid #c8aa6e" // Classic League-style gold border
-        }}
-        // Fallback in case the ID doesn't match the image path exactly
-        onError={(e) => { e.target.style.display = 'none'; }}
-      />
+    <div style={{ padding: "30px", backgroundColor: "#0a0a0c", minHeight: "100vh" }}>
+      <h1 style={{ color: "white", marginBottom: "30px", borderBottom: `2px solid ${RADIANT_COLOR}`, paddingBottom: "10px", width: "fit-content" }}>
+        Radiant Items
+      </h1>
 
-      {/* 2. The Name */}
-      <strong style={{ color: "#f0e6d2", fontSize: "0.9rem" }}>{radiant.name}</strong>
+      <div style={{ 
+        display: "grid", 
+        gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", 
+        gap: "16px" 
+      }}>
+        {radiants.map(radiant => (
+          <div
+            key={radiant.id}
+            style={{
+              border: `1px solid #2d2d31`,
+              padding: "20px",
+              borderRadius: "10px",
+              cursor: "pointer",
+              backgroundColor: "#16161a",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+              transition: "all 0.2s ease-in-out",
+            }}
+            onClick={() => {
+              window.location.href = `/radiant-items/${radiant.id}`;
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-5px)";
+              e.currentTarget.style.borderColor = RADIANT_COLOR;
+              e.currentTarget.style.boxShadow = `0 5px 15px ${RADIANT_COLOR}33`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.borderColor = "#2d2d31";
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          >
+            <img 
+              src={`/assets/radiant_items/${radiant.id}.png`}
+              alt={radiant.name}
+              style={{ 
+                width: "64px", 
+                height: "64px", 
+                marginBottom: "12px",
+                borderRadius: "6px",
+                border: `1px solid ${RADIANT_COLOR}`,
+                backgroundColor: "#000"
+              }}
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+            <strong style={{ color: "#f0e6d2", fontSize: "0.95rem" }}>{radiant.name}</strong>
+          </div>
+        ))}
+      </div>
     </div>
-  ))}
-</div>
   );
 }
 
