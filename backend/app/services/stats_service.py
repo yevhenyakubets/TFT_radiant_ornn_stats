@@ -241,6 +241,7 @@ def get_champion_special_items(split_sorted_items: dict, champion_id: str):
                     return {
                         "champion": data_id,
                         "name" : champions[data_id]["name"],
+                        "cost":champions[data_id]["cost"],
                         "artifacts": data.get("artifact", {}),
                         "radiants": data.get("radiant", {})
         }
@@ -272,11 +273,9 @@ def get_artifact_stats_by_id(split_items: dict, artifact_id: str):
     )
 )
     return {
-        "item": {
-            "id": artifact_id,
-            "name": ARTIFACT_ITEMS[artifact_id]["name"],
-            "type": "artifact"
-        },
+        "id": artifact_id,
+        "name": ARTIFACT_ITEMS[artifact_id]["name"],
+        "type": "artifact",
         "champions": sorted_result
     }
 
@@ -306,10 +305,8 @@ def get_radiant_stats_by_id(split_items: dict, radiant_id: str):
     )
 
     return {
-        "item": {
-            "id": radiant_id,
-            "name": RADIANT_ITEMS[radiant_id]["name"],
-            "type": "artifact"
-        },
+        "id": radiant_id,
+        "name": RADIANT_ITEMS[radiant_id]["name"],
+        "type": "radiant",
         "champions": sorted_result
     }
