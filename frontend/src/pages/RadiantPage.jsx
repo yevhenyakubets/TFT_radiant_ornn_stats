@@ -91,7 +91,6 @@ function RadiantPage() {
               
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>{info.name}</div>
-                <div style={{ fontSize: "0.8rem", color: champColor }}>{info.cost} Gold Unit</div>
               </div>
 
               <div style={{ textAlign: "right" }}>
