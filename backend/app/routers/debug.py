@@ -1,4 +1,9 @@
 from fastapi import APIRouter
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.models.match import Match
+
 
 from app.services.stats_service import (
     extract_all_items,
@@ -76,3 +81,17 @@ def get_champion_items(champion_name: str):
         return {"error": "Champion not found"}
 
     return champion_data
+
+
+@router.post("/test-insert")
+def test_insert(db: Session = Depends(get_db)):
+
+    fake_match = Match(
+        match_id="test123",
+        data={"hello": "world"}
+    )
+
+    db.add(fake_match)
+    db.commit()
+
+    return {"status": "inserted"}
