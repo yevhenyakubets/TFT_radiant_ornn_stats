@@ -1,7 +1,8 @@
-import { useState } from "react";
+import SearchBar from "../components/SearchBar";
+import { useNavigate } from "react-router-dom";
 
 function HomePage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const navButtons = [
     {
@@ -49,38 +50,14 @@ function HomePage() {
         </p>
       </div>
 
-      {/* --- Search Bar (Visual Only) --- */}
+      {/* --- Functional Search Bar --- */}
       <div style={{ width: "100%", maxWidth: "600px", marginBottom: "60px" }}>
-        <div style={{ position: "relative" }}>
-          <input
-            type="text"
-            placeholder="Search for a champion or item..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "16px 20px",
-              borderRadius: "12px",
-              border: "2px solid #2d2d31",
-              backgroundColor: "#16161a",
-              color: "white",
-              fontSize: "1.1rem",
-              outline: "none",
-              transition: "border-color 0.2s"
-            }}
-            onFocus={(e) => e.target.style.borderColor = "#c8aa6e"}
-            onBlur={(e) => e.target.style.borderColor = "#2d2d31"}
-          />
-          <div style={{
-            position: "absolute",
-            right: "20px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            color: "#444"
-          }}>
-            Enter ↵
-          </div>
-        </div>
+        <SearchBar 
+           // Passing custom styles to match the original HomePage design
+           customStyles={{ 
+             fontSize: "1.1rem"
+           }} 
+        />
       </div>
 
       {/* --- Navigation Buttons --- */}
@@ -94,7 +71,7 @@ function HomePage() {
         {navButtons.map((btn) => (
           <div
             key={btn.name}
-            onClick={() => window.location.href = btn.path}
+            onClick={() => navigate(btn.path)} // Updated to use navigate() for SPA speed
             style={{
               backgroundColor: "#16161a",
               padding: "30px",
