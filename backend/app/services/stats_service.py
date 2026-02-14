@@ -6,6 +6,7 @@ from app.database import SessionLocal
 from app.models.champion import Champion
 from app.models.items import Item
 from app.models.champion_item_stats import ChampionItemStats
+from app.models.champion_item_valid_pairs import ChampionItemValidPairs
 
 
 CURRENT_PATCH = "16.4"
@@ -56,6 +57,16 @@ def get_champion_special_items(champion_riot_id: str):
         db.close()
         return None
 
+    # total games for this champion in patch
+    total_games = (
+        db.query(func.count())
+        .filter(
+            ChampionItemStats.champion_id == champion.id,
+            ChampionItemStats.normalized_patch == CURRENT_PATCH,
+        )
+        .scalar()
+    )
+
     stats = (
         db.query(
             ChampionItemStats.item_id,
@@ -78,12 +89,27 @@ def get_champion_special_items(champion_riot_id: str):
         if not item:
             continue
 
+        # VALID CHECK
+        valid_pair = db.query(
+            db.query(ChampionItemValidPairs)
+            .filter(
+                ChampionItemValidPairs.champion_id == champion.id,
+                ChampionItemValidPairs.item_id == item.id,
+            )
+            .exists()
+        ).scalar()
+
+        # LOW SAMPLE CHECK
+        percentage = count / total_games if total_games else 0
+        low_sample = percentage < 0.05
+
         data = {
             "name": item.name,
             "count": count,
-            "placements": [],  # kept for frontend compatibility
             "average_placement": float(avg),
             "type": item.type,
+            "valid": bool(valid_pair),
+            "low_sample": low_sample,
         }
 
         if item.type == "artifact":
@@ -93,11 +119,9 @@ def get_champion_special_items(champion_riot_id: str):
 
     db.close()
 
-    # sort by avg placement ascending
     artifacts = dict(
         sorted(artifacts.items(), key=lambda x: x[1]["average_placement"])
     )
-
     radiants = dict(
         sorted(radiants.items(), key=lambda x: x[1]["average_placement"])
     )
@@ -109,6 +133,7 @@ def get_champion_special_items(champion_riot_id: str):
         "artifacts": artifacts,
         "radiants": radiants,
     }
+
 
 
 # ================================
@@ -127,6 +152,16 @@ def get_artifact_stats_by_id(artifact_riot_id: str):
     if not item:
         db.close()
         return None
+    
+    # total games for this item
+    total_games = (
+        db.query(func.count())
+        .filter(
+            ChampionItemStats.item_id == item.id,
+            ChampionItemStats.normalized_patch == CURRENT_PATCH,
+        )
+        .scalar()
+    )    
 
     stats = (
         db.query(
@@ -149,10 +184,24 @@ def get_artifact_stats_by_id(artifact_riot_id: str):
         if not champion:
             continue
 
+        valid_pair = db.query(
+            db.query(ChampionItemValidPairs)
+            .filter(
+                ChampionItemValidPairs.champion_id == champion.id,
+                ChampionItemValidPairs.item_id == item.id,
+            )
+            .exists()
+        ).scalar()
+
+        percentage = count / total_games if total_games else 0
+        low_sample = percentage < 0.02        
+
         result[champion.riot_id] = {
             "name": champion.name,
             "count": count,
             "average_placement": float(avg),
+            "valid": bool(valid_pair),
+            "low_sample": low_sample,
         }
 
     db.close()
@@ -185,6 +234,16 @@ def get_radiant_stats_by_id(radiant_riot_id: str):
     if not item:
         db.close()
         return None
+        # total games for this item
+
+    total_games = (
+        db.query(func.count())
+        .filter(
+            ChampionItemStats.item_id == item.id,
+            ChampionItemStats.normalized_patch == CURRENT_PATCH,
+        )
+        .scalar()
+    )  
 
     stats = (
         db.query(
@@ -207,10 +266,24 @@ def get_radiant_stats_by_id(radiant_riot_id: str):
         if not champion:
             continue
 
+        valid_pair = db.query(
+            db.query(ChampionItemValidPairs)
+            .filter(
+                ChampionItemValidPairs.champion_id == champion.id,
+                ChampionItemValidPairs.item_id == item.id,
+            )
+            .exists()
+        ).scalar()
+
+        percentage = count / total_games if total_games else 0
+        low_sample = percentage < 0.02  
+
         result[champion.riot_id] = {
             "name": champion.name,
             "count": count,
             "average_placement": float(avg),
+            "valid": bool(valid_pair),
+            "low_sample": low_sample,
         }
 
     db.close()
