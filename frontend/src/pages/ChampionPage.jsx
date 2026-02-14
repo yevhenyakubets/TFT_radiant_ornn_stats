@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import Tooltip from "../components/Tooltip"; 
 
 function ChampionPage() {
   const { championId } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("artifact"); // 'artifact' or 'radiant'
+  const [activeTab, setActiveTab] = useState("artifact");
+  const [showInvalid, setShowInvalid] = useState(false);
+  const [showLowSample, setShowLowSample] = useState(false);
 
-  // Consistency: Rarity color logic
   const getRarityColor = (cost) => {
     switch (cost) {
       case 1: return "#808080";
@@ -33,25 +35,26 @@ function ChampionPage() {
   if (data.error) return <div style={{ color: "red", padding: "20px" }}>{data.error}</div>;
 
   const rarityColor = getRarityColor(data.cost);
+  const rawItems = activeTab === "artifact" ? data.artifacts : data.radiants;
   
-  // Choose the data slice based on the active tab
-  const itemsToShow = activeTab === "artifact" ? data.artifacts : data.radiants;
-  
-  // Set the folder path based on the active tab
+  // FIXED: Standardized to radiant-items to match your asset folder
   const itemFolderPath = activeTab === "artifact" ? "/assets/artifacts" : "/assets/radiant_items";
 
+  // ADDED: Filter items based on validity and toggle state
+  // Using [__, info] to avoid the "unused variable" linter error for the key
+const itemsToShow = Object.entries(rawItems).filter(([, info]) => {
+    // Logic: Keep if (valid OR showInvalid) AND (not low_sample OR showLowSample)
+    const matchesValid = info.valid || showInvalid;
+    const matchesSample = !info.low_sample || showLowSample;
+    return matchesValid && matchesSample;
+  });
   return (
     <div style={{ padding: "30px", backgroundColor: "#0a0a0c", minHeight: "100vh", color: "white", fontFamily: "sans-serif" }}>
       
       {/* --- Champion Header --- */}
       <div style={{ 
-        display: "flex", 
-        alignItems: "center", 
-        gap: "24px", 
-        marginBottom: "40px", 
-        padding: "20px",
-        borderRadius: "12px",
-        background: `linear-gradient(90deg, #1c1c1f 0%, transparent 100%)`,
+        display: "flex", alignItems: "center", gap: "24px", marginBottom: "40px", padding: "20px",
+        borderRadius: "12px", background: `linear-gradient(90deg, #1c1c1f 0%, transparent 100%)`,
         borderLeft: `6px solid ${rarityColor}`
       }}>
         <img 
@@ -67,76 +70,81 @@ function ChampionPage() {
         </div>
       </div>
 
-      {/* --- Tab Switcher --- */}
-      <div style={{ display: "flex", gap: "2px", marginBottom: "24px", backgroundColor: "#1c1c1f", width: "fit-content", padding: "4px", borderRadius: "8px" }}>
-        {["artifact", "radiant"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              padding: "12px 30px",
-              cursor: "pointer",
-              backgroundColor: activeTab === tab ? rarityColor : "transparent",
-              color: activeTab === tab ? "black" : "white",
-              border: "none",
-              borderRadius: "6px",
-              fontWeight: "bold",
-              textTransform: "uppercase",
-              fontSize: "0.85rem",
-              transition: "all 0.2s ease"
-            }}
-          >
-            {tab}s
-          </button>
-        ))}
+      {/* --- Tab Switcher & Toggle Section --- */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+        <div style={{ display: "flex", gap: "2px", backgroundColor: "#1c1c1f", padding: "4px", borderRadius: "8px" }}>
+          {["artifact", "radiant"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                padding: "12px 30px", cursor: "pointer",
+                backgroundColor: activeTab === tab ? rarityColor : "transparent",
+                color: activeTab === tab ? "black" : "white",
+                border: "none", borderRadius: "6px", fontWeight: "bold",
+                textTransform: "uppercase", fontSize: "0.85rem", transition: "all 0.2s ease"
+              }}
+            >
+              {tab}s
+            </button>
+          ))}
+        </div>
+
+{/* ADDED: Double Toggle Section */}
+        <div style={{ display: "flex", gap: "20px" }}>
+          <label style={{ color: "#888", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+            Show low sample size
+            <input type="checkbox" checked={showLowSample} onChange={() => setShowLowSample(!showLowSample)} />
+          </label>
+          <label style={{ color: "#888", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+            Show niche items
+            <input type="checkbox" checked={showInvalid} onChange={() => setShowInvalid(!showInvalid)} />
+          </label>
+        </div>
       </div>
 
       {/* --- Items Grid --- */}
-      <div style={{ 
-        display: "grid", 
-        gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", 
-        gap: "16px" 
-      }}>
-        {Object.entries(itemsToShow).map(([itemId, info]) => (
-          <div 
-            key={itemId}
-            style={{
-              backgroundColor: "#16161a",
-              padding: "16px",
-              borderRadius: "10px",
-              display: "flex",
-              alignItems: "center",
-              gap: "16px",
-              border: "1px solid #2d2d31",
-              transition: "transform 0.2s ease",
-              cursor: "default"
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.borderColor = rarityColor}
-            onMouseLeave={(e) => e.currentTarget.style.borderColor = "#2d2d31"}
-          >
-            {/* Item Icon from specific folder */}
-            <img 
-              src={`${itemFolderPath}/${itemId}.png`} 
-              alt={info.name}
-              style={{ width: "56px", height: "56px", borderRadius: "6px", border: "1px solid #323232" }}
-              onError={(e) => { e.target.src = null }}
-            />
-            
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: "bold", fontSize: "1.05rem", color: "#f0e6d2" }}>{info.name}</div>
-              <div style={{ fontSize: "0.85rem", color: "#888", marginTop: "2px" }}>
-                Frequency: <span style={{ color: "#ddd" }}>{info.count}</span>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "16px" }}>
+        {itemsToShow.map(([itemId, info]) => {
+          // ADDED: Dynamic styles for card based on backend flags
+          const card = (
+            <div 
+              style={{
+                backgroundColor: "#16161a", padding: "16px", borderRadius: "10px",
+                display: "flex", alignItems: "center", gap: "16px",
+                border: info.low_sample ? "1px dashed #ff4e4e" : "1px solid #2d2d31", // DASHED RED if low sample
+                opacity: info.valid ? 1 : 0.5, // SEMI-TRANSPARENT if invalid
+                transition: "transform 0.2s ease", cursor: "default"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.borderColor = info.low_sample ? "#ff4e4e" : rarityColor}
+              onMouseLeave={(e) => e.currentTarget.style.borderColor = info.low_sample ? "#ff4e4e" : "#2d2d31"}
+            >
+              <img 
+                src={`${itemFolderPath}/${itemId}.png`} 
+                alt={info.name}
+                style={{ width: "56px", height: "56px", borderRadius: "6px", border: "1px solid #323232" }}
+                onError={(e) => { e.target.src = "/assets/artifacts/tft_item_unknown.png" }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: "bold", fontSize: "1.05rem", color: "#f0e6d2" }}>{info.name}</div>
+                <div style={{ fontSize: "0.85rem", color: "#888", marginTop: "2px" }}>
+                  Frequency: <span style={{ color: "#ddd" }}>{info.count}</span>
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: "1.3rem", fontWeight: "bold", color: "#ffb93b" }}>
+                  {info.average_placement.toFixed(2)}
+                </div>
+                <div style={{ fontSize: "0.65rem", color: "#666", textTransform: "uppercase" }}>Avg Place</div>
               </div>
             </div>
+          );
 
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: "1.3rem", fontWeight: "bold", color: "#ffb93b" }}>
-                {info.average_placement.toFixed(2)}
-              </div>
-              <div style={{ fontSize: "0.65rem", color: "#666", textTransform: "uppercase", letterSpacing: "1px" }}>Avg Place</div>
-            </div>
-          </div>
-        ))}
+          // ADDED: Conditional Tooltip wrappers
+          if (info.low_sample) return <Tooltip key={itemId} text="Low sample size">{card}</Tooltip>;
+          if (!info.valid) return <Tooltip key={itemId} text="Experimental/Invalid" color="#888">{card}</Tooltip>;
+          return <div key={itemId}>{card}</div>;
+        })}
       </div>
     </div>
   );
