@@ -1,5 +1,5 @@
-// components/Header.jsx
 import { useNavigate, useLocation } from "react-router-dom";
+import SearchBar from "./SearchBar"; // Ensure the import path is correct
 
 function Header() {
   const navigate = useNavigate();
@@ -49,22 +49,9 @@ function Header() {
         })}
       </div>
 
-      {/* Inactive Search Bar */}
-      <div style={{ width: "300px" }}>
-        <input
-          type="text"
-          placeholder="Search..."
-          disabled
-          style={{
-            width: "100%",
-            padding: "8px 12px",
-            borderRadius: "6px",
-            border: "1px solid #2d2d31",
-            backgroundColor: "#0a0a0c",
-            color: "#444",
-            cursor: "not-allowed"
-          }}
-        />
+      {/* Functional Search Bar */}
+      <div>
+        <SearchBar customStyles={{ width: "300px" }} /> 
       </div>
     </header>
   );
