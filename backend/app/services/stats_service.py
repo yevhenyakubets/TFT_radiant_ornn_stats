@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from collections import defaultdict
+import re
 
 from app.database import SessionLocal
 from app.models.champion import Champion
@@ -56,6 +57,11 @@ def get_champion_special_items(champion_riot_id: str):
     if not champion:
         db.close()
         return None
+    
+    readable_ability = render_description(
+        champion.ability_desc, 
+        champion.ability_variables
+    )
 
     # total games for this champion in patch
     total_games = (
@@ -130,6 +136,8 @@ def get_champion_special_items(champion_riot_id: str):
         "champion": champion.riot_id,
         "name": champion.name,
         "cost": champion.cost,
+        "ability_name": champion.ability_name,
+        "ability_description": readable_ability,
         "artifacts": artifacts,
         "radiants": radiants,
     }
@@ -152,6 +160,8 @@ def get_artifact_stats_by_id(artifact_riot_id: str):
     if not item:
         db.close()
         return None
+    
+    readable_desc = render_description(item.description, item.effects)
     
     # total games for this item
     total_games = (
@@ -184,6 +194,8 @@ def get_artifact_stats_by_id(artifact_riot_id: str):
         if not champion:
             continue
 
+        
+
         valid_pair = db.query(
             db.query(ChampionItemValidPairs)
             .filter(
@@ -214,6 +226,8 @@ def get_artifact_stats_by_id(artifact_riot_id: str):
         "id": artifact_riot_id,
         "name": item.name,
         "type": "artifact",
+        "description": readable_desc, # NEW
+        "stats": item.effects,        # NEW (for stat icons in UI)
         "champions": sorted_result,
     }
 
@@ -235,6 +249,8 @@ def get_radiant_stats_by_id(radiant_riot_id: str):
         db.close()
         return None
         # total games for this item
+
+    readable_desc = render_description(item.description, item.effects)
 
     total_games = (
         db.query(func.count())
@@ -296,5 +312,39 @@ def get_radiant_stats_by_id(radiant_riot_id: str):
         "id": radiant_riot_id,
         "name": item.name,
         "type": "radiant",
+        "description": readable_desc, # NEW
+        "stats": item.effects,        # NEW (for stat icons in UI)
         "champions": sorted_result,
     }
+
+
+def render_description(desc, effects_list):
+    if not desc: return ""
+    
+    # NEW: Remove HTML-like tags from CDragon
+    desc = re.sub(r'<[^>]*>', '', desc)
+    
+    stats = {}
+    if isinstance(effects_list, dict):
+        stats = effects_list
+    elif isinstance(effects_list, list):
+        for var in effects_list:
+            stats[var['name']] = var['value']
+
+    def replace_match(match):
+        token = match.group(1)
+        multiplier = 1
+        if '*' in token:
+            token, mult_val = token.split('*')
+            multiplier = float(mult_val)
+
+        val = stats.get(token, "???")
+        
+        if isinstance(val, list):
+            # Champion variables often have a dummy index at [0]
+            # Use indices 1, 2, 3 for star levels
+            return " / ".join([str(round(v * multiplier)) for v in val[1:4]])
+        
+        return str(round(val * multiplier)) if isinstance(val, (int, float)) else str(val)
+
+    return re.sub(r'@([^@]+)@', replace_match, desc)
