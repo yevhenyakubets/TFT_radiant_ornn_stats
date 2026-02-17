@@ -38,11 +38,24 @@ def sync_data():
         
         if db_char:
             # TFT Abilities are nested under 'ability'
+            # Inside your champion sync loop in cdragon_champions_ingest.py
             ability = unit_data.get("ability", {})
             db_char.ability_name = ability.get("name")
             db_char.ability_desc = ability.get("desc")
-            # We store the whole variables list to handle 1/2/3 star scaling
-            db_char.ability_variables = ability.get("variables")
+
+            # MERGE LOGIC: Capture variables AND calculations
+            raw_vars = ability.get("variables", [])
+            raw_calcs = ability.get("calculations", {})
+
+            # We convert calculations into a format the parser can read
+            # Calculations usually look like: {"scaleAP": {"asPercent": True, "value": [0, 50, 75, 100]}}
+            merged_data = {
+                "vars": raw_vars,
+                "calculations": raw_calcs
+            }
+
+            db_char.ability_variables = merged_data
+
             print(f"  Updated Champion: {db_char.name}")
 
     db.commit()
