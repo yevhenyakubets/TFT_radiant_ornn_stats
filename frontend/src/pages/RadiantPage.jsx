@@ -58,7 +58,7 @@ const championsToShow = Object.entries(data.champions).filter(([, info]) => {
         <div>
           <h1 style={{ margin: 0, fontSize: "2.5rem" }}>{data.name}</h1>
           <div style={{ color: "#31c1ca", fontWeight: "bold", textTransform: "uppercase", fontSize: "0.9rem", marginTop: "4px" }}>
-            Radiant Item
+            {data.description}
           </div>
         </div>
       </div>
