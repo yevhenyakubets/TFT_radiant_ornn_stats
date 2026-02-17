@@ -2,6 +2,21 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Tooltip from "../components/Tooltip"; 
 
+const ChampionAbility = ({ champion }) => {
+  return (
+    <div className="ability-container">
+      <h3>{champion.ability_name}</h3>
+      {/* Our function already cleaned the HTML, so we just use a regular <p> */}
+      <p className="description-text">
+        {champion.ability_description}
+      </p>
+      
+      {/* If you decide to add icons back later, 
+          you can split the description by our (AP) or (AD) tags */}
+    </div>
+  );
+};
+
 function ChampionPage() {
   const { championId } = useParams();
   const [data, setData] = useState(null);
@@ -67,8 +82,13 @@ const itemsToShow = Object.entries(rawItems).filter(([, info]) => {
           <div style={{ color: rarityColor, fontWeight: "bold", fontSize: "1.2rem", marginTop: "4px" }}>
             {data.cost} Cost 
           </div>
+          <div>
+            <ChampionAbility champion={data}/>
+
+          </div>
         </div>
       </div>
+
 
       {/* --- Tab Switcher & Toggle Section --- */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
