@@ -21,7 +21,7 @@ export function useSearchData() {
             route: `/champions/${champ.id}`,
             icon: `/assets/champ_logos/${champ.id}.png`
           })),
-          
+    
           ...Object.entries(artifacts).map(([id, info]) => ({
             id,
             name: info.name,

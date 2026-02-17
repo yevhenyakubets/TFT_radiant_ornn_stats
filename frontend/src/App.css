@@ -40,3 +40,20 @@
 .read-the-docs {
   color: #888;
 }
+
+.description-text {
+  line-height: 1.6;
+  color: #e0e0e0;
+  font-size: 0.95rem;
+}
+
+/* Optional: If you want to highlight the scaling tags we created */
+.description-text :contains("(AP)") {
+  color: #ff00ff; /* AP Purple */
+  font-weight: bold;
+}
+
+.description-text :contains("(AD)") {
+  color: #ffa500; /* AD Orange */
+  font-weight: bold;
+}
