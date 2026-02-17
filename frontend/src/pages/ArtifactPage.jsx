@@ -62,7 +62,7 @@ const championsToShow = Object.entries(data.champions).filter(([, info]) => {
         <div>
           <h1 style={{ margin: 0, fontSize: "2.5rem" }}>{data.name}</h1>
           <div style={{ color: "#c8aa6e", fontWeight: "bold", textTransform: "uppercase", fontSize: "0.9rem", marginTop: "4px" }}>
-            Ornn Artifact
+            {data.description}
           </div>
         </div>
       </div>
