@@ -60,7 +60,8 @@ def get_champion_special_items(champion_riot_id: str):
     
     readable_ability = render_champion_description(
         champion.ability_desc, 
-        champion.ability_variables
+        champion.ability_variables,
+        champion.name
     )
 
     # total games for this champion in patch
@@ -315,9 +316,7 @@ def get_radiant_stats_by_id(radiant_riot_id: str):
         "champions": sorted_result,
     }
 
-import re
-
-def render_champion_description(desc, data_block):
+def render_champion_description(desc, data_block, champion_name):
     if not desc:
         return ""
 
@@ -326,29 +325,67 @@ def render_champion_description(desc, data_block):
     desc = desc.replace('&nbsp;', ' ')
 
     # 2. DATA PREP
-    stats = {v['name'].lower(): v['value'] for v in data_block.get("vars", [])}
+    stats = {v['name'].strip().lower(): v['value'] for v in data_block.get("vars", [])}
+    
+    # NEW: Try to get name from data_block if the passed champion_name is empty
+    if not champion_name:
+        # Check 'name' field, then 'mName' (common in Riot files)
+        champion_name = data_block.get("name") or data_block.get("mName") or ""
+        
+    champ_key = str(champion_name).lower().strip()
 
-    # 3. THE EXCEPTION MAP (Simplified Syntax)
-    # Format: "token": ([List of variables to sum], multiplier_variable)
-    EXCEPTIONS = {
-        "modifiedaciddamage": (["addamage", "apdamage"], "acidpercentdamage"),
-        "totaldamage": (["addamage", "apdamage"], None)
+    # 3. MAPPING STRUCTURES
+    SPECIFIC_EXCEPTIONS = {
+        "aatrox": {
+            "firstcastmodifieddamage": (["addamage", "apdamage"], None),
+            "secondcastmodifieddamage": (["addamage", "apdamage"], "secondcastpercentdamage"),
+            "thirdcastmodifieddamage": (["addamage", "apdamage"], "thirdcastpercentdamage"),
+        },
+        "annie": { 
+            "modifieddamage": (["damage"], None),
+            "modifiedsecondarydamage": (["singletargetdamage"], None)
+        },
+        "aphelios": {
+            "modifieddamage": (["severumaddamage"], None)
+        },
+        "azir": {
+            "modifiedsecondarydamage": (["maxsummonsdamage"], None)
+        },
+        "braum": {
+            # Durability is just the DamageReduction variable converted to %
+            "modifieddurability": (["damagereduction"], None),
+            # Magic Damage is APDamage + ArmorDamage
+            "modifieddamage": (["apdamage", "armordamage*60"], None)
+        },
+        "briar": {
+            "modifiedattackspeed": (["decayingattackspeed*100"], None)
+        },
+        "darius": {
+            "modifiedsecondarydamage": (["physicaldamagepersecond"], None)
+        },
+        "fizz": {
+            "modifiedattackdamage": (["damageonhit"], None)
+        },
     }
+
+    GLOBAL_EXCEPTIONS = {
+        "modifiedaciddamage": (["addamage", "apdamage"], "acidpercentdamage"),
+        "totaldamage": (["addamage", "apdamage"], None),
+
+    }
+
+    current_champ_map = SPECIFIC_EXCEPTIONS.get(champ_key, {})
+
     def format_star_values(vals):
         if not vals: return "???"
-        if all(x == vals[0] for x in vals):
-            return str(vals[0])
-        # Only hide the 3rd value if it is exactly 0 and the 1st value is not
+        if all(x == vals[0] for x in vals): return str(vals[0])
         if len(vals) >= 3 and vals[2] == 0 and vals[0] != 0:
-            # Check if index 2 was actually 0 or just rounded to 0
             return f"{vals[0]}/{vals[1]}"
-        return "/".join(map(str, [str(v).rstrip('0').rstrip('.') for v in vals]))
+        return "/".join(map(str, [str(v).rstrip('0').rstrip('.') if '.' in str(v) else v for v in vals]))
 
-    # 5. ICON REPLACEMENT
-    icon_map = {
-        '%i:scaleap%': 'AP', '%i:scalead%': 'AD', '%i:scaleas%': 'AS',
-        '%i:scalehealth%': 'HP', '%i:scalearmor%': 'Armor', '%i:scalemr%': 'MR'
-    }
+    # 4. ICON REPLACEMENT
+    icon_map = {'%i:scaleap%': 'AP', '%i:scalead%': 'AD', '%i:scaleas%': 'AS', 
+                '%i:scalehealth%': 'HP', '%i:scalearmor%': 'Armor', '%i:scalemr%': 'MR'}
     
     def clean_icons(match):
         found = re.findall(r'%i:scale\w+%', match.group(0).lower())
@@ -358,7 +395,7 @@ def render_champion_description(desc, data_block):
 
     desc = re.sub(r'\((%i:scale\w+%)+\)', clean_icons, desc, flags=re.IGNORECASE)
 
-    # 6. TOKEN REPLACEMENT
+    # 5. TOKEN REPLACEMENT
     def replace_token(match):
         raw_token = match.group(1)
         multiplier = 1.0
@@ -366,36 +403,60 @@ def render_champion_description(desc, data_block):
         token_name = raw_token
         if '*' in raw_token:
             token_name, factor = raw_token.split('*')
-            multiplier = float(factor)
+            try: multiplier = float(factor)
+            except: multiplier = 1.0
         
-        token_lower = token_name.lower()
+        token_lower = token_name.lower().strip()
+        
+        # --- PRIORITY LOOKUP ---
+        rule = current_champ_map.get(token_lower) or GLOBAL_EXCEPTIONS.get(token_lower)
 
-        # --- STEP A: Check Exception Map ---
-        if token_lower in EXCEPTIONS:
-            sum_keys, mult_key = EXCEPTIONS[token_lower]
+        if rule:
+            sum_keys, mult_key = rule
             star_values = []
-            
             for i in range(1, 4):
                 base_sum = 0
                 for key in sum_keys:
-                    val_list = stats.get(key, [0]*7)
-                    base_sum += float(val_list[i] if i < len(val_list) else 0)
+                    # Handle local multipliers like 'armordamage*100'
+                    local_mult = 1.0
+                    clean_key = key
+                    if '*' in key:
+                        clean_key, factor = key.split('*')
+                        local_mult = float(factor)
+
+                    val_list = stats.get(clean_key.strip().lower(), [0]*7)
+                    
+                    # Ensure we have a list to index into
+                    if not isinstance(val_list, list): val_list = [val_list]*7
+                    
+                    val = val_list[i] if i < len(val_list) else val_list[0]
+                    
+                    # 3-Star Jump Fix
+                    if i == 3 and val < val_list[1] and any(x > val for x in val_list):
+                        val = max(val_list)
+                        
+                    base_sum += float(val or 0) * local_mult
                 
+                # Apply mult_key if it exists
                 if mult_key:
-                    mult_list = stats.get(mult_key, [1]*7)
-                    mult_val = float(mult_list[i] if i < len(mult_list) else 1)
-                    final = base_sum * mult_val * multiplier
+                    m_list = stats.get(mult_key.lower(), [1]*7)
+                    if not isinstance(m_list, list): m_list = [m_list]*7
+                    m_val = m_list[i] if (i < len(m_list) and m_list[i] != 0) else m_list[0]
+                    final = base_sum * float(m_val or 0) * multiplier
                 else:
                     final = base_sum * multiplier
                 
-                # Decimal-aware rounding for time-based tokens
-                if any(word in token_lower for word in ["seconds", "duration"]):
-                    star_values.append(round(final, 2))
-                else:
-                    star_values.append(round(final))
+                # Percentage and Time Logic
+                is_time = any(word in token_lower for word in ["seconds", "duration"])
+                is_percent = any(word in token_lower for word in ["percent", "ratio", "durability"])
+                
+                if not is_time and is_percent and 0 < final < 2:
+                    final *= 100
+                
+                star_values.append(round(final, 2) if is_time else round(final))
             return format_star_values(star_values)
 
-        # --- STEP B: Standard Aggregation ---
+        # --- STEP B: STANDARD AGGREGATION ---
         base_name = token_lower.replace('modified', '').replace('total', '')
         relevant_vals = []
         
@@ -404,11 +465,10 @@ def render_champion_description(desc, data_block):
         else:
             for key, val in stats.items():
                 if base_name in key:
-                    if "modified" not in key or key == token_lower:
+                    if "percent" not in key and "ratio" not in key:
                         relevant_vals.append(val)
 
-        if not relevant_vals:
-            return "???"
+        if not relevant_vals: return "???"
 
         star_values = []
         for i in range(1, 4):
@@ -416,24 +476,21 @@ def render_champion_description(desc, data_block):
             for v in relevant_vals:
                 try:
                     val = v[i] if isinstance(v, list) else v
+                    if i == 3 and isinstance(v, list) and val < v[1]:
+                        val = max(v)
                     if val is not None: current_sum += float(val)
                 except: continue
             
             final = current_sum * multiplier
-            
-            # Auto-fix 0.4 -> 40 for percentage-based names
-            if ("percent" in token_lower or "ratio" in token_lower) and 0 < final < 2:
+            is_time = any(word in token_lower for word in ["seconds", "duration"])
+            if not is_time and ("percent" in token_lower or "ratio" in token_lower) and 0 < final < 2:
                 final *= 100
             
-            # Decimal-aware rounding for time-based tokens
-            if any(word in token_lower for word in ["seconds", "duration"]):
-                star_values.append(round(final, 2))
-            else:
-                star_values.append(round(final))
+            star_values.append(round(final, 2) if is_time else round(final))
 
         return format_star_values(star_values)
 
-    # 7. EXECUTION
+    # 6. EXECUTION
     final_desc = re.sub(r'@([^@]+)@', replace_token, desc)
     return re.sub(r'\s+', ' ', final_desc).strip()
 
