@@ -315,173 +315,127 @@ def get_radiant_stats_by_id(radiant_riot_id: str):
         "champions": sorted_result,
     }
 
-
-def render_description(desc, data_block):
-    if not desc: return ""
-    
-    # 1. Clean HTML, spaces, and Riot-specific icons
-    desc = re.sub(r'<[^>]*>', '', desc)
-    desc = desc.replace('&nbsp;', ' ')
-    
-    # Replace scale icons with clean text tags
-    desc = re.sub(r'%i:scaleAP%', '(AP)', desc)
-    desc = re.sub(r'%i:scaleAD%', '(AD)', desc)
-    desc = re.sub(r'%i:\w+%', '', desc)
-
-    # 2. Extract stats into a simple dictionary
-    stats = {v['name']: v['value'] for v in data_block.get("vars", [])}
-
-    def replace_match(match):
-        raw_token = match.group(1)
-        multiplier = 1.0
-        
-        # Handle math inside the token (e.g., @Value*100@)
-        token = raw_token
-        if '*' in raw_token:
-            token, factor = raw_token.split('*')
-            multiplier = float(factor)
-
-        # --- STEP 1: RESOLVE TOKEN ---
-        # Try Direct Match -> Try "Modified" variant -> Try "Total" variant
-        val = stats.get(token)
-        if val is None:
-            # If desc says @ModifiedDamage@, try finding @Damage@ or @ADDamage@
-            for alt in [token.replace("Modified", ""), "AD" + token.replace("Modified", ""), "AP" + token.replace("Modified", "")]:
-                if alt in stats:
-                    val = stats[alt]
-                    break
-        
-        # If we still haven't found it, check if it's a known mismatch (Teemo's PrimaryDamage)
-        if val is None:
-            if "Damage" in token and "PrimaryDamage" in stats: val = stats["PrimaryDamage"]
-            elif "Heal" in token and "YuumiHeal" in stats: val = stats["YuumiHeal"]
-
-        if val is None: return ""
-
-        # --- STEP 2: APPLY MATH & FORMATTING ---
-        if isinstance(val, list):
-            raw_levels = [float(v) for v in val[1:4]]
-            
-            # Smart Multiplier Logic:
-            # Only multiply by 100 if:
-            # A) The token explicitly asked for it (*100)
-            # B) It's an AttackSpeed token and the value is a small decimal (< 5)
-            # C) It's an "AttackSpeed" token that ISN'T already a whole number (like Kobuko's 25)
-            final_multiplier = multiplier
-            if "AttackSpeed" in token or "AS" in token:
-                if all(x < 5 for x in raw_levels) and multiplier == 1.0:
-                    final_multiplier = 100.0
-
-            levels = [round(x * final_multiplier) for x in raw_levels]
-            
-            # --- STEP 3: SUFFIXES ---
-            suffix = ""
-            if any(k in token for k in ["AttackSpeed", "AS", "Percent", "Reduction"]):
-                suffix = "%"
-
-            # Collapse single numbers: 4 / 4 / 4 -> 4
-            if all(x == levels[0] for x in levels):
-                return f"{levels[0]}{suffix}"
-            
-            return " / ".join(map(str, levels)) + suffix
-        
-        # Non-list value (singular numbers)
-        return str(round(float(val) * multiplier))
-
-    # Execute replacement
-    final_desc = re.sub(r'@([^@]+)@', replace_match, desc)
-    
-    # Cleanup artifacts
-    final_desc = final_desc.replace("((", "(").replace("))", ")")
-    return re.sub(r'\s+', ' ', final_desc).strip()
-
+import re
 
 def render_champion_description(desc, data_block):
     if not desc:
         return ""
 
-    # 1. CLEAN HTML AND NON-BREAKING SPACES
-    # Removes things like <spellPassive>, <TFTBonus>, and &nbsp;
+    # 1. CLEANING
     desc = re.sub(r'<[^>]*>', '', desc)
     desc = desc.replace('&nbsp;', ' ')
 
-    # 2. PREPARE THE DATA MAP
-    # We turn the vars list into a dictionary for O(1) lookup
-    stats = {v['name']: v['value'] for v in data_block.get("vars", [])}
+    # 2. DATA PREP
+    stats = {v['name'].lower(): v['value'] for v in data_block.get("vars", [])}
 
-    # 3. ICON REPLACEMENT
-    # Map Riot's icon codes to human-readable labels
+    # 3. THE EXCEPTION MAP (Simplified Syntax)
+    # Format: "token": ([List of variables to sum], multiplier_variable)
+    EXCEPTIONS = {
+        "modifiedaciddamage": (["addamage", "apdamage"], "acidpercentdamage"),
+        "totaldamage": (["addamage", "apdamage"], None)
+    }
+    def format_star_values(vals):
+        if not vals: return "???"
+        if all(x == vals[0] for x in vals):
+            return str(vals[0])
+        # Only hide the 3rd value if it is exactly 0 and the 1st value is not
+        if len(vals) >= 3 and vals[2] == 0 and vals[0] != 0:
+            # Check if index 2 was actually 0 or just rounded to 0
+            return f"{vals[0]}/{vals[1]}"
+        return "/".join(map(str, [str(v).rstrip('0').rstrip('.') for v in vals]))
+
+    # 5. ICON REPLACEMENT
     icon_map = {
-        '%i:scaleAP%': 'AP',
-        '%i:scaleAD%': 'AD',
-        '%i:scaleAS%': 'AS',
-        '%i:scaleHealth%': 'HP',
-        '%i:scaleArmor%': 'Armor',
-        '%i:scaleMR%': 'MR'
+        '%i:scaleap%': 'AP', '%i:scalead%': 'AD', '%i:scaleas%': 'AS',
+        '%i:scalehealth%': 'HP', '%i:scalearmor%': 'Armor', '%i:scalemr%': 'MR'
     }
     
-    # We find all icon groups like (%i:scaleAD%%i:scaleAP%) and turn them into (AD, AP)
     def clean_icons(match):
-        icons = re.findall(r'%i:scale\w+%', match.group(0))
-        labels = [icon_map.get(i, i) for i in icons]
+        found = re.findall(r'%i:scale\w+%', match.group(0).lower())
+        if not found: return ""
+        labels = [icon_map.get(i, i.replace('%i:scale', '').replace('%', '')) for i in found]
         return f"({', '.join(labels)})"
 
-    desc = re.sub(r'\((%i:scale\w+%)+\)', clean_icons, desc)
+    desc = re.sub(r'\((%i:scale\w+%)+\)', clean_icons, desc, flags=re.IGNORECASE)
 
-    # 4. TOKEN REPLACEMENT LOGIC
+    # 6. TOKEN REPLACEMENT
     def replace_token(match):
-        token = match.group(1)
-        
-        # Handle multipliers if present (e.g., @Value*100@)
+        raw_token = match.group(1)
         multiplier = 1.0
-        if '*' in token:
-            token, factor = token.split('*')
+        
+        token_name = raw_token
+        if '*' in raw_token:
+            token_name, factor = raw_token.split('*')
             multiplier = float(factor)
+        
+        token_lower = token_name.lower()
 
-        # AGGREGATION LOGIC:
-        # If the token is 'ModifiedSelfHeal', we look for components like 'SelfHealAP' + 'SelfHealHealthPercent'
-        # If it's 'TotalDamage', we look for 'ADDamage' + 'APDamage'
-        
-        base_name = token.replace('Modified', '').replace('Total', '')
-        
-        # Find all keys in stats that relate to this token
-        # e.g., for 'Heal', find 'YuumiHeal', 'AllyHealAP', etc.
+        # --- STEP A: Check Exception Map ---
+        if token_lower in EXCEPTIONS:
+            sum_keys, mult_key = EXCEPTIONS[token_lower]
+            star_values = []
+            
+            for i in range(1, 4):
+                base_sum = 0
+                for key in sum_keys:
+                    val_list = stats.get(key, [0]*7)
+                    base_sum += float(val_list[i] if i < len(val_list) else 0)
+                
+                if mult_key:
+                    mult_list = stats.get(mult_key, [1]*7)
+                    mult_val = float(mult_list[i] if i < len(mult_list) else 1)
+                    final = base_sum * mult_val * multiplier
+                else:
+                    final = base_sum * multiplier
+                
+                # Decimal-aware rounding for time-based tokens
+                if any(word in token_lower for word in ["seconds", "duration"]):
+                    star_values.append(round(final, 2))
+                else:
+                    star_values.append(round(final))
+            return format_star_values(star_values)
+
+        # --- STEP B: Standard Aggregation ---
+        base_name = token_lower.replace('modified', '').replace('total', '')
         relevant_vals = []
         
-        # Priority 1: Exact Match
-        if token in stats:
-            relevant_vals.append(stats[token])
-        # Priority 2: Components (Aggregating HP + AP scaling)
+        if token_lower in stats:
+            relevant_vals.append(stats[token_lower])
         else:
             for key, val in stats.items():
-                if base_name.lower() in key.lower():
-                    # Avoid double counting if 'Modified' version exists
-                    if "Modified" not in key or key == token:
+                if base_name in key:
+                    if "modified" not in key or key == token_lower:
                         relevant_vals.append(val)
 
         if not relevant_vals:
-            return "???" # Fallback for truly missing data
+            return "???"
 
-        # Calculate values per star level (TFT star levels are indices 1, 2, 3)
         star_values = []
         for i in range(1, 4):
-            total = sum(float(v[i]) if isinstance(v, list) else float(v) for v in relevant_vals)
-            star_values.append(round(total * multiplier))
+            current_sum = 0
+            for v in relevant_vals:
+                try:
+                    val = v[i] if isinstance(v, list) else v
+                    if val is not None: current_sum += float(val)
+                except: continue
+            
+            final = current_sum * multiplier
+            
+            # Auto-fix 0.4 -> 40 for percentage-based names
+            if ("percent" in token_lower or "ratio" in token_lower) and 0 < final < 2:
+                final *= 100
+            
+            # Decimal-aware rounding for time-based tokens
+            if any(word in token_lower for word in ["seconds", "duration"]):
+                star_values.append(round(final, 2))
+            else:
+                star_values.append(round(final))
 
-        # FORMATTING THE OUTPUT
-        # Rule: If all star levels are the same, show one number (e.g., "3")
-        if all(x == star_values[0] for x in star_values):
-            return str(star_values[0])
-        
-        # Rule: Show as "140/180/240"
-        return "/".join(map(str, star_values))
+        return format_star_values(star_values)
 
-    # 5. EXECUTION
+    # 7. EXECUTION
     final_desc = re.sub(r'@([^@]+)@', replace_token, desc)
-    
-    # Final cleanup of whitespace
     return re.sub(r'\s+', ' ', final_desc).strip()
-
 
 def render_item_data(desc, effects_raw):
     """
@@ -546,4 +500,4 @@ def render_item_data(desc, effects_raw):
     # Final whitespace cleanup
     rendered_desc = re.sub(r'\s+', ' ', rendered_desc).strip()
     
-    return rendered_desc, cleaned_effects
+    return rendered_desc
