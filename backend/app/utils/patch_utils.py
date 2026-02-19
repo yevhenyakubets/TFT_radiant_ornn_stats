@@ -1,0 +1,57 @@
+from datetime import datetime, timezone
+
+PATCH_SCHEDULE = {
+    "16.2": datetime(2026, 1, 8, tzinfo=timezone.utc),
+    "16.3": datetime(2026, 1, 22, tzinfo=timezone.utc),
+    "16.4": datetime(2026, 2, 4, tzinfo=timezone.utc),
+    "16.5": datetime(2026, 2, 19, tzinfo=timezone.utc),
+    "16.6": datetime(2026, 3, 4, tzinfo=timezone.utc),
+    "16.7": datetime(2026, 3, 18, tzinfo=timezone.utc),
+    "16.8": datetime(2026, 4, 1, tzinfo=timezone.utc),
+    "17.1": datetime(2026, 4, 15, tzinfo=timezone.utc),
+    "17.2": datetime(2026, 4, 29, tzinfo=timezone.utc),
+    "17.3": datetime(2026, 5, 13, tzinfo=timezone.utc),
+    "17.4": datetime(2026, 5, 28, tzinfo=timezone.utc),
+    "17.5": datetime(2026, 6, 10, tzinfo=timezone.utc),
+    "17.6": datetime(2026, 6, 24, tzinfo=timezone.utc),
+    "17.7": datetime(2026, 7, 15, tzinfo=timezone.utc),
+    "18.1": datetime(2026, 7, 29, tzinfo=timezone.utc),
+    "18.2": datetime(2026, 8, 12, tzinfo=timezone.utc),
+    "18.3": datetime(2026, 8, 26, tzinfo=timezone.utc),
+    "18.4": datetime(2026, 9, 10, tzinfo=timezone.utc),
+    "18.5": datetime(2026, 9, 23, tzinfo=timezone.utc),
+    "18.6": datetime(2026, 10, 7, tzinfo=timezone.utc),
+    "18.7": datetime(2026, 10, 21, tzinfo=timezone.utc),
+    "18.8": datetime(2026, 11, 4, tzinfo=timezone.utc),
+    "19.1": datetime(2026, 11, 18, tzinfo=timezone.utc),
+    "19.2": datetime(2026, 12, 7, tzinfo=timezone.utc),
+}
+
+def get_current_patch():
+    now = datetime.now(timezone.utc)
+
+    sorted_patches = sorted(PATCH_SCHEDULE.items(), key=lambda x: x[1])
+    current_patch = None
+
+    for patch, start_date in sorted_patches:
+        if now >= start_date:
+            current_patch = patch
+        else:
+            break
+
+    return current_patch
+
+
+def get_patch_for_timestamp(timestamp_ms: int):
+    match_date = datetime.fromtimestamp(timestamp_ms / 1000, timezone.utc)
+
+    sorted_patches = sorted(PATCH_SCHEDULE.items(), key=lambda x: x[1])
+    current_patch = None
+
+    for patch, start_date in sorted_patches:
+        if match_date >= start_date:
+            current_patch = patch
+        else:
+            break
+
+    return current_patch

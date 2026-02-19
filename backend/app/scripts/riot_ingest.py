@@ -1,15 +1,17 @@
-# backend/scripts/riot_ingest.py
-
 import os
 import time
 import requests
 import argparse
+from app.utils.patch_utils import get_current_patch, PATCH_SCHEDULE, get_patch_for_timestamp
+
 
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
 from app.models.match import Match
+from app.models.champion import Champion 
+from app.models.traits import Trait
 
 load_dotenv()
 
@@ -48,39 +50,49 @@ def riot_get(url, params=None):
 
 def get_puuids_by_tier(tier: str, division: str | None):
     if tier in ["challenger", "grandmaster", "master"]:
-        url = f"{PLATFORM_URL}/tft/league/v1/challenger?api_key={API_KEY}"
-        response = requests.get(url).json()
-        return [entry["puuid"] for entry in response["entries"]]
+        url = f"{PLATFORM_URL}/tft/league/v1/{tier}"
+        # Use your safe helper here!
+        data = riot_get(url)
+        return [entry["puuid"] for entry in data.get("entries", [])]
     else:
-        # diamond / emerald / platinum
         puuids = []
         page = 1
-
         while True:
-            url = f"{PLATFORM_URL}/tft/league/v1/entries/{tier.upper()}/{division}?page={page}&api_key={API_KEY}"
-            response = requests.get(url)
-            data = response.json()
+            # Note: Move api_key to headers via riot_get or keep in URL
+            url = f"{PLATFORM_URL}/tft/league/v1/entries/{tier.upper()}/{division}"
+            params = {"page": page}
+            
+            # Use your safe helper!
+            data = riot_get(url, params=params)
 
             if not data:
                 break
 
-            puuids.extend([entry["puuid"] for entry in data])
-
-            print(f"Fetched page {page} - {len(data)} players")
+            # Safety check: ensure data is a list
+            if isinstance(data, list):
+                puuids.extend([entry["puuid"] for entry in data])
+                print(f"Fetched page {page} - {len(data)} players")
+            else:
+                print(f"Unexpected response format on page {page}: {data}")
+                break
 
             page += 1
+            # Optional: Sleep slightly to be kind to the League API
+            time.sleep(0.05)
 
         return puuids
 
 
 # ---------- Step 2: Get Match IDs ----------
 
-def get_match_ids(puuid, start=0, count=10):
+def get_match_ids(puuid, start_time=None, count=20):
     url = f"{REGIONAL_URL}/tft/match/v1/matches/by-puuid/{puuid}/ids"
     params = {
-        "start": start,
+        "start": 0,
         "count": count
     }
+    if start_time:
+        params["start_time"] = int(start_time) # Epoch seconds
     return riot_get(url, params=params)
 
 
@@ -136,41 +148,49 @@ def parse_args():
 def run():
     db = SessionLocal()
 
+    # 1. Determine the current patch and its start threshold
+    current_patch_name = get_current_patch()
+    patch_start_dt = PATCH_SCHEDULE.get(current_patch_name)
+    # Convert datetime to epoch seconds for the API parameter
+    start_time_epoch = int(patch_start_dt.timestamp()) if patch_start_dt else None
+
+    print(f"Targeting Patch: {current_patch_name} (Starting {patch_start_dt})")
 
     existing_match_ids = get_existing_match_ids(db)
-    print(f"Loaded {len(existing_match_ids)} existing matches from DB")
-
     args = parse_args()
-    tier = args.tier.lower()
-    division = args.division
+    
+    # ... (args validation logic)
 
-    # Validate division requirement
-    if tier in ["diamond", "emerald", "platinum"] and not division:
-        raise ValueError("Division is required for Diamond, Emerald and Platinum")
+    puuids = get_puuids_by_tier(args.tier, args.division)
 
-    if tier in ["challenger", "grandmaster", "master"] and division:
-        raise ValueError("Division should not be provided for Challenger/GM/Master")
-
-    puuids = get_puuids_by_tier(tier, division)
-
-    print(f"Found {len(puuids)} players in {tier} {division or ''}")
-
-    for puuid in puuids:  # limit for dev key safety
-        match_ids = get_match_ids(puuid)
+    for puuid in puuids:
+        # Fetch IDs newest -> oldest
+        match_ids = get_match_ids(puuid, start_time=start_time_epoch)
 
         for match_id in match_ids:
+            # 1. Skip immediately if we already have it in DB
             if match_id in existing_match_ids:
                 continue
 
+            # 2. Fetch match details
             match_data = get_match(match_id)
+            
+            game_ms = match_data.get("info", {}).get("game_datetime")
+            match_patch = get_patch_for_timestamp(game_ms)
+
+            # 3. THE OPTIMIZATION: 
+            # If this match is from an old patch, all matches after it (older) 
+            # are also invalid. Break the loop for this player.
+            if match_patch != current_patch_name:
+                print(f"Reached end of patch for player (Match {match_id} is {match_patch}). Moving to next player.")
+                break 
+
             inserted = insert_match(db, match_id, match_data)
-
             if inserted:
-                print(f"Inserted {match_id}")
-            else:
-                print(f"Skipped duplicate {match_id}")
+                print(f"Inserted {match_id} (Patch {match_patch})")
+                existing_match_ids.add(match_id)
 
-            time.sleep(0.1)  # soft rate control
+            time.sleep(0.05) 
 
     db.close()
 
