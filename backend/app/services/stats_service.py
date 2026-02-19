@@ -10,7 +10,9 @@ from app.models.champion_item_stats import ChampionItemStats
 from app.models.champion_item_valid_pairs import ChampionItemValidPairs
 
 
-CURRENT_PATCH = "16.4"
+CURRENT_PATCH = "16.5"
+
+DECREASING_STATS = ["attacks", "mana", "requirement", "cooldown"]
 
 
 # ================================
@@ -335,6 +337,23 @@ def render_champion_description(desc, data_block, champion_name):
     champ_key = str(champion_name).lower().strip()
 
     # 3. MAPPING STRUCTURES
+    # Values based on 1-Star stats
+    CHAMP_BASE_STATS = {
+        "ashe": {"hp": None, "ad": 58},
+        "dr. mundo": {"hp": 900, "ad": None},
+        "jinx": {"hp": None, "ad": 50},
+        "nasus": {"hp": 1500, "ad": None},
+        "nautilus": {"hp": 900, "ad": None},
+        "rift herald": {"hp": 1100, "ad": None},
+        "ryze": {"hp": 1000, "ad": None},
+        "sion": {"hp": 650, "ad": None},
+        "swain": {"hp": 1200, "ad": None},
+        "volibear": {"hp": 1200, "ad": None},
+        "wukong": {"hp": 1050, "ad": None},
+        "yasuo": {"hp": None, "ad": 45},
+        "yorick": {"hp": 850, "ad": None},
+
+    }
     SPECIFIC_EXCEPTIONS = {
         "aatrox": {
             "firstcastmodifieddamage": (["addamage", "apdamage"], None),
@@ -345,31 +364,180 @@ def render_champion_description(desc, data_block, champion_name):
             "modifieddamage": (["damage"], None),
             "modifiedsecondarydamage": (["singletargetdamage"], None)
         },
+        "ashe": {
+            "smallarrowdamagefinal": (["smallarrowdamage*base_ad"], None)
+        },
         "aphelios": {
             "modifieddamage": (["severumaddamage"], None)
         },
         "azir": {
             "modifiedsecondarydamage": (["maxsummonsdamage"], None)
         },
+        "baron nashor": {
+            "modifiedaciddamage": (["addamage", "apdamage"], "acidpercentdamage"),
+        },
         "braum": {
-            # Durability is just the DamageReduction variable converted to %
             "modifieddurability": (["damagereduction"], None),
-            # Magic Damage is APDamage + ArmorDamage
             "modifieddamage": (["apdamage", "armordamage*60"], None)
         },
         "briar": {
-            "modifiedattackspeed": (["decayingattackspeed*100"], None)
+            "modifiedattackspeed": (["decayingattackspeed*100"], None),
+        },
+        "blitzcrank": {
+            "modifieddamage": (["mrdamageratio*40"], None),
         },
         "darius": {
-            "modifiedsecondarydamage": (["physicaldamagepersecond"], None)
+            "modifiedsecondarydamage": (["physicaldamagepersecond"], None),
+        },
+        "dr. mundo": {
+            "totalhealing": (["percenthealthhealingpersecond*base_hp", "aphealpersecond"], None),
+            "totaldamage": (["percentmaximumhealthdamage*base_hp", "addamage"], None)
         },
         "fizz": {
-            "modifiedattackdamage": (["damageonhit"], None)
+            "modifiedattackdamage": (["damageonhit"], None),
         },
+        "galio": {
+            "bonuspassivedamage": (["passivemrratio*65"], None),
+            "modifiedactivedamage": (["activeardamage*65", "activemrdamage*65"], None)
+        },
+        "gwen": {
+            "modifiedcastsniptimes": (["snipcount"], None),
+            "modifieddamage": (["damage"], None),
+            "modifiedsecondarydamage": (["secondarymagicdamage"], None),
+        },
+        "jarvan iv": {
+            "modifiedattackspeed": (["attackspeed*100"], None),
+        },
+        "jinx": {
+            "totaldamage": (["addamage","apdamage"], None) ,
+        },
+        "kalista": {
+            "totalnumberofspears": (["basespears"], None),
+        },
+        "kindred": {
+            "modifiedhealpercentage": (["healpercentage*100"], None),
+        },
+        "leona": {
+            "modifieddamagereduction": (["flatdr"], None),
+        },
+        "lux": {
+            "modifieddamage_q": (["qdamage"], None),
+        },
+        "mel": {
+            "modifiedsecondarydamage": (["targetdamage"], None),
+            "tftunitproperty.:tft16_mel_manaspent": (["0"], None),
+        },
+        "milio": {
+            "modifiedaoedamage": (["magicdamageaoe"], None),
+        },
+        "miss fortune": {
+            "modifiedsecondarydamage": (["addamage", "apdamage"], "percentdamageofsecondarywaves"),
+        },
+        "nautilus": {
+            "modifieddamage": (["mrdamageratio*50"], None),
+            "modifiedshield": (["apshield","percenthealthshield*base_hp"], None),
+        },
+        "nasus": {
+            "modifieddamagepersecond": (["percenthealthdamagepersecond*base_hp"], None),
+        },
+        "orianna": {
+            "modifiedsecondarydamage": (["targetdamage"], None),
+        },
+        "rek'sai": {
+            "modifiedsecondarydamage": (["spellattackdamage"], None),
+        },
+        "renekton": {
+            "modifieddashdamage": (["dashaddamage"], None),
+            "modifiedslashdamage": (["slashaddamage", "slashapdamage"], None),
+        },
+        "rift herald": {
+            "modifieddurability": (["bonusdurability*100"], None),
+            "modifieddamage": (["apdamage", "percenthealthdamage*base_hp"], None),
+        },
+        "rumble": {
+            "modifiedshield": (["apshield"], None),
+            # PercentArmorDamage * Base Armor (60)
+            "totaldamage": (["percentarmordamage*40"], None)
+        },
+        "ryze": {
+            "modifiedshadowislesbonusdamage": (["shadowislesbasepercentage*100"], None),
+            "modifieddemaciaexecutethreshold": (["demaciaexecutethreshold*100"], None),
+            "modifiedfreljordtruedamage": (["freljordtruedamagepercenthealth*base_hp"], None),
+        },
+        "sett": {
+            "modifiedpercentoftargetmaxhealth": (["percentoftargetmaxhealth*100"], None),
+        },
+        "shyvana": {
+            "modifieddivebombdamage": (["divebombaddamage"], None),
+            "modifiedfiredamagepersecond":(["firedamagetaddamagepersecond", "firedamageappersecond"], None)
+        },
+        "singed": {
+            "modifiedmanapersec": (["manapercentas*0.7"], None),
+        },
+        "sion": {
+            "modifiedshield": (["apshield", "percenthealthshield*base_hp"], None),
+            "modifieddamage": (["damagepercenthealth*base_hp"], None),
+        },
+        "skarner": {
+            "modifieddamage": (["damagepercentarmor*70"], None),
+        },
+        "swain": {
+            "modifiedhanddamage": (["activedamage"], None),
+            "totalhealing": (["aphealing", "percentmaximumhealthhealing*base_hp"], None),
+        },
+        "t-hex": {
+            "modifiedlaserdamagepersecond": (["apdamage","addamage"], None),
+            "modifiedmissiledamage": (["apdamage","addamage"], "missiledamagemult"),
+        },
+        "thresh": {
+            "modifiedhealthdrain": (["appassivedamage"], None),
+        },
+        "tryndamere": {
+            "modifieddurability": (["dr*100"], None),
+        },
+        "vi": {
+            "modifiedsecondarydamage": (["secondaryaddamage"], None),
+        },
+        "viego": {
+            "modifiedattackspeed": (["baseattackspeed"], None),
+        },
+        "volibear": {
+            "modifiedbitedamage": (["bitedamagebase", "bitedamagehealth*base_hp"], None),
+            "modifiedslamdamage": (["bitedamagebase", "bitedamagehealth*base_hp"], "slamdamagemultiplier"),
+            "modifiedboltdamage": (["stormbringerboltbase", "stormbringerbolthealth*base_hp"], None),
+        },
+        "warwick": {
+            "modifiedtakedownattackspeed": (["allyattackspeed*100"], None),
+        },
+        "wukong": {
+            "modifieddefenses": (["resists"], None),
+            "modifiedclonehealth": (["summonmaxhealthpercent*base_hp"], None),
+        },
+        "yasuo": {
+            "yasuoadpercent*100": (["base_ad"], None),
+        },
+        "yorick": {
+            "modifiedheal": (["apheal"], None),
+            "modifieddamage": (["flatdamage","percenthealthdamage*base_hp"], None),
+        },
+        "zaahen": {
+            "modifiedbigaoedamage": (["apdamage","addamage"], "bigaoedamagemultiplier"),
+            "modifieddamage": (["apdamage","addamage"], "aoedamagemultiplier"),
+        },
+        "ziggs": {
+            "modifiedbasicattackdamage": (["bapercentap"], None),
+            "modifiedmindamage": (["minaoedamage"], None),
+            "modifiedmaxdamage": (["maxaoedamage"], None),
+        },
+        "zilean": {
+            "modifieddamage": (["magicdamage"], None),
+            "modifiedsecondarydamage": (["explosiondamage"], None),
+        },
+
+
     }
 
     GLOBAL_EXCEPTIONS = {
-        "modifiedaciddamage": (["addamage", "apdamage"], "acidpercentdamage"),
         "totaldamage": (["addamage", "apdamage"], None),
 
     }
@@ -407,6 +575,17 @@ def render_champion_description(desc, data_block, champion_name):
             except: multiplier = 1.0
         
         token_lower = token_name.lower().strip()
+
+        # --- SETUP BASE STATS ---
+        # Get base stats or default to 0 to avoid math errors
+        base_info = CHAMP_BASE_STATS.get(champ_key, {"hp": 0, "ad": 0})
+        
+        # Scaling Map: 1.8x for HP, 1.5x for AD (standard TFT scaling)
+        scaling_map = {
+            1: {"hp": (base_info.get("hp") or 0), "ad": (base_info.get("ad") or 0)},
+            2: {"hp": round((base_info.get("hp") or 0) * 1.8), "ad": round((base_info.get("ad") or 0) * 1.5)},
+            3: {"hp": round((base_info.get("hp") or 0) * 3.24), "ad": round((base_info.get("ad") or 0) * 2.25)}
+        }
         
         # --- PRIORITY LOOKUP ---
         rule = current_champ_map.get(token_lower) or GLOBAL_EXCEPTIONS.get(token_lower)
@@ -417,25 +596,37 @@ def render_champion_description(desc, data_block, champion_name):
             for i in range(1, 4):
                 base_sum = 0
                 for key in sum_keys:
-                    # Handle local multipliers like 'armordamage*100'
                     local_mult = 1.0
                     clean_key = key
+
+                    # --- NEW SCALING LOGIC BLOCK ---
                     if '*' in key:
                         clean_key, factor = key.split('*')
-                        local_mult = float(factor)
+                        if factor == "base_hp":
+                            local_mult = scaling_map[i]["hp"]
+                        elif factor == "base_ad":
+                            local_mult = scaling_map[i]["ad"]
+                        else:
+                            try: local_mult = float(factor)
+                            except: local_mult = 1.0
+                    # -------------------------------
 
-                    val_list = stats.get(clean_key.strip().lower(), [0]*7)
+                    val_raw = stats.get(clean_key.strip().lower(), [0]*7)
+                    if val_raw is None: val_raw = [0]*7
+                    if not isinstance(val_raw, list): val_raw = [val_raw]*7
                     
-                    # Ensure we have a list to index into
-                    if not isinstance(val_list, list): val_list = [val_list]*7
-                    
+                    val_list = [x if x is not None else 0 for x in val_raw]
                     val = val_list[i] if i < len(val_list) else val_list[0]
                     
-                    # 3-Star Jump Fix
-                    if i == 3 and val < val_list[1] and any(x > val for x in val_list):
-                        val = max(val_list)
-                        
-                    base_sum += float(val or 0) * local_mult
+                    # 3. DEFINE is_decreasing_stat logic (Make sure DECREASING_STATS is defined at top of file)
+                    DECREASING_STATS = ["mana", "attacks", "requirement", "cooldown"]
+                    is_decreasing_stat = any(word in token_lower for word in DECREASING_STATS)
+                    
+                    if i == 3 and not is_decreasing_stat:
+                        if float(val) < float(val_list[1]) and any(x > val for x in val_list):
+                            val = max(val_list)
+                            
+                    base_sum += float(val) * local_mult
                 
                 # Apply mult_key if it exists
                 if mult_key:
@@ -446,7 +637,6 @@ def render_champion_description(desc, data_block, champion_name):
                 else:
                     final = base_sum * multiplier
                 
-                # Percentage and Time Logic
                 is_time = any(word in token_lower for word in ["seconds", "duration"])
                 is_percent = any(word in token_lower for word in ["percent", "ratio", "durability"])
                 
