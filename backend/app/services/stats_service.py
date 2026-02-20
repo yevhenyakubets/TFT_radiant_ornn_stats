@@ -42,6 +42,31 @@ def _aggregate_stats(db: Session):
 
     return results
 
+def get_sorted_traits(traits):
+    """
+    Filters out 'duo' traits, then sorts: Unique > Origin > Class. 
+    Alphabetical within the same type.
+    """
+    # 1. Filter out duo traits immediately
+    filtered_traits = [t for t in traits if t.type != "duo"]
+    
+    # 2. Define priority weights for the remaining types
+    priority = {"unique": 0, "origin": 1, "class": 2}
+    
+    # 3. Sort by priority first, then by name
+    sorted_list = sorted(
+        filtered_traits, 
+        key=lambda t: (priority.get(t.type, 99), t.name)
+    )
+    
+    return [
+        {
+            "name": t.name,
+            "type": t.type,
+            "riot_id": t.riot_id
+        } 
+        for t in sorted_list
+    ]
 
 # ================================
 # CHAMPION PAGE
@@ -55,6 +80,8 @@ def get_champion_special_items(champion_riot_id: str):
         .filter(Champion.riot_id == champion_riot_id)
         .first()
     )
+    
+    sorted_traits = get_sorted_traits(champion.traits)
 
     if not champion:
         db.close()
@@ -139,6 +166,7 @@ def get_champion_special_items(champion_riot_id: str):
         "champion": champion.riot_id,
         "name": champion.name,
         "cost": champion.cost,
+        "traits": sorted_traits,
         "ability_name": champion.ability_name,
         "ability_description": readable_ability,
         "artifacts": artifacts,

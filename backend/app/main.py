@@ -10,6 +10,7 @@ from app.services.stats_service import (
     get_champion_special_items,
     get_artifact_stats_by_id,
     get_radiant_stats_by_id,
+    get_sorted_traits,
 )
 
 app = FastAPI()
@@ -36,13 +37,16 @@ def root():
 def get_champions():
     db = SessionLocal()
 
-    champions = db.query(Champion).all()
+    # Use joinedload to avoid N+1 query problem (loading traits for all champs at once)
+    from sqlalchemy.orm import joinedload
+    champions = db.query(Champion).options(joinedload(Champion.traits)).all()
 
     result = [
         {
             "id": champ.riot_id,
             "name": champ.name,
             "cost": champ.cost,
+            "traits": get_sorted_traits(champ.traits) # <--- Added
         }
         for champ in champions
     ]
