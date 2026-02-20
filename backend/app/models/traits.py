@@ -9,8 +9,8 @@ class Trait(Base):
     id = Column(Integer, primary_key=True)
     riot_id = Column(String, unique=True, index=True)
     name = Column(String)
+    type = Column(String) 
     description = Column(Text)
-    effects = Column(JSON) # Thresholds/breakpoints
+    effects = Column(JSON) 
 
-    # Relationship back to Champion
     champions = relationship("Champion", secondary=champion_traits, back_populates="traits")
