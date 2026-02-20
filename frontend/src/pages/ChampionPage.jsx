@@ -2,17 +2,122 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Tooltip from "../components/Tooltip"; 
 
+import React from 'react';
+
 const ChampionAbility = ({ champion }) => {
-  return (
-    <div className="ability-container">
-      <h3>{champion.ability_name}</h3>
-      {/* Our function already cleaned the HTML, so we just use a regular <p> */}
-      <p className="description-text">
-        {champion.ability_description}
-      </p>
+  if (!champion || !champion.ability_description) return null;
+
+  // 1. Logic to determine number color based on damage type keywords in the text
+  const getDamageColor = (sentencePart) => {
+    const text = sentencePart.toLowerCase();
+    if (text.includes("magic damage")) return "#4e98ff"; // Blue
+    if (text.includes("physical damage")) return "#ff4e4e"; // Red
+    if (text.includes("true damage")) return "#ffffff"; // White
+    if (text.includes("shield") || text.includes("health")) return "#6bff82"; // Light Green
+    return "#f0e6d2"; // Default off-white
+  };
+
+  // 2. Mapping to match your specific folder filenames (e.g., Health.png, AD.png)
+  const getStatFileName = (stat) => {
+    const s = stat.toLowerCase().trim();
+    const mapping = {
+      'ad': 'AD',
+      'ap': 'AP',
+      'armor': 'Armor',
+      'as': 'AS',
+      'crit': 'CritChance',
+      'health': 'Health',
+      'hp': 'Health',
+      'mr': 'MR',
+      'dr': 'scaleDR',
+      'manaregen': 'scalemanaregen',
+      'sv': 'scaleSV'
+    };
+    return mapping[s] || stat;
+  };
+
+  const formatDescription = (text) => {
+    // Split the text into main body and keywords using the <keyword> tags from backend
+    const parts = text.split("<keyword>");
+    const mainBody = parts[0];
+    const keywords = parts.slice(1);
+
+    // Regex to find: Number/Number (Stat1, Stat2)
+    const statRegex = /([\d./%]+)\s*\(([^)]+)\)/g;
+
+    const renderedBody = mainBody.split(statRegex).map((part, i, arr) => {
+      // i % 3 === 1 is the number group (e.g., "72/108/162")
+      if (i % 3 === 1) {
+        const contextText = arr[i + 2] || ""; // Check text immediately following for damage type
+        return (
+          <span key={`val-${i}`} style={{ color: getDamageColor(contextText), fontWeight: "bold" }}>
+            {part}
+          </span>
+        );
+      }
       
-      {/* If you decide to add icons back later, 
-          you can split the description by our (AP) or (AD) tags */}
+      // i % 3 === 2 is the stat group (e.g., "AD, AP")
+      if (i % 3 === 2) {
+        const individualStats = part.split(',').map(s => s.trim());
+        return (
+          <span key={`stats-${i}`} style={{ whiteSpace: "nowrap", marginLeft: "4px" }}>
+            {individualStats.map((stat, idx) => (
+              <img
+                key={idx}
+                src={`/assets/stats/${getStatFileName(stat)}.png`} // Match folder filenames
+                alt={stat}
+                title={stat}
+                style={{ width: "18px", height: "18px", margin: "0 2px", verticalAlign: "middle" }}
+                onError={(e) => (e.target.style.display = "none")}
+              />
+            ))}
+          </span>
+        );
+      }
+      return part;
+    });
+
+    return (
+      <>
+        <div className="main-ability-text" style={{ lineHeight: "1.6", fontSize: "1rem" }}>
+          {renderedBody}
+        </div>
+        
+        {/* Keywords rendered on new lines at the bottom */}
+        {keywords.length > 0 && (
+          <div className="keywords-container" style={{ marginTop: "12px", borderTop: "1px solid #2d2d31", paddingTop: "8px" }}>
+            {keywords.map((kw, idx) => (
+              <p key={idx} style={{ 
+                margin: "4px 0", 
+                fontSize: "0.85rem", 
+                color: "#a0a0a8", 
+                fontStyle: "italic",
+                display: "block" 
+              }}>
+                • {kw.replace("</keyword>", "").trim()}
+              </p>
+            ))}
+          </div>
+        )}
+      </>
+    );
+  };
+
+  return (
+    <div className="ability-container" style={{ marginTop: "15px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+        {/* Ability Icon */}
+        <img 
+          src={`/assets/ability_icons/${champion.champion.toLowerCase()}.png`} 
+          alt={champion.ability_name}
+          style={{ width: "32px", height: "32px", borderRadius: "4px", border: "1px solid #444" }}
+          onError={(e) => (e.target.src = "/assets/ability_icons/default.png")}
+        />
+        <h3 style={{ margin: 0, color: "#f0e6d2", fontSize: "1.2rem" }}>{champion.ability_name}</h3>
+      </div>
+      <div className="description-text" style={{ color: "#ccc" }}>
+        {formatDescription(champion.ability_description)}
+      </div>
     </div>
   );
 };
