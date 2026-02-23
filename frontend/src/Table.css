@@ -1,0 +1,47 @@
+/* src/Table.css */
+.stats-table-container {
+  overflow-x: auto;
+  margin-top: 20px;
+  background-color: #1d1d2e;
+  border-radius: 8px;
+  border: 1px solid #2d2d31;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #f0e6d2;
+}
+
+.stats-table th {
+  padding: 14px 12px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #888;
+  text-transform: uppercase;
+  border-bottom: 2px solid #2d2d31;
+}
+
+.stats-table th:hover {
+  color: #fff;
+}
+
+.stats-table-row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.stats-table-row:hover {
+  background-color: #1c1c1f !important;
+}
+
+.stats-table td {
+  padding: 12px;
+  border-bottom: 1px solid #1c1c1f;
+}
+
+.col-avg {
+  color: #ffb93b;
+  font-weight: bold;
+}
