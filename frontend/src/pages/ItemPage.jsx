@@ -1,12 +1,22 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import Tooltip from "../components/Tooltip";
+import "../Table.css";
 
 function ItemPage() {
   // 1. Determine type based on the URL (e.g., /artifacts/:id vs /radiant/:id)
   const { itemId } = useParams();
   const location = useLocation();
   const isArtifact = location.pathname.includes("artifact");
+  const [sortConfig, setSortConfig] = useState({ key: 'average_placement', direction: 'asc' });
+
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
 
   // 2. Configuration based on item type
   const config = isArtifact ? {
@@ -25,17 +35,17 @@ function ItemPage() {
   const [showLowSample, setShowLowSample] = useState(false);
   
 
-  const getRarityColor = (cost) => {
-    switch (cost) {
-      case 1: return "#808080";
-      case 2: return "#11b288";
-      case 3: return "#207ac7";
-      case 4: return "#c440da";
-      case 5:
-      case 7: return "#ffb93b";
-      default: return config.themeColor;
-    }
-  };
+//   const getRarityColor = (cost) => {
+//     switch (cost) {
+//       case 1: return "#808080";
+//       case 2: return "#11b288";
+//       case 3: return "#207ac7";
+//       case 4: return "#c440da";
+//       case 5:
+//       case 7: return "#ffb93b";
+//       default: return config.themeColor;
+//     }
+//   };
 
 
 const stat_map = {
@@ -98,9 +108,17 @@ useEffect(() => {
     const isCorrectSample = !info.low_sample || showLowSample;
     return isCorrectValidity && isCorrectSample;
   });
+  const sortedData = [...championsToShow].sort((a, b) => {
+    const valA = sortConfig.key === 'name' ? a[1].name : a[1][sortConfig.key];
+    const valB = sortConfig.key === 'name' ? b[1].name : b[1][sortConfig.key];
+    
+    if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+    return 0;
+  });
 
   return (
-    <div style={{ padding: "30px", backgroundColor: "#0a0a0c", minHeight: "100vh", color: "white", fontFamily: "sans-serif" }}>
+    <div className="item-page-wrapper">
       
       {/* --- Item Header --- */}
       <div style={{ 
@@ -155,45 +173,27 @@ useEffect(() => {
       </div>
 
       {/* --- Champions Grid --- */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
-        {championsToShow.map(([champId, info]) => {
-          const champColor = getRarityColor(info.cost);
-          
-          const champCard = (
-            <div 
-              style={{
-                backgroundColor: "#16161a", padding: "16px", borderRadius: "10px",
-                display: "flex", alignItems: "center", gap: "16px",
-                border: info.low_sample ? "1px dashed #ff4e4e" : `1px solid #2d2d31`,
-                opacity: info.valid ? 1 : 0.5,
-                transition: "transform 0.2s ease", cursor: "pointer"
-              }}
-              onClick={() => window.location.href = `/champions/${champId}`}
-            >
-              <img 
-                src={`/assets/champ_logos/${champId}.png`} 
-                alt={info.name}
-                style={{ width: "56px", height: "56px", borderRadius: "50%", border: `2px solid ${champColor}` }}
-              />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>{info.name}</div>
-                <div style={{ fontSize: "0.85rem", color: "#888" }}>
-                  Freq: <span style={{ color: "#ddd" }}>{info.count}</span>
-                </div>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: "1.3rem", fontWeight: "bold", color: "#ffb93b" }}>
-                  #{info.average_placement.toFixed(2)}
-                </div>
-                <div style={{ fontSize: "0.6rem", color: "#666" }}>AVG PLACE</div>
-              </div>
-            </div>
-          );
-
-          if (info.low_sample) return <Tooltip key={champId} text="Low sample size">{champCard}</Tooltip>;
-          if (!info.valid) return <Tooltip key={champId} text="Invalid/Niche combination" color="#888">{champCard}</Tooltip>;
-          return <div key={champId}>{champCard}</div>;
-        })}
+      <div className="stats-table-container">
+        <table className="stats-table">
+          <thead>
+            <tr>
+              <th>Icon</th>
+              <th onClick={() => requestSort('name')}>Name</th>
+              <th onClick={() => requestSort('count')}>Frequency</th>
+              <th onClick={() => requestSort('average_placement')}>Avg Place</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedData.map(([champId, info]) => (
+              <tr key={champId} className="stats-table-row" onClick={() => window.location.href=`/champions/${champId}`}>
+                <td><img src={`/assets/champ_logos/${champId}.png`} className="table-icon" /></td>
+                <td>{info.name}</td>
+                <td>{info.count}</td>
+                <td className="col-avg">#{info.average_placement.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
