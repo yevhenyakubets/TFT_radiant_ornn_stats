@@ -1,62 +1,45 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Tooltip from "../components/Tooltip"; 
-
 import React from 'react';
 
 const ChampionAbility = ({ champion }) => {
   if (!champion || !champion.ability_description) return null;
 
-  // 1. Logic to determine number color based on damage type keywords in the text
   const getDamageColor = (sentencePart) => {
     const text = sentencePart.toLowerCase();
-    if (text.includes("magic damage")) return "#4e98ff"; // Blue
-    if (text.includes("physical damage")) return "#ff4e4e"; // Red
-    if (text.includes("true damage")) return "#ffffff"; // White
-    if (text.includes("shield") || text.includes("health")) return "#6bff82"; // Light Green
-    return "#f0e6d2"; // Default off-white
+    if (text.includes("magic damage")) return "#4e98ff"; 
+    if (text.includes("physical damage")) return "#ff4e4e"; 
+    if (text.includes("true damage")) return "#ffffff"; 
+    if (text.includes("shield") || text.includes("health")) return "#6bff82"; 
+    return "#f0e6d2"; 
   };
 
-  // 2. Mapping to match your specific folder filenames (e.g., Health.png, AD.png)
   const getStatFileName = (stat) => {
     const s = stat.toLowerCase().trim();
     const mapping = {
-      'ad': 'AD',
-      'ap': 'AP',
-      'armor': 'Armor',
-      'as': 'AS',
-      'crit': 'CritChance',
-      'health': 'Health',
-      'hp': 'Health',
-      'mr': 'MR',
-      'dr': 'scaleDR',
-      'manaregen': 'scalemanaregen',
-      'sv': 'scaleSV'
+      'ad': 'AD', 'ap': 'AP', 'armor': 'Armor', 'as': 'AS',
+      'crit': 'CritChance', 'health': 'Health', 'hp': 'Health',
+      'mr': 'MR', 'dr': 'scaleDR', 'manaregen': 'scalemanaregen', 'sv': 'scaleSV'
     };
     return mapping[s] || stat;
   };
 
   const formatDescription = (text) => {
-    // Split the text into main body and keywords using the <keyword> tags from backend
     const parts = text.split("<keyword>");
     const mainBody = parts[0];
     const keywords = parts.slice(1);
-
-    // Regex to find: Number/Number (Stat1, Stat2)
     const statRegex = /([\d./%]+)\s*\(([^)]+)\)/g;
 
     const renderedBody = mainBody.split(statRegex).map((part, i, arr) => {
-      // i % 3 === 1 is the number group (e.g., "72/108/162")
       if (i % 3 === 1) {
-        const contextText = arr[i + 2] || ""; // Check text immediately following for damage type
+        const contextText = arr[i + 2] || ""; 
         return (
           <span key={`val-${i}`} style={{ color: getDamageColor(contextText), fontWeight: "bold" }}>
             {part}
           </span>
         );
       }
-      
-      // i % 3 === 2 is the stat group (e.g., "AD, AP")
       if (i % 3 === 2) {
         const individualStats = part.split(',').map(s => s.trim());
         return (
@@ -64,7 +47,7 @@ const ChampionAbility = ({ champion }) => {
             {individualStats.map((stat, idx) => (
               <img
                 key={idx}
-                src={`/assets/stats/${getStatFileName(stat)}.png`} // Match folder filenames
+                src={`/assets/stats/${getStatFileName(stat)}.png`}
                 alt={stat}
                 title={stat}
                 style={{ width: "18px", height: "18px", margin: "0 2px", verticalAlign: "middle" }}
@@ -82,18 +65,10 @@ const ChampionAbility = ({ champion }) => {
         <div className="main-ability-text" style={{ lineHeight: "1.6", fontSize: "1rem" }}>
           {renderedBody}
         </div>
-        
-        {/* Keywords rendered on new lines at the bottom */}
         {keywords.length > 0 && (
           <div className="keywords-container" style={{ marginTop: "12px", borderTop: "1px solid #2d2d31", paddingTop: "8px" }}>
             {keywords.map((kw, idx) => (
-              <p key={idx} style={{ 
-                margin: "4px 0", 
-                fontSize: "0.85rem", 
-                color: "#a0a0a8", 
-                fontStyle: "italic",
-                display: "block" 
-              }}>
+              <p key={idx} style={{ margin: "4px 0", fontSize: "0.85rem", color: "#a0a0a8", fontStyle: "italic", display: "block" }}>
                 • {kw.replace("</keyword>", "").trim()}
               </p>
             ))}
@@ -106,7 +81,6 @@ const ChampionAbility = ({ champion }) => {
   return (
     <div className="ability-container" style={{ marginTop: "15px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-        {/* Ability Icon */}
         <img 
           src={`/assets/ability_icons/${champion.champion.toLowerCase()}.png`} 
           alt={champion.ability_name}
@@ -156,46 +130,79 @@ function ChampionPage() {
 
   const rarityColor = getRarityColor(data.cost);
   const rawItems = activeTab === "artifact" ? data.artifacts : data.radiants;
-  
-  // FIXED: Standardized to radiant-items to match your asset folder
   const itemFolderPath = activeTab === "artifact" ? "/assets/artifacts" : "/assets/radiant_items";
 
-  // ADDED: Filter items based on validity and toggle state
-  // Using [__, info] to avoid the "unused variable" linter error for the key
-const itemsToShow = Object.entries(rawItems).filter(([, info]) => {
-    // Logic: Keep if (valid OR showInvalid) AND (not low_sample OR showLowSample)
+  const itemsToShow = Object.entries(rawItems).filter(([, info]) => {
     const matchesValid = info.valid || showInvalid;
     const matchesSample = !info.low_sample || showLowSample;
     return matchesValid && matchesSample;
   });
+
   return (
     <div style={{ padding: "30px", backgroundColor: "#0a0a0c", minHeight: "100vh", color: "white", fontFamily: "sans-serif" }}>
       
-      {/* --- Champion Header --- */}
+      {/* --- Champion Header UPDATED --- */}
       <div style={{ 
-        display: "flex", alignItems: "center", gap: "24px", marginBottom: "40px", padding: "20px",
+        display: "flex", alignItems: "flex-start", gap: "32px", marginBottom: "40px", padding: "20px",
         borderRadius: "12px", background: `linear-gradient(90deg, #1c1c1f 0%, transparent 100%)`,
         borderLeft: `6px solid ${rarityColor}`
       }}>
-        <img 
-          src={`/assets/champ_logos/${championId}.png`} 
-          alt={data.name} 
-          style={{ width: "120px", height: "120px", borderRadius: "12px", border: `2px solid ${rarityColor}`, boxShadow: `0 0 15px ${rarityColor}44` }}
-        />
-        <div>
-          <h1 style={{ margin: 0, fontSize: "2.8rem", letterSpacing: "-1px" }}>{data.name}</h1>
-          <div style={{ color: rarityColor, fontWeight: "bold", fontSize: "1.2rem", marginTop: "4px" }}>
+        {/* Splash Image Container with Trait Overlay */}
+        <div style={{ position: "relative", minWidth: "220px" }}>
+          <img 
+            src={`/assets/champ_splashes/${championId}.png`} 
+            alt={data.name} 
+            style={{ 
+              width: "400px", 
+              height: "auto", 
+              borderRadius: "8px", 
+              border: `3px solid ${rarityColor}`, 
+              boxShadow: `0 0 20px ${rarityColor}33` 
+            }}
+          />
+          {/* Traits Overlay */}
+          <div style={{ 
+            position: "absolute", 
+            top: "8px", 
+            left: "8px", 
+            display: "flex", 
+            flexDirection: "column", 
+            gap: "6px" 
+          }}>
+            {data.traits && data.traits.map((trait, index) => (
+              <Tooltip key={index} text={trait.name}>
+                <div style={{ 
+                  backgroundColor: "rgba(0,0,0,0.7)", 
+                  padding: "4px", 
+                  borderRadius: "4px", 
+                  display: "flex", 
+                  alignItems: "center", 
+                  justifyContent: "center",
+                  border: "1px solid rgba(255,255,255,0.2)"
+                }}>
+                  <img 
+                    src={`/assets/traits/${trait.name}.png`} 
+                    alt={trait.name} 
+                    style={{ width: "24px", height: "24px" }} 
+                    onError={(e) => (e.target.style.display = "none")}
+                  />
+                  {trait.name}
+                </div>
+              </Tooltip>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ flex: 1 }}>
+          <h1 style={{ margin: 0, fontSize: "3.2rem", letterSpacing: "-1px", lineHeight: "1" }}>{data.name}</h1>
+          <div style={{ color: rarityColor, fontWeight: "bold", fontSize: "1.4rem", marginTop: "8px", textTransform: "uppercase", letterSpacing: "1px" }}>
             {data.cost} Cost 
           </div>
-          <div>
-            <ChampionAbility champion={data}/>
-
-          </div>
+          <ChampionAbility champion={data}/>
         </div>
       </div>
 
-
-      {/* --- Tab Switcher & Toggle Section --- */}
+      {/* --- Tab Switcher & Toggles --- */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
         <div style={{ display: "flex", gap: "2px", backgroundColor: "#1c1c1f", padding: "4px", borderRadius: "8px" }}>
           {["artifact", "radiant"].map((tab) => (
@@ -215,7 +222,6 @@ const itemsToShow = Object.entries(rawItems).filter(([, info]) => {
           ))}
         </div>
 
-{/* ADDED: Double Toggle Section */}
         <div style={{ display: "flex", gap: "20px" }}>
           <label style={{ color: "#888", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
             Show low sample size
@@ -231,14 +237,13 @@ const itemsToShow = Object.entries(rawItems).filter(([, info]) => {
       {/* --- Items Grid --- */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "16px" }}>
         {itemsToShow.map(([itemId, info]) => {
-          // ADDED: Dynamic styles for card based on backend flags
           const card = (
             <div 
               style={{
                 backgroundColor: "#16161a", padding: "16px", borderRadius: "10px",
                 display: "flex", alignItems: "center", gap: "16px",
-                border: info.low_sample ? "1px dashed #ff4e4e" : "1px solid #2d2d31", // DASHED RED if low sample
-                opacity: info.valid ? 1 : 0.5, // SEMI-TRANSPARENT if invalid
+                border: info.low_sample ? "1px dashed #ff4e4e" : "1px solid #2d2d31",
+                opacity: info.valid ? 1 : 0.5,
                 transition: "transform 0.2s ease", cursor: "default"
               }}
               onMouseEnter={(e) => e.currentTarget.style.borderColor = info.low_sample ? "#ff4e4e" : rarityColor}
@@ -265,7 +270,6 @@ const itemsToShow = Object.entries(rawItems).filter(([, info]) => {
             </div>
           );
 
-          // ADDED: Conditional Tooltip wrappers
           if (info.low_sample) return <Tooltip key={itemId} text="Low sample size">{card}</Tooltip>;
           if (!info.valid) return <Tooltip key={itemId} text="Experimental/Invalid" color="#888">{card}</Tooltip>;
           return <div key={itemId}>{card}</div>;

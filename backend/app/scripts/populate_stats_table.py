@@ -6,6 +6,7 @@ from app.models.match import Match
 from app.models.champion_item_stats import ChampionItemStats
 from app.models.champion import Champion
 from app.models.items import Item
+from app.models.traits import Trait
 
 
 PATCH_SCHEDULE = {

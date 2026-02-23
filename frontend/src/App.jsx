@@ -6,9 +6,8 @@ import HomePage from "./pages/HomePage";
 import ChampionPage from "./pages/ChampionPage";
 import ChampionsListPage from "./pages/ChampionsListPage";
 import ArtifactListPage from "./pages/ArtifactListPage";
-import ArtifactPage from "./pages/ArtifactPage";
 import RadiantListPage from "./pages/RadiantListPage";
-import RadiantPage from "./pages/RadiantPage";
+import ItemPage from "./pages/ItemPage";
 
 function PageLayout() {
   return (
@@ -30,10 +29,16 @@ function App() {
         <Route path="/champions" element={<ChampionsListPage />} />
         <Route path="/champions/:championId" element={<ChampionPage />} />
         <Route path="/artifacts" element={<ArtifactListPage />} />
-        <Route path="/artifacts/:artifactId" element={<ArtifactPage />} />
         <Route path="/radiant-items" element={<RadiantListPage />} />
-        <Route path="/radiant-items/:radiantId" element={<RadiantPage />} />
-      </Route>
+        <Route 
+          path="/artifacts/:itemId" 
+          element={<ItemPage key={window.location.pathname} />} 
+        />
+        <Route 
+          path="/radiant-items/:itemId" 
+          element={<ItemPage key={window.location.pathname} />} 
+        />
+        </Route>
 
       <Route path="*" element={<HomePage />} />
     </Routes>
