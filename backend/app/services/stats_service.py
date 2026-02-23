@@ -137,7 +137,7 @@ def get_champion_special_items(champion_riot_id: str):
 
         # LOW SAMPLE CHECK
         percentage = count / total_games if total_games else 0
-        low_sample = percentage < 0.05
+        low_sample = percentage < 0.02
 
         data = {
             "name": item.name,
@@ -235,7 +235,7 @@ def get_artifact_stats_by_id(artifact_riot_id: str):
         ).scalar()
 
         percentage = count / total_games if total_games else 0
-        low_sample = percentage < 0.02        
+        low_sample = percentage < 0.01        
 
         result[champion.riot_id] = {
             "name": champion.name,
@@ -321,7 +321,7 @@ def get_radiant_stats_by_id(radiant_riot_id: str):
         ).scalar()
 
         percentage = count / total_games if total_games else 0
-        low_sample = percentage < 0.02  
+        low_sample = percentage < 0.01  
 
         result[champion.riot_id] = {
             "name": champion.name,
@@ -357,9 +357,7 @@ def render_champion_description(desc, data_block, champion_name):
     # 2. DATA PREP
     stats = {v['name'].strip().lower(): v['value'] for v in data_block.get("vars", [])}
     
-    # NEW: Try to get name from data_block if the passed champion_name is empty
     if not champion_name:
-        # Check 'name' field, then 'mName' (common in Riot files)
         champion_name = data_block.get("name") or data_block.get("mName") or ""
         
     champ_key = str(champion_name).lower().strip()
@@ -605,18 +603,14 @@ def render_champion_description(desc, data_block, champion_name):
         token_lower = token_name.lower().strip()
 
         # --- SETUP BASE STATS ---
-        # Get base stats or default to 0 to avoid math errors
         base_info = CHAMP_BASE_STATS.get(champ_key, {"hp": 0, "ad": 0})
-        
-        # Scaling Map: 1.8x for HP, 1.5x for AD (standard TFT scaling)
         scaling_map = {
             1: {"hp": (base_info.get("hp") or 0), "ad": (base_info.get("ad") or 0)},
             2: {"hp": round((base_info.get("hp") or 0) * 1.8), "ad": round((base_info.get("ad") or 0) * 1.5)},
             3: {"hp": round((base_info.get("hp") or 0) * 3.24), "ad": round((base_info.get("ad") or 0) * 2.25)}
         }
         
-        # --- PRIORITY LOOKUP ---
-        rule = current_champ_map.get(token_lower) or GLOBAL_EXCEPTIONS.get(token_lower)
+        rule = SPECIFIC_EXCEPTIONS.get(champ_key, {}).get(token_lower) or GLOBAL_EXCEPTIONS.get(token_lower)
 
         if rule:
             sum_keys, mult_key = rule
@@ -626,37 +620,28 @@ def render_champion_description(desc, data_block, champion_name):
                 for key in sum_keys:
                     local_mult = 1.0
                     clean_key = key
-
-                    # --- NEW SCALING LOGIC BLOCK ---
                     if '*' in key:
                         clean_key, factor = key.split('*')
-                        if factor == "base_hp":
-                            local_mult = scaling_map[i]["hp"]
-                        elif factor == "base_ad":
-                            local_mult = scaling_map[i]["ad"]
+                        if factor == "base_hp": local_mult = scaling_map[i]["hp"]
+                        elif factor == "base_ad": local_mult = scaling_map[i]["ad"]
                         else:
                             try: local_mult = float(factor)
                             except: local_mult = 1.0
-                    # -------------------------------
 
                     val_raw = stats.get(clean_key.strip().lower(), [0]*7)
                     if val_raw is None: val_raw = [0]*7
                     if not isinstance(val_raw, list): val_raw = [val_raw]*7
-                    
                     val_list = [x if x is not None else 0 for x in val_raw]
                     val = val_list[i] if i < len(val_list) else val_list[0]
                     
-                    # 3. DEFINE is_decreasing_stat logic (Make sure DECREASING_STATS is defined at top of file)
                     DECREASING_STATS = ["mana", "attacks", "requirement", "cooldown"]
                     is_decreasing_stat = any(word in token_lower for word in DECREASING_STATS)
                     
                     if i == 3 and not is_decreasing_stat:
                         if float(val) < float(val_list[1]) and any(x > val for x in val_list):
                             val = max(val_list)
-                            
                     base_sum += float(val) * local_mult
                 
-                # Apply mult_key if it exists
                 if mult_key:
                     m_list = stats.get(mult_key.lower(), [1]*7)
                     if not isinstance(m_list, list): m_list = [m_list]*7
@@ -667,25 +652,14 @@ def render_champion_description(desc, data_block, champion_name):
                 
                 is_time = any(word in token_lower for word in ["seconds", "duration"])
                 is_percent = any(word in token_lower for word in ["percent", "ratio", "durability"])
-                
-                if not is_time and is_percent and 0 < final < 2:
-                    final *= 100
-                
+                if not is_time and is_percent and 0 < final < 2: final *= 100
                 star_values.append(round(final, 2) if is_time else round(final))
             return format_star_values(star_values)
 
-        # --- STEP B: STANDARD AGGREGATION ---
+        # STANDARD AGGREGATION FALLBACK
         base_name = token_lower.replace('modified', '').replace('total', '')
-        relevant_vals = []
-        
-        if token_lower in stats:
-            relevant_vals.append(stats[token_lower])
-        else:
-            for key, val in stats.items():
-                if base_name in key:
-                    if "percent" not in key and "ratio" not in key:
-                        relevant_vals.append(val)
-
+        relevant_vals = [val for key, val in stats.items() if base_name in key and "percent" not in key and "ratio" not in key]
+        if token_lower in stats: relevant_vals = [stats[token_lower]]
         if not relevant_vals: return "???"
 
         star_values = []
@@ -694,23 +668,44 @@ def render_champion_description(desc, data_block, champion_name):
             for v in relevant_vals:
                 try:
                     val = v[i] if isinstance(v, list) else v
-                    if i == 3 and isinstance(v, list) and val < v[1]:
-                        val = max(v)
+                    if i == 3 and isinstance(v, list) and val < v[1]: val = max(v)
                     if val is not None: current_sum += float(val)
                 except: continue
-            
             final = current_sum * multiplier
             is_time = any(word in token_lower for word in ["seconds", "duration"])
-            if not is_time and ("percent" in token_lower or "ratio" in token_lower) and 0 < final < 2:
-                final *= 100
-            
+            if not is_time and ("percent" in token_lower or "ratio" in token_lower) and 0 < final < 2: final *= 100
             star_values.append(round(final, 2) if is_time else round(final))
-
         return format_star_values(star_values)
 
-    # 6. EXECUTION
+    # 6. KEYWORD HANDLING
+    keyword_map = {
+        "{{TFT_Keyword_Sunder}}": "Sunder: Reduce Armor",
+        "{{TFT_Keyword_Shred}}": "Shred: Reduce Magic Resist",
+        "{{TFT_Keyword_Chill}}": "Chill: Reduce Attack Speed",
+        "{{TFT_Keyword_Wound}}": "Wound: Reduce healing received by 33%",
+        "{{TFT_Keyword_Burn}}": "Burn: Deal a percent of the target's max Health as true damage every second",
+    }
+
+    # Execute Token Replacement
     final_desc = re.sub(r'@([^@]+)@', replace_token, desc)
-    return re.sub(r'\s+', ' ', final_desc).strip()
+
+    # Process Keywords
+    found_keywords = []
+    for key, text in keyword_map.items():
+        if key in final_desc:
+            # We remove the placeholder from the main body to keep it clean
+            final_desc = final_desc.replace(key, "")
+            found_keywords.append(text)
+
+    # Cleanup extra whitespace before adding keyword block
+    final_desc = re.sub(r'\s+', ' ', final_desc).strip()
+
+    # Append keyword block at the bottom
+    if found_keywords:
+        keyword_block = "\n" + "\n".join([f"<keyword>{kw}</keyword>" for kw in found_keywords])
+        final_desc += keyword_block
+
+    return final_desc
 
 def render_item_data(desc, effects_raw):
     """
