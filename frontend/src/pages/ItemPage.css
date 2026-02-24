@@ -100,3 +100,43 @@
 .filter-label input[type="checkbox"] {
   cursor: pointer;
 }
+
+/* ChampionPage.css specific table overrides */
+
+.invalid-row {
+  opacity: 0.4;
+}
+
+.table-icon-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* A small red indicator for low sample size inside the table */
+.low-sample-indicator {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ff4e4e;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #000;
+}
+
+/* Ensure the table doesn't feel too cramped compared to the header */
+.stats-table-container {
+  margin-bottom: 50px;
+  border-color: var(--border-muted);
+}
+
+.stats-table-row:hover .champ-name-text {
+  color: #ffb93b; /* Highlight name on row hover */
+  transition: color 0.2s ease;
+}

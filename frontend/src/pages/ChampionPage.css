@@ -1,0 +1,255 @@
+:root {
+  --magic-damage: #4e98ff;
+  --physical-damage: #ff4e4e;
+  --true-damage: #ffffff;
+  --utility-green: #6bff82;
+  --text-main: #f0e6d2;
+  --bg-dark: #0a0a0c;
+  --panel-bg: #16161a;
+  --border-muted: #2d2d31;
+}
+
+.champion-page-wrapper {
+  padding: 30px;
+  background-color: var(--bg-dark);
+  min-height: 100vh;
+  color: white;
+  font-family: 'Verdana', sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header Section */
+.champion-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+  margin-bottom: 40px;
+  padding: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #1c1c1f 0%, transparent 100%);
+  border-left: 6px solid #ccc; /* Fallback */
+}
+
+.splash-container {
+  position: relative;
+  min-width: 220px;
+}
+
+.champ-splash {
+  width: 400px;
+  height: auto;
+  border-radius: 8px;
+  border: 3px solid transparent;
+}
+
+.traits-overlay {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trait-badge {
+  background-color: rgba(0,0,0,0.8);
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  font-size: 0.8rem;
+  color: #eee;
+}
+
+.trait-badge img {
+  width: 20px;
+  height: 20px;
+}
+
+.champ-info-main {
+  flex: 1;
+}
+
+.champ-name-big {
+  margin: 0;
+  font-size: 3.2rem;
+  letter-spacing: -1px;
+  line-height: 1;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.champ-cost-label {
+  font-weight: bold;
+  font-size: 1.4rem;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Ability Component Styles */
+.ability-container {
+  margin-top: 20px;
+  background: rgba(0,0,0,0.2);
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.ability-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.ability-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  border: 1px solid #444;
+}
+
+.ability-title {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 1.25rem;
+}
+
+.main-ability-text {
+  line-height: 1.6;
+  font-size: 1rem;
+  color: #ccc;
+}
+
+.ability-stat-value {
+  font-weight: bold;
+}
+
+.description-stat-icon {
+  width: 18px;
+  height: 18px;
+  margin: 0 2px;
+  vertical-align: middle;
+}
+
+.keywords-container {
+  margin-top: 12px;
+  border-top: 1px solid var(--border-muted);
+  padding-top: 8px;
+}
+
+.keyword-item {
+  margin: 4px 0;
+  font-size: 0.85rem;
+  color: #a0a0a8;
+  font-style: italic;
+}
+
+/* Tabs & Filters */
+.tab-switcher {
+  display: flex;
+  gap: 2px;
+  background-color: #1c1c1f;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.tab-button {
+  padding: 12px 30px;
+  cursor: pointer;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.tab-button.active {
+  color: black;
+}
+
+/* Items Grid */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.item-card {
+  background-color: var(--panel-bg);
+  padding: 16px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--border-muted);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.item-card.low-sample {
+  border: 1px dashed #ff4e4e;
+}
+
+.item-card.invalid-item {
+  opacity: 0.5;
+}
+
+.card-item-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  border: 1px solid #323232;
+}
+
+.card-info {
+  flex: 1;
+}
+
+.card-item-name {
+  font-weight: bold;
+  font-size: 1.05rem;
+  color: var(--text-main);
+}
+
+.card-item-stat {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+.card-item-stat span {
+  color: #ddd;
+}
+
+.card-placement {
+  text-align: right;
+}
+
+.avg-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffb93b;
+}
+
+.avg-label {
+  font-size: 0.65rem;
+  color: #666;
+  text-transform: uppercase;
+}
+
+/* Global States */
+.loading-state {
+  color: white;
+  padding: 40px;
+  text-align: center;
+}
+
+.error-state {
+  color: #ff4e4e;
+  padding: 40px;
+  text-align: center;
+}
