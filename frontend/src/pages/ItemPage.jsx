@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import Tooltip from "../components/Tooltip";
 import "../Table.css";
+import "./ItemPage.css";
 
 function ItemPage() {
   // 1. Determine type based on the URL (e.g., /artifacts/:id vs /radiant/:id)
@@ -46,6 +47,11 @@ function ItemPage() {
 //       default: return config.themeColor;
 //     }
 //   };
+
+const getSortIcon = (key) => {
+  if (sortConfig.key !== key) return <span className="sort-arrow-placeholder"></span>;
+  return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
+};
 
 
 const stat_map = {
@@ -121,75 +127,103 @@ useEffect(() => {
     <div className="item-page-wrapper">
       
       {/* --- Item Header --- */}
-      <div style={{ 
-        display: "flex", alignItems: "center", gap: "24px", marginBottom: "40px", padding: "20px",
-        borderRadius: "12px", background: `linear-gradient(90deg, #1c1c1f 0%, transparent 100%)`,
-        borderLeft: `6px solid ${config.themeColor}` 
-      }}>
-        <img 
+      <div className="item-header">
+        <img
+          className="item-image" 
           src={`/assets/${config.assetFolder}/${itemId}.png`} 
           alt={data.name} 
-          style={{ width: "100px", height: "100px", borderRadius: "12px", border: `2px solid ${config.themeColor}`, padding: "5px", backgroundColor: "#000" }}
         />
-        <div>
-          <h1 style={{ margin: 0, fontSize: "2.5rem" }}>{data.name}</h1>
-                {/* NEW: Stats Row */}
-          <div style={{ display: "flex", gap: "7px", flexWrap: "wrap", alignItems: "center" }}>
+        
+        {/* NEW WRAPPER DIV */}
+        <div className="item-info-container">
+          <h1 className="item-name">{data.name}</h1>
+          
+          <div className="stats-row">
             {data.stats && Object.entries(data.stats)
-            .filter(([key]) => key in stat_map)
-            .map(([key, val]) => (
-            <div key={key} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <img 
-                src={`/assets/stats/${stat_map[key]}.png`} 
-                alt={key} 
-                style={{ width: "20px", height: "20px" }}
-                />
-                <span style={{ fontSize: "1rem", fontWeight: "bold", color: "#ddd" }}>
-                {formatStatValue(val, key)}
-                </span>
-            </div>
-            ))
+              .filter(([key]) => key in stat_map)
+              .map(([key, val]) => (
+                <div key={key}>
+                  <img
+                    className="stat-image" 
+                    src={`/assets/stats/${stat_map[key]}.png`} 
+                    alt={key} 
+                  />
+                  <span> {formatStatValue(val, key)} </span>
+                </div>
+              ))
             }
-            </div>
-          <div style={{ color: config.themeColor, fontWeight: "bold", textTransform: "uppercase", fontSize: "0.9rem", marginTop: "4px" }}>
+          </div>
+
+          <div className="item-description">
             {data.description}
           </div>
         </div>
       </div>
 
       {/* --- Filter Bar --- */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid #2d2d31", paddingBottom: "10px" }}>
-        <h2 style={{ margin: 0, fontSize: "1.5rem" }}>Best Champions</h2>
-        <div style={{ display: "flex", gap: "20px" }}>
-          <label style={{ color: "#888", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+      <div className="filter-bar">
+        <h2 className="filter-bar-title">Best users of {data.name}</h2>
+        
+        <div className="filter-options">
+          <label className="filter-label">
             Show low sample size
-            <input type="checkbox" checked={showLowSample} onChange={() => setShowLowSample(!showLowSample)} />
+            <input 
+              type="checkbox" 
+              checked={showLowSample} 
+              onChange={() => setShowLowSample(!showLowSample)} 
+            />
           </label>
-          <label style={{ color: "#888", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+          
+          <label className="filter-label">
             Show niche units
-            <input type="checkbox" checked={showInvalid} onChange={() => setShowInvalid(!showInvalid)} />
+            <input 
+              type="checkbox" 
+              checked={showInvalid} 
+              onChange={() => setShowInvalid(!showInvalid)} 
+            />
           </label>
         </div>
       </div>
 
-      {/* --- Champions Grid --- */}
+      {/* --- Champions Table --- */}
       <div className="stats-table-container">
         <table className="stats-table">
           <thead>
-            <tr>
-              <th>Icon</th>
-              <th onClick={() => requestSort('name')}>Name</th>
-              <th onClick={() => requestSort('count')}>Frequency</th>
-              <th onClick={() => requestSort('average_placement')}>Avg Place</th>
-            </tr>
-          </thead>
+                <tr>
+                  <th onClick={() => requestSort('name')} className="champ-column-header">
+                    Champion {getSortIcon('name')}
+                  </th>
+                  <th onClick={() => requestSort('count')}>
+                    Frequency {getSortIcon('count')}
+                  </th>
+                  <th onClick={() => requestSort('average_placement')}>
+                    Avg Place {getSortIcon('average_placement')}
+                  </th>
+                </tr>
+              </thead>
           <tbody>
             {sortedData.map(([champId, info]) => (
-              <tr key={champId} className="stats-table-row" onClick={() => window.location.href=`/champions/${champId}`}>
-                <td><img src={`/assets/champ_logos/${champId}.png`} className="table-icon" /></td>
-                <td>{info.name}</td>
-                <td>{info.count}</td>
-                <td className="col-avg">#{info.average_placement.toFixed(2)}</td>
+              <tr 
+                key={champId} 
+                className="stats-table-row" 
+                onClick={() => window.location.href=`/champions/${champId}`}
+              >
+                {/* Combined Icon and Name Cell */}
+                <td className="champ-cell">
+                  <img 
+                    src={`/assets/champ_logos/${champId}.png`} 
+                    className="table-icon" 
+                    alt={info.name}
+                  />
+                  <span className="champ-name-text">{info.name}</span>
+                </td>
+
+                <td className="col-count">{info.count.toLocaleString()}</td>
+                
+                {/* Removed the # character here */}
+                <td className="col-avg">
+                  {info.average_placement.toFixed(2)}
+                </td>
               </tr>
             ))}
           </tbody>

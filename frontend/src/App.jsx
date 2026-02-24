@@ -8,6 +8,7 @@ import ChampionsListPage from "./pages/ChampionsListPage";
 import ArtifactListPage from "./pages/ArtifactListPage";
 import RadiantListPage from "./pages/RadiantListPage";
 import ItemPage from "./pages/ItemPage";
+import "./App.css"
 
 function PageLayout() {
   return (
