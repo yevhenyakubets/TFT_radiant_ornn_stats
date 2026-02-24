@@ -1,9 +1,9 @@
 /* src/Table.css */
 .stats-table-container {
   overflow-x: auto;
-  margin-top: 20px;
-  background-color: #1d1d2e;
-  border-radius: 8px;
+  margin-top: 10px;
+  background-color: #0f1014;
+  border-radius: 4px;
   border: 1px solid #2d2d31;
 }
 
@@ -11,37 +11,67 @@
   width: 100%;
   border-collapse: collapse;
   color: #f0e6d2;
+  font-family: 'Verdana', sans-serif;
+  /* Ensures columns don't shift unexpectedly */
+  table-layout: auto; 
+}
+
+/* Headers and Cells Alignment Fix */
+.stats-table th, 
+.stats-table td {
+  padding: 16px 24px; /* Matching horizontal padding is key for alignment */
+  text-align: left;
 }
 
 .stats-table th {
-  padding: 14px 12px;
-  text-align: left;
   cursor: pointer;
-  font-size: 1.5rem;
-  color: #888;
+  font-size: 0.85rem;
+  color: #7a7a8c;
   text-transform: uppercase;
+  letter-spacing: 1.5px;
+  background-color: #1a1b20;
   border-bottom: 2px solid #2d2d31;
 }
 
-.stats-table th:hover {
-  color: #fff;
+/* Combined Champion Column Logic */
+.champ-cell {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Space between icon and name */
 }
 
-.stats-table-row {
-  cursor: pointer;
-  transition: background-color 0.2s;
+.table-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  flex-shrink: 0; /* Prevents icon from squishing */
 }
 
-.stats-table-row:hover {
-  background-color: #1c1c1f !important;
+.champ-name-text {
+  font-weight: bold;
+  color: #ffffff;
+  font-size: 1rem;
 }
 
-.stats-table td {
-  padding: 12px;
-  border-bottom: 1px solid #1c1c1f;
+/* Data Column Styling */
+.col-count {
+  color: #a3a3a3;
+  width: 20%; /* Optional: set widths to keep columns consistent */
 }
 
 .col-avg {
   color: #ffb93b;
-  font-weight: bold;
+  font-weight: 800;
+  font-size: 1.1rem;
+  width: 20%;
+}
+
+.stats-table-row {
+  border-bottom: 1px solid #232429;
+  transition: background-color 0.2s;
+}
+
+.stats-table-row:hover {
+  background-color: #1c1d24 !important;
 }

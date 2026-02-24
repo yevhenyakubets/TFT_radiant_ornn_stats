@@ -1,7 +1,6 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
@@ -16,6 +15,12 @@
 }
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+body {
+  margin: 0;           /* This removes the white gaps around the edges */
+  padding: 0;          /* Optional: ensures no internal gaps either */
+  overflow-x: hidden;  /* Optional: prevents accidental horizontal scrolling */
 }
 
 @keyframes logo-spin {
@@ -41,11 +46,11 @@
   color: #888;
 }
 
-.description-text {
+/* .description-text {
   line-height: 1.6;
   color: #e0e0e0;
   font-size: 0.95rem;
-}
+} */
 
 /* Optional: If you want to highlight the scaling tags we created */
 .description-text :contains("(AP)") {
