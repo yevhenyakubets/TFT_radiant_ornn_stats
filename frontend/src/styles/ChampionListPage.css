@@ -113,3 +113,66 @@
 .champ-search-input::placeholder {
   color: #666;
 }
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1000;
+}
+
+/* Info Icon */
+.info-icon-container {
+  position: relative;
+  cursor: help;
+}
+
+.info-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #666;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: serif; /* For a more classic 'i' look */
+  font-style: italic;
+  font-weight: bold;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.info-icon-container:hover .info-icon {
+  border-color: #ffb93b;
+  color: #ffb93b;
+}
+
+/* Tooltip Popup */
+.search-tooltip {
+  position: absolute;
+  bottom: 140%; /* Position above the icon */
+  right: 0;
+  width: 200px;
+  background-color: #232327;
+  color: #f0e6d2;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  font-size: 0.8rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  z-index: 100;
+  pointer-events: none; /* Prevents flickering */
+}
+
+/* Small triangle for tooltip */
+.search-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 5px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: #444 transparent transparent transparent;
+}
