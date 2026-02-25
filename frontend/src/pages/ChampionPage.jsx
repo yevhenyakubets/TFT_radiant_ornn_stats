@@ -49,9 +49,11 @@ const ChampionAbility = ({ champion }) => {
             {individualStats.map((stat, idx) => (
               <img
                 key={idx}
-                src={`/assets/stats/${getStatFileName(stat)}.png`}
-                className="description-stat-icon"
+                // Wrap the filename in encodeURIComponent
+                src={`/assets/stats/${encodeURIComponent(getStatFileName(stat))}.png`}
                 alt={stat}
+                className="description-stat-icon"
+                // This helps catch the "??? NaN" cases so they just don't show up
                 onError={(e) => (e.target.style.display = "none")}
               />
             ))}
