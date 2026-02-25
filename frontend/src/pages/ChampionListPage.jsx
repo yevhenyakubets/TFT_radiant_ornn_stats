@@ -4,6 +4,7 @@ import "../styles/ChampionListPage.css";
 
 function ChampionsListPage() {
   const [champions, setChampions] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -32,18 +33,44 @@ function ChampionsListPage() {
     return () => { isMounted = false; };
   }, []);
 
-  if (loading) {
-    return <div className="loading-container">Loading champions...</div>;
-  }
+  // Filter and Sort logic
+  const filteredChampions = champions
+    .filter(champ => 
+      champ.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      const query = searchTerm.toLowerCase();
+      const aName = a.name.toLowerCase();
+      const bName = b.name.toLowerCase();
+      
+      const aStarts = aName.startsWith(query);
+      const bStarts = bName.startsWith(query);
+
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+      return aName.localeCompare(bName); // Alphabetical if both start or both just include
+    });
+
+  if (loading) return <div className="loading-container">Loading champions...</div>;
 
   return (
     <div className="champions-list-wrapper">
-      <h1 className="champions-list-title">Champions</h1>
+      <div className="champions-header-row">
+        <h1 className="champions-list-title">Champions</h1>
+        <div className="search-container">
+          <input 
+            type="text" 
+            placeholder="Search champions..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="champ-search-input"
+          />
+        </div>
+      </div>
 
       <div className="champions-grid">
-        {champions.map(champ => {
+        {filteredChampions.map(champ => {
           const rarityColor = getRarityColor(champ.cost);
-          
           return (
             <div
               key={champ.id}
@@ -59,12 +86,8 @@ function ChampionsListPage() {
                   onError={(e) => { e.target.style.display = 'none'; }}
                 />
               </div>
-
               <strong className="champ-list-name">{champ.name}</strong>
-              
-              <div className="champ-list-cost">
-                {champ.cost} Gold
-              </div>
+              <div className="champ-list-cost">{champ.cost} Gold</div>
             </div>
           );
         })}
