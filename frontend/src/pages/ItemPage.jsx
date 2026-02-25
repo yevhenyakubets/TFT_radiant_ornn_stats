@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import Tooltip from "../components/Tooltip";
-import "../Table.css";
-import "./ItemPage.css";
+import "../styles/Table.css";
+import "../styles/ItemPage.css";
 
 function ItemPage() {
   // 1. Determine type based on the URL (e.g., /artifacts/:id vs /radiant/:id)
