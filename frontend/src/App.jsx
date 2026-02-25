@@ -4,7 +4,7 @@ import Header from "./components/Header";
 
 import HomePage from "./pages/HomePage";
 import ChampionPage from "./pages/ChampionPage";
-import ChampionsListPage from "./pages/ChampionsListPage";
+import ChampionsListPage from "./pages/ChampionListPage";
 import ItemPage from "./pages/ItemPage";
 import ItemListPage from "./pages/ItemListPage";
 import "./styles/App.css"
