@@ -1,0 +1,75 @@
+/* ItemListPage.css */
+
+.item-list-wrapper {
+  padding: 30px;
+  background-color: #0a0a0c;
+  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.list-title {
+  color: white;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #ccc; /* Default */
+  padding-bottom: 10px;
+  width: fit-content;
+  font-family: 'Verdana', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.item-card-link {
+  border: 1px solid #2d2d31;
+  padding: 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  background-color: #16161a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.item-card-link:hover {
+  transform: translateY(-5px);
+  /* Uses the variable passed from JSX style attribute */
+  border-color: var(--hover-color);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.image-container {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 12px;
+}
+
+.list-item-icon {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background-color: #000;
+  display: block;
+}
+
+.list-item-name {
+  color: #f0e6d2;
+  font-size: 0.95rem;
+  font-family: 'Verdana', sans-serif;
+  line-height: 1.2;
+}
+
+.list-loading {
+  color: white;
+  padding: 40px;
+  text-align: center;
+  font-family: sans-serif;
+}

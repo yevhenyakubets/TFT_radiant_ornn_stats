@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Tooltip from "../components/Tooltip"; 
 import React from 'react';
-import "../Table.css";
-import "./ChampionPage.css";
+import "../styles/Table.css";
+import "../styles/ChampionPage.css";
 
 const ChampionAbility = ({ champion }) => {
   if (!champion || !champion.ability_description) return null;
