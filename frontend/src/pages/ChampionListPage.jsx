@@ -40,33 +40,38 @@ function ChampionsListPage() {
       const query = searchTerm.toLowerCase().trim();
       if (!query) return true;
 
-      // TRAIT SEARCH: if it starts with #
+      // TRAIT SEARCH
       if (query.startsWith("#")) {
-      const traitQuery = query.substring(1);
-      if (!traitQuery) return true;
-      
-      // Added safety: Check if traits exist, and check trait.name if it's an object
-      return champ.traits?.some(trait => {
-        const traitName = typeof trait === 'string' ? trait : trait.name;
-        return traitName?.toLowerCase().includes(traitQuery);
-      });
-    }
+        const traitQuery = query.substring(1);
+        if (!traitQuery) return true;
+        
+        return champ.traits?.some(trait => {
+          const traitName = typeof trait === 'string' ? trait : trait.name;
+          return traitName?.toLowerCase().includes(traitQuery);
+        });
+      }
 
-      // NAME SEARCH: default behavior
+      // NAME SEARCH
       return champ.name.toLowerCase().includes(query);
     })
     .sort((a, b) => {
       const query = searchTerm.toLowerCase().trim();
-      if (!query || query.startsWith("#")) return 0; // Don't priority-sort traits
 
-      const aName = a.name.toLowerCase();
-      const bName = b.name.toLowerCase();
-      const aStarts = aName.startsWith(query);
-      const bStarts = bName.startsWith(query);
+      // 1. If searching by name, prioritize "Starts With" matches
+      if (query && !query.startsWith("#")) {
+        const aStarts = a.name.toLowerCase().startsWith(query);
+        const bStarts = b.name.toLowerCase().startsWith(query);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+      }
 
-      if (aStarts && !bStarts) return -1;
-      if (!aStarts && bStarts) return 1;
-      return aName.localeCompare(bName);
+      // 2. Primary Sort: Cost (1, 2, 3, 4, 5)
+      if (a.cost !== b.cost) {
+        return a.cost - b.cost;
+      }
+
+      // 3. Secondary Sort: Alphabetical (A-Z)
+      return a.name.localeCompare(b.name);
     });
 
   if (loading) return <div className="loading-container">Loading champions...</div>;

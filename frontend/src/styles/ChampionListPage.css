@@ -33,6 +33,7 @@
   align-items: center;
   transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+  /* min-height: 160px; */
 }
 
 .champion-card:hover {
@@ -63,12 +64,15 @@
   margin-bottom: 4px;
 }
 
+/* Ensure cost stands out for the new sorting order */
 .champ-list-cost {
-  font-size: 12px;
-  font-weight: bold;
+  font-size: 13px;
+  font-weight: 800; /* Bolder */
   color: var(--rarity-color);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  margin-top: auto; /* Pushes cost to the bottom of the card */
+  padding-top: 8px;
 }
 
 .loading-container {
