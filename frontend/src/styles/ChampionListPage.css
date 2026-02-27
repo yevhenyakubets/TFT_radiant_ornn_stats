@@ -69,7 +69,6 @@
   font-size: 13px;
   font-weight: 800; /* Bolder */
   color: var(--rarity-color);
-  text-transform: uppercase;
   letter-spacing: 0.8px;
   margin-top: auto; /* Pushes cost to the bottom of the card */
   padding-top: 8px;
@@ -97,7 +96,7 @@
 }
 
 .champ-search-input {
-  width: 100%;
+  width: 30%;
   padding: 10px 15px;
   background-color: #1c1c1f;
   border: 1px solid #2d2d31;
@@ -179,4 +178,104 @@
   border-width: 6px;
   border-style: solid;
   border-color: #444 transparent transparent transparent;
+}
+
+/* Shop Grid Layout */
+.champions-shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Wider for splashes */
+  gap: 20px;
+}
+
+.shop-card {
+  background-color: #0c1218;
+  border: 1px solid #2d2d31;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  position: relative;
+}
+
+.shop-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 15px var(--rarity-color);
+  z-index: 2;
+}
+
+/* Splash Art Container */
+.shop-splash-container {
+  position: relative;
+  width: 100%;
+  height: 120px; /* Landscape aspect ratio */
+  overflow: hidden;
+}
+
+.shop-splash-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  filter: brightness(0.8);
+}
+
+/* Traits Overlay (Bottom Left) */
+.shop-traits-overlay {
+  position: absolute;
+  bottom: 5px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shop-trait-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  /* background: rgba(0, 0, 0, 0.7); */
+  /* padding: 2px 6px; */
+  border-radius: 2px;
+  font-size: 10px;
+  color: #eee;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.shop-trait-icon {
+  width: 12px;
+  height: 12px;
+  filter: brightness(0) invert(1); /* Makes icons white like the game */
+}
+
+/* Info Stripe (Bottom) */
+.shop-info-stripe {
+  background-color: var(--rarity-color);
+  padding: 4px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white; /* Dark text on bright rarity colors */
+  font-weight: 800;
+}
+
+.shop-name {
+  font-size: 0.9rem;
+  letter-spacing: -0.5px;
+  font-size: 20px;
+}
+
+.shop-cost-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.shop-cost-value {
+  font-size: 1rem;
+}
+
+.shop-gold-icon {
+  width: 14px;
+  height: 14px;
 }

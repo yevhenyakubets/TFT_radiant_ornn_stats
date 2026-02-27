@@ -18,7 +18,7 @@
 }
 
 body {
-  margin: 0;           /* This removes the white gaps around the edges */
+   margin: 0;          /* This removes the white gaps around the edges */
   padding: 0;          /* Optional: ensures no internal gaps either */
   overflow-x: hidden;  /* Optional: prevents accidental horizontal scrolling */
 }

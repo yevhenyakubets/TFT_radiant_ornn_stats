@@ -6,7 +6,6 @@ function ChampionsListPage() {
   const [champions, setChampions] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
-  const [showTooltip, setShowTooltip] = useState(false); // For the info icon
   const navigate = useNavigate();
 
   const getRarityColor = (cost) => {
@@ -16,118 +15,102 @@ function ChampionsListPage() {
       case 3: return "#207ac7";
       case 4: return "#c440da";
       case 5:
-      case 7: return "#ffb93b";
+      case 7: return "#b78322";
       default: return "#ccc";
     }
   };
 
+  // Helper to sort traits: Unique -> Origin -> Class
+  const sortTraits = (traits) => {
+    if (!traits) return [];
+    return [...traits].sort((a, b) => {
+      const order = { unique: 1, origin: 2, class: 3 };
+      return (order[a.type] || 4) - (order[b.type] || 4);
+    });
+  };
+
   useEffect(() => {
-    let isMounted = true;
     fetch("http://127.0.0.1:8000/champions")
       .then(res => res.json())
       .then(data => {
-        if (isMounted) {
-          setChampions(data.champions);
-          setLoading(false);
-        }
+        setChampions(data.champions);
+        setLoading(false);
       });
-    return () => { isMounted = false; };
   }, []);
 
-  // Filter and Sort logic
   const filteredChampions = champions
     .filter(champ => {
       const query = searchTerm.toLowerCase().trim();
       if (!query) return true;
-
-      // TRAIT SEARCH
       if (query.startsWith("#")) {
-        const traitQuery = query.substring(1);
-        if (!traitQuery) return true;
-        
-        return champ.traits?.some(trait => {
-          const traitName = typeof trait === 'string' ? trait : trait.name;
-          return traitName?.toLowerCase().includes(traitQuery);
-        });
+        const tQ = query.substring(1);
+        return champ.traits?.some(t => (typeof t === 'string' ? t : t.name).toLowerCase().includes(tQ));
       }
-
-      // NAME SEARCH
       return champ.name.toLowerCase().includes(query);
     })
     .sort((a, b) => {
-      const query = searchTerm.toLowerCase().trim();
-
-      // 1. If searching by name, prioritize "Starts With" matches
-      if (query && !query.startsWith("#")) {
-        const aStarts = a.name.toLowerCase().startsWith(query);
-        const bStarts = b.name.toLowerCase().startsWith(query);
-        if (aStarts && !bStarts) return -1;
-        if (!aStarts && bStarts) return 1;
-      }
-
-      // 2. Primary Sort: Cost (1, 2, 3, 4, 5)
-      if (a.cost !== b.cost) {
-        return a.cost - b.cost;
-      }
-
-      // 3. Secondary Sort: Alphabetical (A-Z)
+      if (a.cost !== b.cost) return a.cost - b.cost;
       return a.name.localeCompare(b.name);
     });
 
-  if (loading) return <div className="loading-container">Loading champions...</div>;
+  if (loading) return <div className="loading-container">Loading Shop...</div>;
 
   return (
     <div className="champions-list-wrapper">
       <div className="champions-header-row">
         <h1 className="champions-list-title">Champions</h1>
-        
-        <div className="search-wrapper">
-          {/* Info Icon + Tooltip */}
-          <div 
-            className="info-icon-container"
-            onMouseEnter={() => setShowTooltip(true)}
-            onMouseLeave={() => setShowTooltip(false)}
-          >
-            <div className="info-icon">i</div>
-            {showTooltip && (
-              <div className="search-tooltip">
-                Use <strong>#traitname</strong> to filter by trait (e.g., #noxus)
-              </div>
-            )}
-          </div>
-
-          <div className="search-container">
-            <input 
-              type="text" 
-              placeholder="Search by name or #trait..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="champ-search-input"
-            />
-          </div>
-        </div>
+        <input 
+          className="champ-search-input"
+          placeholder="Search..." 
+          onChange={(e) => setSearchTerm(e.target.value)} 
+        />
       </div>
 
-      <div className="champions-grid">
+      <div className="champions-shop-grid">
         {filteredChampions.map(champ => {
           const rarityColor = getRarityColor(champ.cost);
+          const sortedTraits = sortTraits(champ.traits);
+
           return (
             <div
               key={champ.id}
-              className="champion-card"
+              className="shop-card"
               style={{ "--rarity-color": rarityColor }}
               onClick={() => navigate(`/champions/${champ.id}`)}
             >
-              <div className="champ-icon-container">
+              {/* Top Section: Splash Art */}
+              <div className="shop-splash-container">
                 <img 
-                  src={`/assets/champ_logos/${champ.id}.png`} 
+                  src={`/assets/champ_splashes/${champ.id}.png`} 
                   alt={champ.name}
-                  className="champ-list-icon"
-                  onError={(e) => { e.target.style.display = 'none'; }}
+                  className="shop-splash-img"
+                  onError={(e) => { e.target.src = `/assets/champ_logos/${champ.id}.png`; }}
                 />
+                
+                {/* Overlay: Traits at bottom left */}
+                <div className="shop-traits-overlay">
+                  {sortedTraits.map((trait, idx) => (
+                    <div key={idx} className="shop-trait-item">
+                      <img 
+                        src={`/assets/traits/${trait.name.toLowerCase()}.png`} 
+                        className="shop-trait-icon"
+                        alt=""
+                        onError={(e) => e.target.style.display = 'none'}
+                      />
+                      <span>{trait.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <strong className="champ-list-name">{champ.name}</strong>
-              <div className="champ-list-cost">{champ.cost} Gold</div>
+
+              {/* Bottom Stripe: Name and Cost */}
+              <div className="shop-info-stripe">
+                <span className="shop-name">{champ.name}</span>
+                <div className="shop-cost-wrapper">
+                  <span className="shop-cost-value">{champ.cost}</span>
+                  <img src="/assets/other/gold.png" className="shop-gold-icon" alt="" />
+                </div>
+              </div>
             </div>
           );
         })}
