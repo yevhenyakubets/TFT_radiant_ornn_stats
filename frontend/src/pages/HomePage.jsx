@@ -37,7 +37,7 @@ function HomePage() {
       </div>
 
       <div className="search-bar-wrapper">
-        <SearchBar customStyles={{ fontSize: "1.1rem" }} />
+        <SearchBar customStyles={{ fontSize: "1.6rem" }} />
       </div>
 
       <div className="nav-grid">

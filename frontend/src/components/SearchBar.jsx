@@ -81,28 +81,54 @@ const results = query.length > 1
           {results.map(item => (
             <div
               key={`${item.type}-${item.id}`}
-              onClick={() => {
-                navigate(item.route);
-                setIsOpen(false);
-                setQuery("");
-              }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                padding: "10px 15px",
-                cursor: "pointer",
-                borderBottom: "1px solid #2d2d31",
-                transition: "background 0.2s"
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#2d2d31"}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                onClick={() => {
+                  navigate(item.route);
+                  setIsOpen(false);
+                  setQuery("");
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  padding: "8px 15px", // Slightly tighter vertical padding
+                  cursor: "pointer",
+                  borderBottom: "1px solid #2d2d31",
+                  transition: "background 0.2s"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#2d2d31"}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
             >
               <img src={item.icon} alt="" style={{ width: "32px", height: "32px", borderRadius: "4px" }} />
-              <div>
-                <div style={{ color: "white", fontSize: "0.95rem" }}>{item.name}</div>
-                <div style={{ color: "#666", fontSize: "0.75rem", textTransform: "uppercase" }}>{item.type}</div>
-              </div>
+              <div style={{ 
+                display: "flex", 
+                  flexDirection: "column", 
+                  justifyContent: "center",
+                  alignItems: "flex-start", // <--- Forces children to the left
+                  lineHeight: "1.2",
+                  textAlign: "left"
+              }}>
+                <div style={{ 
+                  color: "white", 
+                  fontSize: "0.95rem", 
+                  fontWeight: "600",
+                  margin: 0,
+                  padding : 0,
+                }}>
+                  {item.name}
+                </div>
+                <div style={{ 
+                  color: "#888", // Brightened slightly for readability
+                  fontSize: "0.7rem", 
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px", // Cleaner "Beaufort" look
+                  marginTop: "2px", // Precise control over the gap
+                  marginLeft: 0,
+                  marginRight: 0,
+                  width: "100%",
+                }}>
+                  {item.type}
+                </div>
+              </div>  
             </div>
           ))}
         </div>
