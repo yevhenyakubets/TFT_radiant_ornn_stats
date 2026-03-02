@@ -137,7 +137,7 @@ def get_champion_special_items(champion_riot_id: str):
 
         # LOW SAMPLE CHECK
         percentage = count / total_games if total_games else 0
-        low_sample = percentage < 0.02
+        low_sample = percentage < 0.001
 
         data = {
             "name": item.name,
@@ -235,7 +235,7 @@ def get_artifact_stats_by_id(artifact_riot_id: str):
         ).scalar()
 
         percentage = count / total_games if total_games else 0
-        low_sample = percentage < 0.01        
+        low_sample = percentage < 0.001       
 
         result[champion.riot_id] = {
             "name": champion.name,
@@ -321,7 +321,7 @@ def get_radiant_stats_by_id(radiant_riot_id: str):
         ).scalar()
 
         percentage = count / total_games if total_games else 0
-        low_sample = percentage < 0.01  
+        low_sample = percentage < 0.001 
 
         result[champion.riot_id] = {
             "name": champion.name,
