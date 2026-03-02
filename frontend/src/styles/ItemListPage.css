@@ -2,7 +2,7 @@
 
 .item-list-wrapper {
   padding: 30px;
-  background-color: #0a0a0c;
+  background-color: rgb(1, 10, 19);
   min-height: 100vh;
   max-width: 1200px;
   margin: 0 auto;
@@ -11,12 +11,9 @@
 .list-title {
   color: white;
   margin-bottom: 30px;
-  border-bottom: 2px solid #ccc; /* Default */
-  padding-bottom: 10px;
   width: fit-content;
-  font-family: 'Verdana', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 .item-grid {
@@ -26,11 +23,11 @@
 }
 
 .item-card-link {
-  border: 1px solid #2d2d31;
-  padding: 20px;
+  border: 1px solid rgb(4, 53, 74);
+  padding: 15px;
   border-radius: 10px;
   cursor: pointer;
-  background-color: #16161a;
+  background-color: black;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -62,14 +59,56 @@
 
 .list-item-name {
   color: #f0e6d2;
-  font-size: 0.95rem;
-  font-family: 'Verdana', sans-serif;
+  font-size: 1rem;
   line-height: 1.2;
+  padding: 4px;
 }
 
 .list-loading {
   color: white;
   padding: 40px;
   text-align: center;
-  font-family: sans-serif;
+}
+
+.list-header {
+  display: flex;
+  align-items: flex-end; /* Aligns search bar bottom with title underline */
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 30px; /* Space between header and grid */
+  gap: 20px;
+}
+
+.list-title {
+  margin: 0;
+  padding-bottom: 5px;
+  white-space: nowrap; /* Prevents title from wrapping */
+}
+
+.list-search-container {
+  /* Remove margin: 0 auto */
+  width: 100%;
+  max-width: 400px; /* Adjusted size for side-by-side look */
+  margin: 0; 
+}
+
+.list-search-input {
+  width: 100%;
+  padding: 10px 16px; /* Slightly slimmer for the header line */
+  background-color: #010a13;
+  border: 1px solid #2d2d31;
+  border-radius: 6px;
+  color: white;
+  outline: none;
+}
+
+/* Responsive fix: Stack them on small mobile screens */
+@media (max-width: 600px) {
+  .list-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .list-search-container {
+    max-width: 100%;
+  }
 }

@@ -1,5 +1,5 @@
 #root {
-  max-width: 1280px;
+  max-width: 1900px;
   margin: 0 auto;
   text-align: center;
 }
@@ -21,6 +21,7 @@ body {
    margin: 0;          /* This removes the white gaps around the edges */
   padding: 0;          /* Optional: ensures no internal gaps either */
   overflow-x: hidden;  /* Optional: prevents accidental horizontal scrolling */
+  font-family: 'Beaufort W01 Regular';
 }
 
 @keyframes logo-spin {
@@ -61,4 +62,13 @@ body {
 .description-text :contains("(AD)") {
   color: #ffa500; /* AD Orange */
   font-weight: bold;
+}
+
+@font-face {
+  font-family: 'Beaufort W01 Regular'; /* A name you choose to use later */
+  src: url('assets/fonts/Beaufort W01 Regular.woff2') format('woff2'),
+       url('assets/fonts/Beaufort W01 Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; /* Controls font loading behavior */
 }

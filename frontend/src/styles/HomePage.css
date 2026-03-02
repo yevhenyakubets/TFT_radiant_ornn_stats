@@ -1,5 +1,5 @@
 .home-container {
-  background-color: #0a0a0c;
+  background-color: rgb(1, 10, 19);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -7,16 +7,15 @@
   justify-content: center;
   padding: 40px 20px;
   color: white;
-  font-family: 'Verdana', sans-serif;
 }
 
-.hero-section {
+.header-section {
   text-align: center;
   margin-bottom: 50px;
 }
 
-.hero-title {
-  font-size: 2.8rem;
+.header-title {
+  font-size: 4rem;
   margin-bottom: 10px;
   font-weight: 800;
   letter-spacing: -1px;
@@ -26,16 +25,25 @@
   color: #c8aa6e;
 }
 
-.hero-subtitle {
+.header-subtitle {
   color: #888;
-  font-size: 1.1rem;
+  font-size: 1.7rem;
   margin: 5px 0;
 }
 
+/* Make the container wider */
 .search-bar-wrapper {
   width: 100%;
-  max-width: 800px;
-  margin-bottom: 60px;
+  max-width: 800px; /* Increase this to make it stretch further across the screen */
+  margin-bottom: 30px;
+}
+
+/* Target the actual input field inside SearchBar */
+.search-bar-wrapper input {
+  padding: 18px 24px !important; /* Larger padding makes the bar "thicker" */
+  font-size: 1.5rem; /* Matches your desired text size */
+  border-radius: 12px; /* Rounds the corners more for the larger size */
+  font-family: 'Beaufort W01 Regular';
 }
 
 .nav-grid {
@@ -47,7 +55,7 @@
 }
 
 .nav-card {
-  background-color: #16161a;
+  background-color: rgb(4, 53, 74);
   padding: 30px;
   border-radius: 16px;
   border: 1px solid #2d2d31;
@@ -60,7 +68,7 @@
 .nav-card:hover {
   border-color: var(--hover-color);
   transform: translateY(-8px);
-  background-color: #1c1c22;
+  background-color: rgb(1, 10, 19);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
 }
 
@@ -90,22 +98,22 @@
 
 .nav-card-title {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 700;
 
 }
 
 .nav-card-description {
   color: #888;
-  font-size: 1rem;
+  font-size: 1.3rem;
   margin: 0;
-  line-height: 1.5;
+  line-height: 1;
   /* Aligns description with the title text, skipping the icon width */
   /* padding-left: 65px;  */
 }
 
 .footer-decoration {
-  margin-top: 100px;
+  margin-top: 50px;
   opacity: 0.3;
   font-size: 0.8rem;
   letter-spacing: 3px;

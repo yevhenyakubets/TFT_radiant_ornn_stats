@@ -14,15 +14,16 @@ function Header() {
 
   return (
     <header style={{
-      backgroundColor: "#16161a",
+      backgroundColor: "rgb(0, 0, 0)",
       padding: "10px 30px",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      borderBottom: "1px solid #2d2d31",
+      // borderBottom: "5px solid rgb(4, 53, 74)",
       position: "sticky",
       top: 0,
-      zIndex: 1000
+      zIndex: 1000,
+
     }}>
       {/* Navigation Buttons */}
       <div style={{ display: "flex", gap: "10px" }}>
@@ -40,7 +41,9 @@ function Header() {
                 borderRadius: "6px",
                 cursor: "pointer",
                 fontWeight: "bold",
-                transition: "0.2s"
+                transition: "0.2s",
+                fontFamily:"Beaufort W01 Regular",
+                fontSize:"1.25rem"
               }}
             >
               {item.name}
@@ -51,7 +54,7 @@ function Header() {
 
       {/* Functional Search Bar */}
       <div>
-        <SearchBar customStyles={{ width: "300px" }} /> 
+        <SearchBar customStyles={{ width: "280px" , marginRight: "60px"}} /> 
       </div>
     </header>
   );
