@@ -61,7 +61,9 @@ const results = query.length > 1
           border: "1px solid #2d2d31",
           backgroundColor: "#0a0a0c",
           color: "white",
-          outline: "none"
+          outline: "none",
+          fontFamily:"Beaufort W01 Regular",
+          fontSize:"1.3rem"
         }}
       />
 
@@ -109,7 +111,7 @@ const results = query.length > 1
               }}>
                 <div style={{ 
                   color: "white", 
-                  fontSize: "0.95rem", 
+                  fontSize: "1.1rem", 
                   fontWeight: "600",
                   margin: 0,
                   padding : 0,

@@ -28,15 +28,15 @@ function HomePage() {
 
   return (
     <div className="home-container">
-      <div className="hero-section">
-        <h1 className="hero-title">
+      <div className="header-section">
+        <h1 className="header-title">
           TFT <span className="highlight">ARTIFACTS AND RADIANT ITEMS</span>
         </h1>
-        <p className="hero-subtitle">Analyze placements and optimize your itemization.</p>
-        <p className="hero-subtitle">Find the best items for champions, as well as best users for specific items</p>
+        <p className="header-subtitle">Analyze placements and optimize your itemization.</p>
+        <p className="header-subtitle">Find the best items for champions, as well as best users for specific items</p>
       </div>
 
-      <div className="search-bar-wrapper">
+      <div className="search-bar-wrapper" style={{ maxWidth: "800px" }}> {/* Changed from 600px */}
         <SearchBar customStyles={{ fontSize: "1.6rem" }} />
       </div>
 
@@ -67,8 +67,11 @@ function HomePage() {
         ))}
       </div>
 
-      <div className="footer-decoration">DATA POWERED BY RIOT GAMES API</div>
+      <div className="footer-decoration">DATA POWERED BY RIOT GAMES API
+        , Fonts made from <a href="http://www.onlinewebfonts.com">Web Fonts</a> is licensed by CC BY 4.0
+      </div>
     </div>
+    
   );
 }
 

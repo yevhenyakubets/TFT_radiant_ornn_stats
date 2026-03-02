@@ -2,7 +2,7 @@
 
 .champions-list-wrapper {
   padding: 30px;
-  background-color: #0a0a0c;
+  background-color: rgb(1, 10, 19);
   min-height: 100vh;
   max-width: 1200px;
   margin: 0 auto;
@@ -11,7 +11,6 @@
 .champions-list-title {
   color: white;
   margin: 0;
-  font-family: 'Verdana', sans-serif;
   letter-spacing: 1px;
 }
 
@@ -86,8 +85,6 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  border-left: 5px solid #ffb93b;
-  padding-left: 15px;
 }
 
 /* Search Bar Styles */
@@ -98,19 +95,14 @@
 .champ-search-input {
   width: 30%;
   padding: 10px 15px;
-  background-color: #1c1c1f;
+  background-color: black;
   border: 1px solid #2d2d31;
   border-radius: 6px;
   color: white;
-  font-size: 0.9rem;
+  font-size: 1.3rem;
   outline: none;
   transition: all 0.2s ease;
-}
-
-.champ-search-input:focus {
-  border-color: #ffb93b;
-  box-shadow: 0 0 8px rgba(255, 185, 59, 0.2);
-  background-color: #232327;
+  font-family: Beaufort W01 Regular;
 }
 
 .champ-search-input::placeholder {
