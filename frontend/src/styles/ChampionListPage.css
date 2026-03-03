@@ -1,181 +1,6 @@
-/* src/styles/ChampionsListPage.css */
-
-.champions-list-wrapper {
-  padding: 30px;
-  background-color: rgb(1, 10, 19);
-  min-height: 100vh;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.champions-list-title {
-  color: white;
-  margin: 0;
-  letter-spacing: 1px;
-}
-
-.champions-grid {
-  display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
-  gap: 16px;
-}
-
-.champion-card {
-  /* Using the variable passed from JSX */
-  border: 2px solid var(--rarity-color); 
-  padding: 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  background-color: #1c1c1f;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.4);
-  /* min-height: 160px; */
-}
-
-.champion-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0,0,0,0.6);
-  background-color: #232327;
-}
-
-.champ-icon-container {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 10px;
-}
-
-.champ-list-icon {
-  width: 100%;
-  height: 100%;
-  border-radius: 4px;
-  border: 1px solid var(--rarity-color);
-  object-fit: cover;
-  background-color: #000;
-}
-
-.champ-list-name {
-  color: white;
-  text-align: center;
-  font-size: 1rem;
-  margin-bottom: 4px;
-}
-
-/* Ensure cost stands out for the new sorting order */
-.champ-list-cost {
-  font-size: 13px;
-  font-weight: 800; /* Bolder */
-  color: var(--rarity-color);
-  letter-spacing: 0.8px;
-  margin-top: auto; /* Pushes cost to the bottom of the card */
-  padding-top: 8px;
-}
-
-.loading-container {
-  color: white;
-  padding: 40px;
-  text-align: center;
-  font-family: 'Verdana', sans-serif;
-}
-
-.champions-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-/* Search Bar Styles */
-.search-container {
-  flex: 0 1 300px; /* Limits width of search bar */
-}
-
-.champ-search-input {
-  width: 30%;
-  padding: 10px 15px;
-  background-color: black;
-  border: 1px solid #2d2d31;
-  border-radius: 6px;
-  color: white;
-  font-size: 1.3rem;
-  outline: none;
-  transition: all 0.2s ease;
-  font-family: Beaufort W01 Regular;
-}
-
-.champ-search-input::placeholder {
-  color: #666;
-}
-
-.search-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-  z-index: 1000;
-}
-
-/* Info Icon */
-.info-icon-container {
-  position: relative;
-  cursor: help;
-}
-
-.info-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 1px solid #666;
-  color: #666;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: serif; /* For a more classic 'i' look */
-  font-style: italic;
-  font-weight: bold;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.info-icon-container:hover .info-icon {
-  border-color: #ffb93b;
-  color: #ffb93b;
-}
-
-/* Tooltip Popup */
-.search-tooltip {
-  position: absolute;
-  bottom: 140%; /* Position above the icon */
-  right: 0;
-  width: 200px;
-  background-color: #232327;
-  color: #f0e6d2;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  font-size: 0.8rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  z-index: 100;
-  pointer-events: none; /* Prevents flickering */
-}
-
-/* Small triangle for tooltip */
-.search-tooltip::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  right: 5px;
-  border-width: 6px;
-  border-style: solid;
-  border-color: #444 transparent transparent transparent;
-}
-
-/* Shop Grid Layout */
 .champions-shop-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Wider for splashes */
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
 }
 
@@ -195,11 +20,10 @@
   z-index: 2;
 }
 
-/* Splash Art Container */
 .shop-splash-container {
   position: relative;
   width: 100%;
-  height: 120px; /* Landscape aspect ratio */
+  height: 120px;
   overflow: hidden;
 }
 
@@ -211,7 +35,6 @@
   filter: brightness(0.8);
 }
 
-/* Traits Overlay (Bottom Left) */
 .shop-traits-overlay {
   position: absolute;
   bottom: 5px;
@@ -225,10 +48,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  /* background: rgba(0, 0, 0, 0.7); */
-  /* padding: 2px 6px; */
   border-radius: 2px;
-  font-size: 10px;
   color: #eee;
   font-weight: 600;
   font-size: 15px;
@@ -237,22 +57,20 @@
 .shop-trait-icon {
   width: 12px;
   height: 12px;
-  filter: brightness(0) invert(1); /* Makes icons white like the game */
+  filter: brightness(0) invert(1);
 }
 
-/* Info Stripe (Bottom) */
 .shop-info-stripe {
   background-color: var(--rarity-color);
   padding: 4px 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: white; /* Dark text on bright rarity colors */
+  color: white;
   font-weight: 800;
 }
 
 .shop-name {
-  font-size: 0.9rem;
   letter-spacing: -0.5px;
   font-size: 20px;
 }

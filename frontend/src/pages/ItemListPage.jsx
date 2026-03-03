@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import "../styles/Common.css"; // ADDED
 import "../styles/ItemListPage.css";
 
 function ItemListPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(""); // New state for searching
+  const [searchTerm, setSearchTerm] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -25,9 +26,9 @@ function ItemListPage() {
     linkPath: "radiant-items"
   };
 
-  useEffect(() => {
+useEffect(() => {
+
   let isMounted = true;
-  // REMOVED: setLoading(true) from here to avoid cascading renders
 
   fetch(`http://127.0.0.1:8000/${config.endpoint}`)
     .then(res => res.json())
@@ -37,46 +38,42 @@ function ItemListPage() {
         setLoading(false);
       }
     })
+
     .catch(err => {
       if (isMounted) {
         console.error("Fetch error:", err);
         setLoading(false);
       }
     });
-
   return () => { isMounted = false; };
+
 }, [config.endpoint]);
 
-  // Filter items based on the search term
   const filteredItems = items.filter((item) =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
-    return <div className="list-loading">Loading {config.title.toLowerCase()}...</div>;
+    return <div className="list-loading-container">Loading {config.title.toLowerCase()}...</div>;
   }
 
   return (
-    <div className="item-list-wrapper">
-      <div className="list-header">
-          <h1 
-            className="list-title" 
-            style={{ borderBottomColor: config.themeColor }}
-          >
-            {config.title}
-          </h1>
+    <div className="list-page-wrapper">
+      <div className="list-header-row">
+        <h1 
+          className="list-page-title" 
+        >
+          {config.title}
+        </h1>
 
-          <div className="list-search-container">
-            <input
-              type="text"
-              placeholder={`Search ${config.title.toLowerCase()}...`}
-              className="list-search-input"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-
+        <input
+          type="text"
+          placeholder={`Search ${config.title.toLowerCase()}...`}
+          className="list-search-input"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
 
       <div className="item-grid">
         {filteredItems.length > 0 ? (
