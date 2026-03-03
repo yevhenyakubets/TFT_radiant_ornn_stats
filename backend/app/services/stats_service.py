@@ -351,8 +351,14 @@ def render_champion_description(desc, data_block, champion_name):
         return ""
 
     # 1. CLEANING
+    # 1. CLEANING
     desc = re.sub(r'<[^>]*>', '', desc)
     desc = desc.replace('&nbsp;', ' ')
+
+# FIX: Only delete icons that ARE NOT "scale" icons
+# This uses a "negative lookahead" to say: 
+# "Find %i: but only if it is NOT followed by 'scale'"
+    desc = re.sub(r'%i:(?!scale)[^%]+%', '', desc)
 
     # 2. DATA PREP
     stats = {v['name'].strip().lower(): v['value'] for v in data_block.get("vars", [])}
@@ -401,6 +407,9 @@ def render_champion_description(desc, data_block, champion_name):
         },
         "baron nashor": {
             "modifiedaciddamage": (["addamage", "apdamage"], "acidpercentdamage"),
+        },
+        "bel'veth": {
+            "modifiedattackspeed": (["attackspeedontransform*100"], None),
         },
         "braum": {
             "modifieddurability": (["damagereduction"], None),
@@ -541,6 +550,13 @@ def render_champion_description(desc, data_block, champion_name):
         },
         "yasuo": {
             "yasuoadpercent*100": (["base_ad"], None),
+        },
+        "yone": {
+            "modifiedpertargetdamage": (["pertargetaddamage", "pertargetapdamage"], None),
+            "modifiedstrikedamage": (["strikeaddamage", "strikeapdamage"], None),
+        },
+        "yunara": {
+            "modifiedattackspeed": (["attackspeed*100"], None),
         },
         "yorick": {
             "modifiedheal": (["apheal"], None),
