@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../styles/Common.css"; // ADDED
 import "../styles/ChampionListPage.css";
 
 function ChampionsListPage() {
@@ -20,7 +21,6 @@ function ChampionsListPage() {
     }
   };
 
-  // Helper to sort traits: Unique -> Origin -> Class
   const sortTraits = (traits) => {
     if (!traits) return [];
     return [...traits].sort((a, b) => {
@@ -53,15 +53,16 @@ function ChampionsListPage() {
       return a.name.localeCompare(b.name);
     });
 
-  if (loading) return <div className="loading-container">Loading Shop...</div>;
+  if (loading) return <div className="list-loading-container">Loading Shop...</div>;
 
   return (
-    <div className="champions-list-wrapper">
-      <div className="champions-header-row">
-        <h1 className="champions-list-title">CHAMPIONS</h1>
+    <div className="list-page-wrapper">
+      <div className="list-header-row">
+        <h1 className="list-page-title">CHAMPIONS</h1>
         <input 
-          className="champ-search-input"
+          className="list-search-input"
           placeholder="Search..." 
+          value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)} 
         />
       </div>
@@ -78,7 +79,6 @@ function ChampionsListPage() {
               style={{ "--rarity-color": rarityColor }}
               onClick={() => navigate(`/champions/${champ.id}`)}
             >
-              {/* Top Section: Splash Art */}
               <div className="shop-splash-container">
                 <img 
                   src={`/assets/champ_splashes/${champ.id}.png`} 
@@ -86,8 +86,6 @@ function ChampionsListPage() {
                   className="shop-splash-img"
                   onError={(e) => { e.target.src = `/assets/champ_logos/${champ.id}.png`; }}
                 />
-                
-                {/* Overlay: Traits at bottom left */}
                 <div className="shop-traits-overlay">
                   {sortedTraits.map((trait, idx) => (
                     <div key={idx} className="shop-trait-item">
@@ -103,7 +101,6 @@ function ChampionsListPage() {
                 </div>
               </div>
 
-              {/* Bottom Stripe: Name and Cost */}
               <div className="shop-info-stripe">
                 <span className="shop-name">{champ.name}</span>
                 <div className="shop-cost-wrapper">

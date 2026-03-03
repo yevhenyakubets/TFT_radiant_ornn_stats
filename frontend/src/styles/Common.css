@@ -1,0 +1,68 @@
+/* Shared Wrapper and Layout */
+.list-page-wrapper {
+  padding: 30px;
+  background-color: rgb(1, 10, 19);
+  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Shared Header Row */
+.list-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+/* Shared Title Style */
+.list-page-title {
+  color: white;
+  margin: 0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-family: 'Beaufort W01 Regular', sans-serif;
+}
+
+/* Shared Search Input Style */
+.list-search-input {
+  width: 300px;
+  padding: 10px 15px;
+  background-color: black;
+  border: 1px solid #2d2d31;
+  border-radius: 6px;
+  color: white;
+  font-size: 1.3rem;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: 'Beaufort W01 Regular', sans-serif;
+}
+
+.list-search-input::placeholder {
+  color: #666;
+}
+
+.list-search-input:focus {
+  border-color: #555;
+}
+
+/* Shared Loading State */
+.list-loading-container {
+  color: white;
+  padding: 40px;
+  text-align: center;
+  font-family: 'Verdana', sans-serif;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+  .list-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .list-search-input {
+    width: 100%;
+  }
+}
