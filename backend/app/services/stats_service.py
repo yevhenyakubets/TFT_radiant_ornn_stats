@@ -432,6 +432,32 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
         "champions": sorted_result,
     }
 
+def _resolve_token_fuzzy(token_lower: str, stats: dict) -> dict | None:
+    """
+    Attempts to automatically resolve Modified*/Total*/Bonus* tokens
+    by stripping the prefix and finding matching vars in stats.
+    Returns a dict of {var_name: value} or None if nothing found.
+    """
+    base = token_lower
+    for prefix in ("modified", "total", "bonus"):
+        if base.startswith(prefix):
+            base = base[len(prefix):]
+            break
+
+    if not base:
+        return None
+
+    matches = {k: v for k, v in stats.items() if base in k}
+
+    if not matches:
+        return None
+
+    # Prefer non-percent/non-ratio vars — only fall back to them if nothing else found
+    non_percent = {k: v for k, v in matches.items()
+                   if "percent" not in k and "ratio" not in k}
+
+    return non_percent if non_percent else matches
+
 def render_champion_description(desc, data_block, champion_name):
     if not desc:
         return ""
@@ -455,8 +481,6 @@ def render_champion_description(desc, data_block, champion_name):
 
     # 3. MAPPING STRUCTURES
     # Values based on 1-Star stats
-
-    current_champ_map = SPECIFIC_EXCEPTIONS.get(champ_key, {})
 
     def format_star_values(vals):
         if not vals: return "???"
@@ -541,6 +565,34 @@ def render_champion_description(desc, data_block, champion_name):
                 is_percent = any(word in token_lower for word in ["percent", "ratio", "durability"])
                 if not is_time and is_percent and 0 < final < 2: final *= 100
                 star_values.append(round(final, 2) if is_time else round(final))
+            return format_star_values(star_values)
+
+        # STANDARD AGGREGATION FALLBACK
+        fuzzy_matches = _resolve_token_fuzzy(token_lower, stats)
+        if fuzzy_matches:
+            star_values = []
+            for i in range(1, 4):
+                current_sum = 0
+                for v in fuzzy_matches.values():
+                    try:
+                        val_list = v if isinstance(v, list) else [v] * 7
+                        val_list = [x if x is not None else 0 for x in val_list]
+                        val = val_list[i] if i < len(val_list) else val_list[0]
+
+                        is_decreasing_stat = any(w in token_lower for w in DECREASING_STATS)
+                        if i == 3 and not is_decreasing_stat:
+                            if float(val) < float(val_list[1]) and any(x > val for x in val_list):
+                                val = max(val_list)
+
+                        current_sum += float(val) * multiplier
+                    except:
+                        continue
+
+                is_time = any(w in token_lower for w in ["seconds", "duration"])
+                is_percent = any(w in token_lower for w in ["percent", "ratio", "durability"])
+                if not is_time and is_percent and 0 < current_sum < 2:
+                    current_sum *= 100
+                star_values.append(round(current_sum, 2) if is_time else round(current_sum))
             return format_star_values(star_values)
 
         # STANDARD AGGREGATION FALLBACK
