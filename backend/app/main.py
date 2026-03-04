@@ -8,8 +8,7 @@ from app.models.traits import Trait
 
 from app.services.stats_service import (
     get_champion_special_items,
-    get_artifact_stats_by_id,
-    get_radiant_stats_by_id,
+    get_item_stats_by_id,
     get_sorted_traits,
 )
 
@@ -117,7 +116,7 @@ def get_artifact_items():
 
 @app.get("/artifacts/{artifact_id}")
 def get_artifact_page(artifact_id: str):
-    data = get_artifact_stats_by_id(artifact_id)
+    data = get_item_stats_by_id(artifact_id, "artifact")
 
     if not data:
         raise HTTPException(status_code=404, detail="Artifact not found")
@@ -131,7 +130,7 @@ def get_artifact_page(artifact_id: str):
 
 @app.get("/radiant-items/{radiant_id}")
 def get_radiant_page(radiant_id: str):
-    data = get_radiant_stats_by_id(radiant_id)
+    data = get_item_stats_by_id(radiant_id, "radiant")
 
     if not data:
         raise HTTPException(status_code=404, detail="Radiant item not found")
