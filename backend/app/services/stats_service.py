@@ -1,7 +1,6 @@
-from sqlalchemy.orm import Session
 from sqlalchemy import func
-from collections import defaultdict
 import re
+from contextlib import contextmanager
 
 from app.database import SessionLocal
 from app.models.champion import Champion
@@ -9,38 +8,231 @@ from app.models.items import Item
 from app.models.champion_item_stats import ChampionItemStats
 from app.models.champion_item_valid_pairs import ChampionItemValidPairs
 
+@contextmanager
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 CURRENT_PATCH = "16.5"
 
 DECREASING_STATS = ["attacks", "mana", "requirement", "cooldown"]
 
+CHAMP_BASE_STATS = {
+    "ashe": {"hp": None, "ad": 58},
+    "dr. mundo": {"hp": 900, "ad": None},
+    "jinx": {"hp": None, "ad": 50},
+    "nasus": {"hp": 1500, "ad": None},
+    "nautilus": {"hp": 900, "ad": None},
+    "rift herald": {"hp": 1100, "ad": None},
+    "ryze": {"hp": 1000, "ad": None},
+    "sion": {"hp": 650, "ad": None},
+    "swain": {"hp": 1200, "ad": None},
+    "volibear": {"hp": 1200, "ad": None},
+    "wukong": {"hp": 1050, "ad": None},
+    "yasuo": {"hp": None, "ad": 45},
+    "yorick": {"hp": 850, "ad": None},
+}
 
-# ================================
-# INTERNAL QUERY HELPERS
-# ================================
+SPECIFIC_EXCEPTIONS = {
+    "aatrox": {
+        "firstcastmodifieddamage": (["addamage", "apdamage"], None),
+        "secondcastmodifieddamage": (["addamage", "apdamage"], "secondcastpercentdamage"),
+        "thirdcastmodifieddamage": (["addamage", "apdamage"], "thirdcastpercentdamage"),
+    },
+    "annie": { 
+        "modifieddamage": (["damage"], None),
+        "modifiedsecondarydamage": (["singletargetdamage"], None)
+    },
+    "ashe": {
+        "smallarrowdamagefinal": (["smallarrowdamage*base_ad"], None)
+    },
+    "aphelios": {
+        "modifieddamage": (["severumaddamage"], None)
+    },
+    "azir": {
+        "modifiedsecondarydamage": (["maxsummonsdamage"], None)
+    },
+    "baron nashor": {
+        "modifiedaciddamage": (["addamage", "apdamage"], "acidpercentdamage"),
+    },
+    "bel'veth": {
+        "modifiedattackspeed": (["attackspeedontransform*100"], None),
+    },
+    "braum": {
+        "modifieddurability": (["damagereduction"], None),
+        "modifieddamage": (["apdamage", "armordamage*60"], None)
+    },
+    "briar": {
+        "modifiedattackspeed": (["decayingattackspeed*100"], None),
+    },
+    "blitzcrank": {
+        "modifieddamage": (["mrdamageratio*40"], None),
+    },
+    "darius": {
+        "modifiedsecondarydamage": (["physicaldamagepersecond"], None),
+    },
+    "dr. mundo": {
+        "totalhealing": (["percenthealthhealingpersecond*base_hp", "aphealpersecond"], None),
+        "totaldamage": (["percentmaximumhealthdamage*base_hp", "addamage"], None)
+    },
+    "fizz": {
+        "modifiedattackdamage": (["damageonhit"], None),
+    },
+    "galio": {
+        "bonuspassivedamage": (["passivemrratio*65"], None),
+        "modifiedactivedamage": (["activeardamage*65", "activemrdamage*65"], None)
+    },
+    "gwen": {
+        "modifiedcastsniptimes": (["snipcount"], None),
+        "modifieddamage": (["damage"], None),
+        "modifiedsecondarydamage": (["secondarymagicdamage"], None),
+    },
+    "jarvan iv": {
+        "modifiedattackspeed": (["attackspeed*100"], None),
+    },
+    "jinx": {
+        "totaldamage": (["addamage","apdamage"], None) ,
+    },
+    "kalista": {
+        "totalnumberofspears": (["basespears"], None),
+    },
+    "kindred": {
+        "modifiedhealpercentage": (["healpercentage*100"], None),
+    },
+    "leona": {
+        "modifieddamagereduction": (["flatdr"], None),
+    },
+    "lux": {
+        "modifieddamage_q": (["qdamage"], None),
+    },
+    "mel": {
+        "modifiedsecondarydamage": (["targetdamage"], None),
+        "tftunitproperty.:tft16_mel_manaspent": (["0"], None),
+    },
+    "milio": {
+        "modifiedaoedamage": (["magicdamageaoe"], None),
+    },
+    "miss fortune": {
+        "modifiedsecondarydamage": (["addamage", "apdamage"], "percentdamageofsecondarywaves"),
+    },
+    "nautilus": {
+        "modifieddamage": (["mrdamageratio*50"], None),
+        "modifiedshield": (["apshield","percenthealthshield*base_hp"], None),
+    },
+    "nasus": {
+        "modifieddamagepersecond": (["percenthealthdamagepersecond*base_hp"], None),
+    },
+    "orianna": {
+        "modifiedsecondarydamage": (["targetdamage"], None),
+    },
+    "rek'sai": {
+        "modifiedsecondarydamage": (["spellattackdamage"], None),
+    },
+    "renekton": {
+        "modifieddashdamage": (["dashaddamage"], None),
+        "modifiedslashdamage": (["slashaddamage", "slashapdamage"], None),
+    },
+    "rift herald": {
+        "modifieddurability": (["bonusdurability*100"], None),
+        "modifieddamage": (["apdamage", "percenthealthdamage*base_hp"], None),
+    },
+    "rumble": {
+        "modifiedshield": (["apshield"], None),
+        # PercentArmorDamage * Base Armor (60)
+        "totaldamage": (["percentarmordamage*40"], None)
+    },
+    "ryze": {
+        "modifiedshadowislesbonusdamage": (["shadowislesbasepercentage*100"], None),
+        "modifieddemaciaexecutethreshold": (["demaciaexecutethreshold*100"], None),
+        "modifiedfreljordtruedamage": (["freljordtruedamagepercenthealth*base_hp"], None),
+    },
+    "sett": {
+        "modifiedpercentoftargetmaxhealth": (["percentoftargetmaxhealth*100"], None),
+    },
+    "shyvana": {
+        "modifieddivebombdamage": (["divebombaddamage"], None),
+        "modifiedfiredamagepersecond":(["firedamagetaddamagepersecond", "firedamageappersecond"], None)
+    },
+    "singed": {
+        "modifiedmanapersec": (["manapercentas*0.7"], None),
+    },
+    "sion": {
+        "modifiedshield": (["apshield", "percenthealthshield*base_hp"], None),
+        "modifieddamage": (["damagepercenthealth*base_hp"], None),
+    },
+    "skarner": {
+        "modifieddamage": (["damagepercentarmor*70"], None),
+    },
+    "swain": {
+        "modifiedhanddamage": (["activedamage"], None),
+        "totalhealing": (["aphealing", "percentmaximumhealthhealing*base_hp"], None),
+    },
+    "t-hex": {
+        "modifiedlaserdamagepersecond": (["apdamage","addamage"], None),
+        "modifiedmissiledamage": (["apdamage","addamage"], "missiledamagemult"),
+    },
+    "thresh": {
+        "modifiedhealthdrain": (["appassivedamage"], None),
+    },
+    "tryndamere": {
+        "modifieddurability": (["dr*100"], None),
+    },
+    "vi": {
+        "modifiedsecondarydamage": (["secondaryaddamage"], None),
+    },
+    "viego": {
+        "modifiedattackspeed": (["baseattackspeed"], None),
+    },
+    "volibear": {
+        "modifiedbitedamage": (["bitedamagebase", "bitedamagehealth*base_hp"], None),
+        "modifiedslamdamage": (["bitedamagebase", "bitedamagehealth*base_hp"], "slamdamagemultiplier"),
+        "modifiedboltdamage": (["stormbringerboltbase", "stormbringerbolthealth*base_hp"], None),
+    },
+    "warwick": {
+        "modifiedtakedownattackspeed": (["allyattackspeed*100"], None),
+    },
+    "wukong": {
+        "modifieddefenses": (["resists"], None),
+        "modifiedclonehealth": (["summonmaxhealthpercent*base_hp"], None),
+    },
+    "yasuo": {
+        "yasuoadpercent*100": (["base_ad"], None),
+    },
+    "yone": {
+        "modifiedpertargetdamage": (["pertargetaddamage", "pertargetapdamage"], None),
+        "modifiedstrikedamage": (["strikeaddamage", "strikeapdamage"], None),
+    },
+    "yunara": {
+        "modifiedattackspeed": (["attackspeed*100"], None),
+    },
+    "yorick": {
+        "modifiedheal": (["apheal"], None),
+        "modifieddamage": (["flatdamage","percenthealthdamage*base_hp"], None),
+    },
+    "zaahen": {
+        "modifiedbigaoedamage": (["apdamage","addamage"], "bigaoedamagemultiplier"),
+        "modifieddamage": (["apdamage","addamage"], "aoedamagemultiplier"),
+    },
+    "ziggs": {
+        "modifiedbasicattackdamage": (["bapercentap"], None),
+        "modifiedmindamage": (["minaoedamage"], None),
+        "modifiedmaxdamage": (["maxaoedamage"], None),
+    },
+    "zilean": {
+        "modifieddamage": (["magicdamage"], None),
+        "modifiedsecondarydamage": (["explosiondamage"], None),
+    },
 
-def _aggregate_stats(db: Session):
-    """
-    Returns aggregated stats:
-    champion_id, item_id, count, avg_placement
-    """
 
-    results = (
-        db.query(
-            ChampionItemStats.champion_id,
-            ChampionItemStats.item_id,
-            func.count().label("count"),
-            func.avg(ChampionItemStats.placement).label("avg_placement"),
-        )
-        .filter(ChampionItemStats.normalized_patch == CURRENT_PATCH)
-        .group_by(
-            ChampionItemStats.champion_id,
-            ChampionItemStats.item_id,
-        )
-        .all()
-    )
+}
 
-    return results
+GLOBAL_EXCEPTIONS = {
+    "totaldamage": (["addamage", "apdamage"], None),
+
+}
 
 def get_sorted_traits(traits):
     """
@@ -68,99 +260,88 @@ def get_sorted_traits(traits):
         for t in sorted_list
     ]
 
-# ================================
-# CHAMPION PAGE
-# ================================
-
 def get_champion_special_items(champion_riot_id: str):
-    db = SessionLocal()
-
-    champion = (
-        db.query(Champion)
-        .filter(Champion.riot_id == champion_riot_id)
-        .first()
-    )
-    
-    sorted_traits = get_sorted_traits(champion.traits)
-
-    if not champion:
-        db.close()
-        return None
-    
-    readable_ability = render_champion_description(
-        champion.ability_desc, 
-        champion.ability_variables,
-        champion.name
-    )
-
-    # total games for this champion in patch
-    total_games = (
-        db.query(func.count())
-        .filter(
-            ChampionItemStats.champion_id == champion.id,
-            ChampionItemStats.normalized_patch == CURRENT_PATCH,
+    with get_db() as db:
+        champion = (
+            db.query(Champion)
+            .filter(Champion.riot_id == champion_riot_id)
+            .first()
         )
-        .scalar()
-    )
 
-    stats = (
-        db.query(
-            ChampionItemStats.item_id,
-            func.count().label("count"),
-            func.avg(ChampionItemStats.placement).label("avg_placement"),
+        if not champion:
+            return None
+
+        sorted_traits = get_sorted_traits(champion.traits)
+
+        readable_ability = render_champion_description(
+            champion.ability_desc,
+            champion.ability_variables,
+            champion.name
         )
-        .filter(
-            ChampionItemStats.champion_id == champion.id,
-            ChampionItemStats.normalized_patch == CURRENT_PATCH,
-        )
-        .group_by(ChampionItemStats.item_id)
-        .all()
-    )
 
-    artifacts = {}
-    radiants = {}
-
-    for item_id, count, avg in stats:
-        item = db.query(Item).filter(Item.id == item_id).first()
-        if not item:
-            continue
-
-        # VALID CHECK
-        valid_pair = db.query(
-            db.query(ChampionItemValidPairs)
+        total_games = (
+            db.query(func.count())
             .filter(
-                ChampionItemValidPairs.champion_id == champion.id,
-                ChampionItemValidPairs.item_id == item.id,
+                ChampionItemStats.champion_id == champion.id,
+                ChampionItemStats.normalized_patch == CURRENT_PATCH,
             )
-            .exists()
-        ).scalar()
+            .scalar()
+        )
 
-        # LOW SAMPLE CHECK
-        percentage = count / total_games if total_games else 0
-        low_sample = percentage < 0.001
+        stats = (
+            db.query(
+                ChampionItemStats.item_id,
+                func.count().label("count"),
+                func.avg(ChampionItemStats.placement).label("avg_placement"),
+            )
+            .filter(
+                ChampionItemStats.champion_id == champion.id,
+                ChampionItemStats.normalized_patch == CURRENT_PATCH,
+            )
+            .group_by(ChampionItemStats.item_id)
+            .all()
+        )
 
-        data = {
-            "name": item.name,
-            "count": count,
-            "average_placement": float(avg),
-            "type": item.type,
-            "valid": bool(valid_pair),
-            "low_sample": low_sample,
+        item_ids = [row.item_id for row in stats]
+
+        item_map = {
+            i.id: i for i in
+            db.query(Item).filter(Item.id.in_(item_ids)).all()
         }
 
-        if item.type == "artifact":
-            artifacts[item.riot_id] = data
-        elif item.type == "radiant":
-            radiants[item.riot_id] = data
+        valid_item_ids = {
+            row.item_id for row in
+            db.query(ChampionItemValidPairs.item_id)
+            .filter(ChampionItemValidPairs.champion_id == champion.id)
+            .all()
+        }
 
-    db.close()
+        artifacts = {}
+        radiants = {}
 
-    artifacts = dict(
-        sorted(artifacts.items(), key=lambda x: x[1]["average_placement"])
-    )
-    radiants = dict(
-        sorted(radiants.items(), key=lambda x: x[1]["average_placement"])
-    )
+        for item_id, count, avg in stats:
+            item = item_map.get(item_id)
+            if not item:
+                continue
+
+            percentage = count / total_games if total_games else 0
+
+            data = {
+                "name": item.name,
+                "count": count,
+                "average_placement": float(avg),
+                "type": item.type,
+                "valid": item_id in valid_item_ids,
+                "low_sample": percentage < 0.001,
+            }
+
+            if item.type == "artifact":
+                artifacts[item.riot_id] = data
+            elif item.type == "radiant":
+                radiants[item.riot_id] = data
+
+    artifacts = dict(sorted(artifacts.items(), key=lambda x: x[1]["average_placement"]))
+    radiants = dict(sorted(radiants.items(), key=lambda x: x[1]["average_placement"]))
 
     return {
         "champion": champion.riot_id,
@@ -173,176 +354,81 @@ def get_champion_special_items(champion_riot_id: str):
         "radiants": radiants,
     }
 
-# ================================
-# ARTIFACT PAGE
-# ================================
-
-def get_artifact_stats_by_id(artifact_riot_id: str):
-    db = SessionLocal()
-
-    item = (
-        db.query(Item)
-        .filter(Item.riot_id == artifact_riot_id, Item.type == "artifact")
-        .first()
-    )
-
-    if not item:
-        db.close()
-        return None
-    
-    readable_desc = render_item_data(item.description, item.effects)
-    
-    # total games for this item
-    total_games = (
-        db.query(func.count())
-        .filter(
-            ChampionItemStats.item_id == item.id,
-            ChampionItemStats.normalized_patch == CURRENT_PATCH,
+def get_item_stats_by_id(item_riot_id: str, item_type: str):
+    with get_db() as db:
+        item = (
+            db.query(Item)
+            .filter(Item.riot_id == item_riot_id, Item.type == item_type)
+            .first()
         )
-        .scalar()
-    )    
 
-    stats = (
-        db.query(
-            ChampionItemStats.champion_id,
-            func.count().label("count"),
-            func.avg(ChampionItemStats.placement).label("avg_placement"),
-        )
-        .filter(
-            ChampionItemStats.item_id == item.id,
-            ChampionItemStats.normalized_patch == CURRENT_PATCH,
-        )
-        .group_by(ChampionItemStats.champion_id)
-        .all()
-    )
+        if not item:
+            return None
 
-    result = {}
+        readable_desc = render_item_data(item.description, item.effects)
 
-    for champion_id, count, avg in stats:
-        champion = db.query(Champion).filter(Champion.id == champion_id).first()
-        if not champion:
-            continue
-
-        
-
-        valid_pair = db.query(
-            db.query(ChampionItemValidPairs)
+        total_games = (
+            db.query(func.count())
             .filter(
-                ChampionItemValidPairs.champion_id == champion.id,
-                ChampionItemValidPairs.item_id == item.id,
+                ChampionItemStats.item_id == item.id,
+                ChampionItemStats.normalized_patch == CURRENT_PATCH,
             )
-            .exists()
-        ).scalar()
+            .scalar()
+        )
 
-        percentage = count / total_games if total_games else 0
-        low_sample = percentage < 0.001       
+        stats = (
+            db.query(
+                ChampionItemStats.champion_id,
+                func.count().label("count"),
+                func.avg(ChampionItemStats.placement).label("avg_placement"),
+            )
+            .filter(
+                ChampionItemStats.item_id == item.id,
+                ChampionItemStats.normalized_patch == CURRENT_PATCH,
+            )
+            .group_by(ChampionItemStats.champion_id)
+            .all()
+        )
 
-        result[champion.riot_id] = {
-            "name": champion.name,
-            "count": count,
-            "average_placement": float(avg),
-            "valid": bool(valid_pair),
-            "low_sample": low_sample,
+        champion_ids = [row.champion_id for row in stats]
+
+        champion_map = {
+            c.id: c for c in
+            db.query(Champion).filter(Champion.id.in_(champion_ids)).all()
         }
 
-    db.close()
-
-    sorted_result = dict(
-        sorted(result.items(), key=lambda x: x[1]["average_placement"])
-    )
-
-    return {
-        "id": artifact_riot_id,
-        "name": item.name,
-        "type": "artifact",
-        "description": readable_desc, # NEW
-        "stats": item.effects,        # NEW (for stat icons in UI)
-        "champions": sorted_result,
-    }
-
-
-# ================================
-# RADIANT PAGE
-# ================================
-
-def get_radiant_stats_by_id(radiant_riot_id: str):
-    db = SessionLocal()
-
-    item = (
-        db.query(Item)
-        .filter(Item.riot_id == radiant_riot_id, Item.type == "radiant")
-        .first()
-    )
-
-    if not item:
-        db.close()
-        return None
-        # total games for this item
-
-    readable_desc = render_item_data(item.description, item.effects)
-
-    total_games = (
-        db.query(func.count())
-        .filter(
-            ChampionItemStats.item_id == item.id,
-            ChampionItemStats.normalized_patch == CURRENT_PATCH,
-        )
-        .scalar()
-    )  
-
-    stats = (
-        db.query(
-            ChampionItemStats.champion_id,
-            func.count().label("count"),
-            func.avg(ChampionItemStats.placement).label("avg_placement"),
-        )
-        .filter(
-            ChampionItemStats.item_id == item.id,
-            ChampionItemStats.normalized_patch == CURRENT_PATCH,
-        )
-        .group_by(ChampionItemStats.champion_id)
-        .all()
-    )
-
-    result = {}
-
-    for champion_id, count, avg in stats:
-        champion = db.query(Champion).filter(Champion.id == champion_id).first()
-        if not champion:
-            continue
-
-        valid_pair = db.query(
-            db.query(ChampionItemValidPairs)
-            .filter(
-                ChampionItemValidPairs.champion_id == champion.id,
-                ChampionItemValidPairs.item_id == item.id,
-            )
-            .exists()
-        ).scalar()
-
-        percentage = count / total_games if total_games else 0
-        low_sample = percentage < 0.001 
-
-        result[champion.riot_id] = {
-            "name": champion.name,
-            "count": count,
-            "average_placement": float(avg),
-            "valid": bool(valid_pair),
-            "low_sample": low_sample,
+        valid_champion_ids = {
+            row.champion_id for row in
+            db.query(ChampionItemValidPairs.champion_id)
+            .filter(ChampionItemValidPairs.item_id == item.id)
+            .all()
         }
 
-    db.close()
+        result = {}
 
-    sorted_result = dict(
-        sorted(result.items(), key=lambda x: x[1]["average_placement"])
-    )
+        for champion_id, count, avg in stats:
+            champion = champion_map.get(champion_id)
+            if not champion:
+                continue
+
+            percentage = count / total_games if total_games else 0
+
+            result[champion.riot_id] = {
+                "name": champion.name,
+                "count": count,
+                "average_placement": float(avg),
+                "valid": champion_id in valid_champion_ids,
+                "low_sample": percentage < 0.001,
+            }
+
+    sorted_result = dict(sorted(result.items(), key=lambda x: x[1]["average_placement"]))
 
     return {
-        "id": radiant_riot_id,
+        "id": item_riot_id,
         "name": item.name,
-        "type": "radiant",
-        "description": readable_desc, # NEW
-        "stats": item.effects,        # NEW (for stat icons in UI)
+        "type": item_type,
+        "description": readable_desc,
+        "stats": item.effects,
         "champions": sorted_result,
     }
 
@@ -350,7 +436,6 @@ def render_champion_description(desc, data_block, champion_name):
     if not desc:
         return ""
 
-    # 1. CLEANING
     # 1. CLEANING
     desc = re.sub(r'<[^>]*>', '', desc)
     desc = desc.replace('&nbsp;', ' ')
@@ -370,219 +455,6 @@ def render_champion_description(desc, data_block, champion_name):
 
     # 3. MAPPING STRUCTURES
     # Values based on 1-Star stats
-    CHAMP_BASE_STATS = {
-        "ashe": {"hp": None, "ad": 58},
-        "dr. mundo": {"hp": 900, "ad": None},
-        "jinx": {"hp": None, "ad": 50},
-        "nasus": {"hp": 1500, "ad": None},
-        "nautilus": {"hp": 900, "ad": None},
-        "rift herald": {"hp": 1100, "ad": None},
-        "ryze": {"hp": 1000, "ad": None},
-        "sion": {"hp": 650, "ad": None},
-        "swain": {"hp": 1200, "ad": None},
-        "volibear": {"hp": 1200, "ad": None},
-        "wukong": {"hp": 1050, "ad": None},
-        "yasuo": {"hp": None, "ad": 45},
-        "yorick": {"hp": 850, "ad": None},
-
-    }
-    SPECIFIC_EXCEPTIONS = {
-        "aatrox": {
-            "firstcastmodifieddamage": (["addamage", "apdamage"], None),
-            "secondcastmodifieddamage": (["addamage", "apdamage"], "secondcastpercentdamage"),
-            "thirdcastmodifieddamage": (["addamage", "apdamage"], "thirdcastpercentdamage"),
-        },
-        "annie": { 
-            "modifieddamage": (["damage"], None),
-            "modifiedsecondarydamage": (["singletargetdamage"], None)
-        },
-        "ashe": {
-            "smallarrowdamagefinal": (["smallarrowdamage*base_ad"], None)
-        },
-        "aphelios": {
-            "modifieddamage": (["severumaddamage"], None)
-        },
-        "azir": {
-            "modifiedsecondarydamage": (["maxsummonsdamage"], None)
-        },
-        "baron nashor": {
-            "modifiedaciddamage": (["addamage", "apdamage"], "acidpercentdamage"),
-        },
-        "bel'veth": {
-            "modifiedattackspeed": (["attackspeedontransform*100"], None),
-        },
-        "braum": {
-            "modifieddurability": (["damagereduction"], None),
-            "modifieddamage": (["apdamage", "armordamage*60"], None)
-        },
-        "briar": {
-            "modifiedattackspeed": (["decayingattackspeed*100"], None),
-        },
-        "blitzcrank": {
-            "modifieddamage": (["mrdamageratio*40"], None),
-        },
-        "darius": {
-            "modifiedsecondarydamage": (["physicaldamagepersecond"], None),
-        },
-        "dr. mundo": {
-            "totalhealing": (["percenthealthhealingpersecond*base_hp", "aphealpersecond"], None),
-            "totaldamage": (["percentmaximumhealthdamage*base_hp", "addamage"], None)
-        },
-        "fizz": {
-            "modifiedattackdamage": (["damageonhit"], None),
-        },
-        "galio": {
-            "bonuspassivedamage": (["passivemrratio*65"], None),
-            "modifiedactivedamage": (["activeardamage*65", "activemrdamage*65"], None)
-        },
-        "gwen": {
-            "modifiedcastsniptimes": (["snipcount"], None),
-            "modifieddamage": (["damage"], None),
-            "modifiedsecondarydamage": (["secondarymagicdamage"], None),
-        },
-        "jarvan iv": {
-            "modifiedattackspeed": (["attackspeed*100"], None),
-        },
-        "jinx": {
-            "totaldamage": (["addamage","apdamage"], None) ,
-        },
-        "kalista": {
-            "totalnumberofspears": (["basespears"], None),
-        },
-        "kindred": {
-            "modifiedhealpercentage": (["healpercentage*100"], None),
-        },
-        "leona": {
-            "modifieddamagereduction": (["flatdr"], None),
-        },
-        "lux": {
-            "modifieddamage_q": (["qdamage"], None),
-        },
-        "mel": {
-            "modifiedsecondarydamage": (["targetdamage"], None),
-            "tftunitproperty.:tft16_mel_manaspent": (["0"], None),
-        },
-        "milio": {
-            "modifiedaoedamage": (["magicdamageaoe"], None),
-        },
-        "miss fortune": {
-            "modifiedsecondarydamage": (["addamage", "apdamage"], "percentdamageofsecondarywaves"),
-        },
-        "nautilus": {
-            "modifieddamage": (["mrdamageratio*50"], None),
-            "modifiedshield": (["apshield","percenthealthshield*base_hp"], None),
-        },
-        "nasus": {
-            "modifieddamagepersecond": (["percenthealthdamagepersecond*base_hp"], None),
-        },
-        "orianna": {
-            "modifiedsecondarydamage": (["targetdamage"], None),
-        },
-        "rek'sai": {
-            "modifiedsecondarydamage": (["spellattackdamage"], None),
-        },
-        "renekton": {
-            "modifieddashdamage": (["dashaddamage"], None),
-            "modifiedslashdamage": (["slashaddamage", "slashapdamage"], None),
-        },
-        "rift herald": {
-            "modifieddurability": (["bonusdurability*100"], None),
-            "modifieddamage": (["apdamage", "percenthealthdamage*base_hp"], None),
-        },
-        "rumble": {
-            "modifiedshield": (["apshield"], None),
-            # PercentArmorDamage * Base Armor (60)
-            "totaldamage": (["percentarmordamage*40"], None)
-        },
-        "ryze": {
-            "modifiedshadowislesbonusdamage": (["shadowislesbasepercentage*100"], None),
-            "modifieddemaciaexecutethreshold": (["demaciaexecutethreshold*100"], None),
-            "modifiedfreljordtruedamage": (["freljordtruedamagepercenthealth*base_hp"], None),
-        },
-        "sett": {
-            "modifiedpercentoftargetmaxhealth": (["percentoftargetmaxhealth*100"], None),
-        },
-        "shyvana": {
-            "modifieddivebombdamage": (["divebombaddamage"], None),
-            "modifiedfiredamagepersecond":(["firedamagetaddamagepersecond", "firedamageappersecond"], None)
-        },
-        "singed": {
-            "modifiedmanapersec": (["manapercentas*0.7"], None),
-        },
-        "sion": {
-            "modifiedshield": (["apshield", "percenthealthshield*base_hp"], None),
-            "modifieddamage": (["damagepercenthealth*base_hp"], None),
-        },
-        "skarner": {
-            "modifieddamage": (["damagepercentarmor*70"], None),
-        },
-        "swain": {
-            "modifiedhanddamage": (["activedamage"], None),
-            "totalhealing": (["aphealing", "percentmaximumhealthhealing*base_hp"], None),
-        },
-        "t-hex": {
-            "modifiedlaserdamagepersecond": (["apdamage","addamage"], None),
-            "modifiedmissiledamage": (["apdamage","addamage"], "missiledamagemult"),
-        },
-        "thresh": {
-            "modifiedhealthdrain": (["appassivedamage"], None),
-        },
-        "tryndamere": {
-            "modifieddurability": (["dr*100"], None),
-        },
-        "vi": {
-            "modifiedsecondarydamage": (["secondaryaddamage"], None),
-        },
-        "viego": {
-            "modifiedattackspeed": (["baseattackspeed"], None),
-        },
-        "volibear": {
-            "modifiedbitedamage": (["bitedamagebase", "bitedamagehealth*base_hp"], None),
-            "modifiedslamdamage": (["bitedamagebase", "bitedamagehealth*base_hp"], "slamdamagemultiplier"),
-            "modifiedboltdamage": (["stormbringerboltbase", "stormbringerbolthealth*base_hp"], None),
-        },
-        "warwick": {
-            "modifiedtakedownattackspeed": (["allyattackspeed*100"], None),
-        },
-        "wukong": {
-            "modifieddefenses": (["resists"], None),
-            "modifiedclonehealth": (["summonmaxhealthpercent*base_hp"], None),
-        },
-        "yasuo": {
-            "yasuoadpercent*100": (["base_ad"], None),
-        },
-        "yone": {
-            "modifiedpertargetdamage": (["pertargetaddamage", "pertargetapdamage"], None),
-            "modifiedstrikedamage": (["strikeaddamage", "strikeapdamage"], None),
-        },
-        "yunara": {
-            "modifiedattackspeed": (["attackspeed*100"], None),
-        },
-        "yorick": {
-            "modifiedheal": (["apheal"], None),
-            "modifieddamage": (["flatdamage","percenthealthdamage*base_hp"], None),
-        },
-        "zaahen": {
-            "modifiedbigaoedamage": (["apdamage","addamage"], "bigaoedamagemultiplier"),
-            "modifieddamage": (["apdamage","addamage"], "aoedamagemultiplier"),
-        },
-        "ziggs": {
-            "modifiedbasicattackdamage": (["bapercentap"], None),
-            "modifiedmindamage": (["minaoedamage"], None),
-            "modifiedmaxdamage": (["maxaoedamage"], None),
-        },
-        "zilean": {
-            "modifieddamage": (["magicdamage"], None),
-            "modifiedsecondarydamage": (["explosiondamage"], None),
-        },
-
-
-    }
-
-    GLOBAL_EXCEPTIONS = {
-        "totaldamage": (["addamage", "apdamage"], None),
-
-    }
 
     current_champ_map = SPECIFIC_EXCEPTIONS.get(champ_key, {})
 
@@ -650,7 +522,6 @@ def render_champion_description(desc, data_block, champion_name):
                     val_list = [x if x is not None else 0 for x in val_raw]
                     val = val_list[i] if i < len(val_list) else val_list[0]
                     
-                    DECREASING_STATS = ["mana", "attacks", "requirement", "cooldown"]
                     is_decreasing_stat = any(word in token_lower for word in DECREASING_STATS)
                     
                     if i == 3 and not is_decreasing_stat:
