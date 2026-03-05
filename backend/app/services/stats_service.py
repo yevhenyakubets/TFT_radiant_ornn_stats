@@ -49,9 +49,6 @@ SPECIFIC_EXCEPTIONS = {
     "ashe": {
         "smallarrowdamagefinal": (["smallarrowdamage*base_ad"], None)
     },
-    "aphelios": {
-        "modifieddamage": (["severumaddamage"], None)
-    },
     "azir": {
         "modifiedsecondarydamage": (["maxsummonsdamage"], None)
     },
@@ -93,14 +90,8 @@ SPECIFIC_EXCEPTIONS = {
     "jarvan iv": {
         "modifiedattackspeed": (["attackspeed*100"], None),
     },
-    "jinx": {
-        "totaldamage": (["addamage","apdamage"], None) ,
-    },
     "kalista": {
         "totalnumberofspears": (["basespears"], None),
-    },
-    "kindred": {
-        "modifiedhealpercentage": (["healpercentage*100"], None),
     },
     "leona": {
         "modifieddamagereduction": (["flatdr"], None),
