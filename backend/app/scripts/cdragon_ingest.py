@@ -6,58 +6,69 @@ from app.models.champion import Champion
 from app.models.items import Item
 from app.models.traits import Trait
 
-# URL for the en_us convenience file
 CDRAGON_URL = "https://raw.communitydragon.org/latest/cdragon/tft/en_us.json"
 
 def sync_data():
-    print("DEBUG: Entering sync_data function") # Add this
     db: Session = SessionLocal()
-    print("Fetching data from Community Dragon...")
+    print("Fetching latest patch data from Community Dragon...")
     response = requests.get(CDRAGON_URL)
     data = response.json()
 
-    # 1. Sync Items (Radiants and Artifacts)
-    print("Syncing Items...")
+    # 1. Sync Items
+    print("\n--- Syncing Items ---")
     for item_data in data.get("items", []):
         riot_id = item_data.get("apiName")
-        
-        # Check if this item exists in your 'items' table
         db_item = db.query(Item).filter(Item.riot_id == riot_id).first()
         
         if db_item:
-            db_item.description = item_data.get("desc")
-            db_item.effects = item_data.get("effects")
-            print(f"  Updated Item: {db_item.name}")
+            new_desc = item_data.get("desc")
+            new_effects = item_data.get("effects")
 
-    # 2. Sync Champions (Set 16 Units)
-    print("Syncing Champions...")
-    for unit_data in data.get("sets", {}).get("16", {}).get("champions", []):
+            # Only update if the description or effects have changed
+            if db_item.description != new_desc or db_item.effects != new_effects:
+                db_item.description = new_desc
+                db_item.effects = new_effects
+                print(f"  [UPDATED] {db_item.name}")
+            else:
+                pass # No change detected
+
+    # 2. Sync Champions
+    print("\n--- Syncing Champions ---")
+    # Accessing Set 16 Champions
+    champions_list = data.get("sets", {}).get("16", {}).get("champions", [])
+    
+    for unit_data in champions_list:
         riot_id = unit_data.get("apiName")
-        
         db_char = db.query(Champion).filter(Champion.riot_id == riot_id).first()
         
         if db_char:
-            # TFT Abilities are nested under 'ability'
-            # Inside your champion sync loop in cdragon_champions_ingest.py
             ability = unit_data.get("ability", {})
-            db_char.ability_name = ability.get("name")
-            db_char.ability_desc = ability.get("desc")
-
-            # MERGE LOGIC: Capture variables AND calculations
-            raw_vars = ability.get("variables", [])
-            raw_calcs = ability.get("calculations", {})
-
-            # We convert calculations into a format the parser can read
-            # Calculations usually look like: {"scaleAP": {"asPercent": True, "value": [0, 50, 75, 100]}}
-            merged_data = {
-                "vars": raw_vars,
-                "calculations": raw_calcs
+            new_ability_name = ability.get("name")
+            new_ability_desc = ability.get("desc")
+            
+            # Prepare the new merged data for comparison
+            new_merged_data = {
+                "vars": ability.get("variables", []),
+                "calculations": ability.get("calculations", {})
             }
 
-            db_char.ability_variables = merged_data
+            # Comparison Check
+            # Note: Python dictionaries/lists comparison works deep-level here
+            has_changes = (
+                db_char.ability_name != new_ability_name or
+                db_char.ability_desc != new_ability_desc or
+                db_char.ability_variables != new_merged_data
+            )
 
-            print(f"  Updated Champion: {db_char.name}")
+            if has_changes:
+                db_char.ability_name = new_ability_name
+                db_char.ability_desc = new_ability_desc
+                db_char.ability_variables = new_merged_data
+                print(f"  [UPDATED] {db_char.name}")
+            else:
+                pass # Already up to date
 
+    print("\nFinalizing changes...")
     db.commit()
     db.close()
     print("Sync Complete!")
