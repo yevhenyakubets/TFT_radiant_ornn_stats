@@ -454,6 +454,13 @@ def render_champion_description(desc, data_block, champion_name):
         return ""
 
     # 1. CLEANING
+    # Replace tags + the word that follows them to avoid duplication
+    desc = re.sub(r'<spellPassive>\s*Passive\s*:\s*</spellPassive>\s*', '\nPassive: ', desc, flags=re.IGNORECASE)
+    desc = re.sub(r'<spellActive>\s*Active\s*:\s*</spellActive>\s*', '\nActive: ', desc, flags=re.IGNORECASE)
+    # Fallback in case some champions don't have the word inside the tag
+    desc = re.sub(r'<spellPassive>|</spellPassive>', '', desc, flags=re.IGNORECASE)
+    desc = re.sub(r'<spellActive>|</spellActive>', '', desc, flags=re.IGNORECASE)
+    desc = re.sub(r'<br\s*/?>', '\n', desc, flags=re.IGNORECASE)
     desc = re.sub(r'<[^>]*>', '', desc)
     desc = desc.replace('&nbsp;', ' ')
     desc = re.sub(r'%i:(?!scale)[^%]+%', '', desc)
@@ -644,7 +651,7 @@ def render_champion_description(desc, data_block, champion_name):
             found_keywords.append(text)
 
     # Cleanup extra whitespace before adding keyword block
-    final_desc = re.sub(r'\s+', ' ', final_desc).strip()
+    final_desc = re.sub(r'[^\S\n]+', ' ', final_desc).strip()
 
     # Append keyword block at the bottom
     if found_keywords:

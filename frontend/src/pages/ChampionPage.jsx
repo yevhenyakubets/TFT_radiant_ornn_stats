@@ -27,17 +27,18 @@ const ChampionAbility = ({ champion }) => {
     return mapping[s] || stat;
   };
 
-  const formatDescription = (text) => {
-    const parts = text.split("<keyword>");
-    const mainBody = parts[0];
-    const keywords = parts.slice(1);
-    const statRegex = /([\d./%]+)\s*\(([^)]+)\)/g;
+const formatDescription = (text) => {
+  const parts = text.split("<keyword>");
+  const mainBody = parts[0];
+  const keywords = parts.slice(1);
+  const statRegex = /([\d./%]+)\s*\(([^)]+)\)/g;
 
-    const renderedBody = mainBody.split(statRegex).map((part, i, arr) => {
+  const renderLine = (line, lineIdx) => {
+    return line.split(statRegex).map((part, i, arr) => {
       if (i % 3 === 1) {
-        const contextText = arr[i + 2] || ""; 
+        const contextText = arr[i + 2] || "";
         return (
-          <span key={`val-${i}`} className="ability-stat-value" style={{ color: getDamageColor(contextText) }}>
+          <span key={`val-${lineIdx}-${i}`} className="ability-stat-value" style={{ color: getDamageColor(contextText) }}>
             {part}
           </span>
         );
@@ -45,15 +46,13 @@ const ChampionAbility = ({ champion }) => {
       if (i % 3 === 2) {
         const individualStats = part.split(',').map(s => s.trim());
         return (
-          <span key={`stats-${i}`} className="ability-stat-icons">
+          <span key={`stats-${lineIdx}-${i}`} className="ability-stat-icons">
             {individualStats.map((stat, idx) => (
               <img
                 key={idx}
-                // Wrap the filename in encodeURIComponent
                 src={`/assets/stats/${encodeURIComponent(getStatFileName(stat))}.png`}
                 alt={stat}
                 className="description-stat-icon"
-                // This helps catch the "??? NaN" cases so they just don't show up
                 onError={(e) => (e.target.style.display = "none")}
               />
             ))}
@@ -62,24 +61,31 @@ const ChampionAbility = ({ champion }) => {
       }
       return part;
     });
-
-    return (
-      <>
-        <div className="main-ability-text">
-          {renderedBody}
-        </div>
-        {keywords.length > 0 && (
-          <div className="keywords-container">
-            {keywords.map((kw, idx) => (
-              <p key={idx} className="keyword-item">
-                • {kw.replace("</keyword>", "").trim()}
-              </p>
-            ))}
-          </div>
-        )}
-      </>
-    );
   };
+
+  const lines = mainBody.split('\n').filter(line => line.trim() !== '');
+
+  return (
+    <>
+      <div className="main-ability-text">
+        {lines.map((line, lineIdx) => (
+          <p key={lineIdx} className="ability-line">
+            {renderLine(line, lineIdx)}
+          </p>
+        ))}
+      </div>
+      {keywords.length > 0 && (
+        <div className="keywords-container">
+          {keywords.map((kw, idx) => (
+            <p key={idx} className="keyword-item">
+              • {kw.replace("</keyword>", "").trim()}
+            </p>
+          ))}
+        </div>
+      )}
+    </>
+  );
+};
 
   return (
     <div className="ability-container">
