@@ -7,15 +7,18 @@ from app.services.patch_service import get_current_patch, PATCH_SCHEDULE, get_pa
 
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
+from pathlib import Path
 
 from app.database import SessionLocal
 from app.models.match import Match
 from app.models.champion import Champion 
 from app.models.traits import Trait
 
-load_dotenv()
+load_dotenv(dotenv_path=Path(__file__).resolve().parents[3] / ".env", override=True)
 
 API_KEY = os.getenv("RIOT_API_KEY")
+
+MAX_INSERTS_PER_RUN = 500
 
 PLATFORM_URL = "https://euw1.api.riotgames.com"
 REGIONAL_URL = "https://europe.api.riotgames.com"
@@ -156,6 +159,7 @@ def run():
 
     print(f"Targeting Patch: {current_patch_name} (Starting {patch_start_dt})")
 
+    total_inserted = 0
     existing_match_ids = get_existing_match_ids(db)
     args = parse_args()
     
@@ -187,10 +191,16 @@ def run():
 
             inserted = insert_match(db, match_id, match_data)
             if inserted:
-                print(f"Inserted {match_id} (Patch {match_patch})")
+                total_inserted += 1
+                print(f"Inserted {match_id} (Patch {match_patch}) [{total_inserted}/{MAX_INSERTS_PER_RUN}]")
                 existing_match_ids.add(match_id)
 
-            time.sleep(0.05) 
+                if total_inserted >= MAX_INSERTS_PER_RUN:
+                    print(f"Reached insert cap of {MAX_INSERTS_PER_RUN}. Stopping.")
+                    db.close()
+                    return
+
+            time.sleep(0.05)
 
     db.close()
 
