@@ -456,10 +456,6 @@ def render_champion_description(desc, data_block, champion_name):
     # 1. CLEANING
     desc = re.sub(r'<[^>]*>', '', desc)
     desc = desc.replace('&nbsp;', ' ')
-
-# FIX: Only delete icons that ARE NOT "scale" icons
-# This uses a "negative lookahead" to say: 
-# "Find %i: but only if it is NOT followed by 'scale'"
     desc = re.sub(r'%i:(?!scale)[^%]+%', '', desc)
 
     # 2. DATA PREP
@@ -470,15 +466,24 @@ def render_champion_description(desc, data_block, champion_name):
         
     champ_key = str(champion_name).lower().strip()
 
-    # 3. MAPPING STRUCTURES
-    # Values based on 1-Star stats
+    PERCENT_TOKENS = [
+    "attackspeed", "durability", "omnivamp", "crit",
+    "modifiedattackspeed", "modifiedhealpercentage",
+    "modifiedpercentoftargetmaxhealth", "modifieddurability",
+    "modifieddamagereduction",
+    ]
 
-    def format_star_values(vals):
+    # 3. HELPER FUNCTIONS
+    def needs_percent_suffix(token_lower):
+        return any(kw in token_lower for kw in PERCENT_TOKENS)
+
+    def format_star_values(vals, suffix=""):
         if not vals: return "???"
-        if all(x == vals[0] for x in vals): return str(vals[0])
-        if len(vals) >= 3 and vals[2] == 0 and vals[0] != 0:
-            return f"{vals[0]}/{vals[1]}"
-        return "/".join(map(str, [str(v).rstrip('0').rstrip('.') if '.' in str(v) else v for v in vals]))
+        str_vals = [str(v) for v in vals]
+        if all(v == str_vals[0] for v in str_vals): return f"{str_vals[0]}{suffix}"
+        if len(vals) >= 3 and str(vals[2]) in ("0", "0%") and str(vals[0]) not in ("0", "0%"):
+            return f"{vals[0]}{suffix}/{vals[1]}{suffix}"
+        return "/".join(f"{v}{suffix}" for v in str_vals)
 
     # 4. ICON REPLACEMENT
     icon_map = {'%i:scaleap%': 'AP', '%i:scalead%': 'AD', '%i:scaleas%': 'AS', 
@@ -512,12 +517,18 @@ def render_champion_description(desc, data_block, champion_name):
             2: {"hp": round((base_info.get("hp") or 0) * 1.8), "ad": round((base_info.get("ad") or 0) * 1.5)},
             3: {"hp": round((base_info.get("hp") or 0) * 3.24), "ad": round((base_info.get("ad") or 0) * 2.25)}
         }
+
+        def append_percent(value):
+            if '*' in raw_token and needs_percent_suffix(token_lower):
+                return f"{value}%"
+            return f"{value}%" if needs_percent_suffix(token_lower) else value
         
         rule = SPECIFIC_EXCEPTIONS.get(champ_key, {}).get(token_lower) or GLOBAL_EXCEPTIONS.get(token_lower)
 
         if rule:
             sum_keys, mult_key = rule
             star_values = []
+            suffix = "%" if needs_percent_suffix(token_lower) else ""
             for i in range(1, 4):
                 base_sum = 0
                 for key in sum_keys:
@@ -555,13 +566,15 @@ def render_champion_description(desc, data_block, champion_name):
                 is_time = any(word in token_lower for word in ["seconds", "duration"])
                 is_percent = any(word in token_lower for word in ["percent", "ratio", "durability"])
                 if not is_time and is_percent and 0 < final < 2: final *= 100
-                star_values.append(round(final, 2) if is_time else round(final))
-            return format_star_values(star_values)
+                formatted = round(final, 2) if is_time else round(final)
+                star_values.append(formatted)  # always raw number now
+            return format_star_values(star_values, suffix)
 
-        # STANDARD AGGREGATION FALLBACK
+        # FUZZY RESOLUTION
         fuzzy_matches = _resolve_token_fuzzy(token_lower, stats)
         if fuzzy_matches:
             star_values = []
+            suffix = "%" if needs_percent_suffix(token_lower) else ""
             for i in range(1, 4):
                 current_sum = 0
                 for v in fuzzy_matches.values():
@@ -583,8 +596,9 @@ def render_champion_description(desc, data_block, champion_name):
                 is_percent = any(w in token_lower for w in ["percent", "ratio", "durability"])
                 if not is_time and is_percent and 0 < current_sum < 2:
                     current_sum *= 100
-                star_values.append(round(current_sum, 2) if is_time else round(current_sum))
-            return format_star_values(star_values)
+                formatted = round(current_sum, 2) if is_time else round(current_sum)
+                star_values.append(formatted)
+            return format_star_values(star_values, suffix)
 
         # STANDARD AGGREGATION FALLBACK
         base_name = token_lower.replace('modified', '').replace('total', '')
@@ -593,6 +607,7 @@ def render_champion_description(desc, data_block, champion_name):
         if not relevant_vals: return "???"
 
         star_values = []
+        suffix = "%" if needs_percent_suffix(token_lower) else ""
         for i in range(1, 4):
             current_sum = 0
             for v in relevant_vals:
@@ -604,8 +619,9 @@ def render_champion_description(desc, data_block, champion_name):
             final = current_sum * multiplier
             is_time = any(word in token_lower for word in ["seconds", "duration"])
             if not is_time and ("percent" in token_lower or "ratio" in token_lower) and 0 < final < 2: final *= 100
-            star_values.append(round(final, 2) if is_time else round(final))
-        return format_star_values(star_values)
+            formatted = round(final, 2) if is_time else round(final)
+            star_values.append(formatted)
+        return format_star_values(star_values, suffix)
 
     # 6. KEYWORD HANDLING
     keyword_map = {
@@ -618,12 +634,12 @@ def render_champion_description(desc, data_block, champion_name):
 
     # Execute Token Replacement
     final_desc = re.sub(r'@([^@]+)@', replace_token, desc)
+    final_desc = final_desc.replace('%%', '%')
 
     # Process Keywords
     found_keywords = []
     for key, text in keyword_map.items():
         if key in final_desc:
-            # We remove the placeholder from the main body to keep it clean
             final_desc = final_desc.replace(key, "")
             found_keywords.append(text)
 
