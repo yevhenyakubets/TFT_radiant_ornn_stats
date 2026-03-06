@@ -7,6 +7,7 @@ from app.models.champion import Champion
 from app.models.items import Item
 from app.models.champion_item_stats import ChampionItemStats
 from app.models.champion_item_valid_pairs import ChampionItemValidPairs
+from app.services.patch_service import get_current_patch
 
 @contextmanager
 def get_db():
@@ -16,7 +17,7 @@ def get_db():
     finally:
         db.close()
 
-CURRENT_PATCH = "16.5"
+CURRENT_PATCH = get_current_patch()
 
 DECREASING_STATS = ["attacks", "mana", "requirement", "cooldown"]
 
@@ -661,66 +662,62 @@ def render_champion_description(desc, data_block, champion_name):
     return final_desc
 
 def render_item_data(desc, effects_raw):
-    """
-    Processes item descriptions and effects.
-    Returns a tuple: (rendered_description, cleaned_effects)
-    """
     if not desc:
         return "", effects_raw
 
     # 1. CLEAN HTML AND ITEM RULE TAGS
-    # Removes <tftitemrules>, <TFTTrackerLabel>, etc.
+    desc = re.sub(r'<br\s*/?>', '\n', desc, flags=re.IGNORECASE)
+    
+    # Preserve content of shadow/bonus tags but remove the tags themselves
+    desc = re.sub(r'<TFTShadowItemBonus>(.*?)</TFTShadowItemBonus>', r'\1', desc, flags=re.IGNORECASE|re.DOTALL)
+    
+    # Remove rule tags AND their content (flavor text not needed)
+    desc = re.sub(r'<tftitemrules>.*?</tftitemrules>', '', desc, flags=re.IGNORECASE|re.DOTALL)
+    desc = re.sub(r'<rules>.*?</rules>', '', desc, flags=re.IGNORECASE|re.DOTALL)
+    
+    # Remove remaining tags
     desc = re.sub(r'<[^>]*>', '', desc)
     desc = desc.replace('&nbsp;', ' ')
     
-    # Clean up specific gold icons or currency symbols
-    desc = desc.replace('%i:goldCoins%', '')
+    # Remove all icon tokens entirely (goldCoins, scaleAS, etc.)
+    desc = re.sub(r'%i:[^%]+%', '', desc)
 
     # 2. RENDER DESCRIPTION
     def replace_item_token(match):
         token = match.group(1)
         
-        # Handle Riot's Tracker/Property tokens (e.g., @TFTUnitProperty.item... @)
-        # These are usually 0 for a fresh item description.
+        # Runtime-tracked values — show placeholder
         if "TFTUnitProperty" in token:
-            return "0"
+            return "X (scales with stage)"
 
-        # Handle math multipliers (e.g., @AD*100@)
         multiplier = 1.0
         if '*' in token:
             token, factor = token.split('*')
             multiplier = float(factor)
 
-        # Lookup in effects
         val = effects_raw.get(token)
         
         if val is None:
             return "???"
 
-        # Items use single floats/ints. 
-        # If it's a small decimal (like 0.25 for AD), and the token isn't asking for *100,
-        # we check if it's meant to be a percentage.
         num = float(val)
-        
-        # Most item variables in the JSON are already whole numbers (50, 4, 12)
-        # except for AD/AP/Omnivamp which are often 0.25 (25%)
-        return str(round(num * multiplier))
+        result = num * multiplier
+        # Preserve decimals for small values like 0.5
+        return str(round(result, 2)).rstrip('0').rstrip('.')
 
     rendered_desc = re.sub(r'@([^@]+)@', replace_item_token, desc)
     
     # 3. CLEAN UP EFFECTS FOR FRONTEND
-    # This creates a pretty version of the stats for your UI
     cleaned_effects = {}
     for key, val in effects_raw.items():
-        # Only include stats that are actually numbers
         if isinstance(val, (int, float)):
-            # Convert 0.25 to 25 for stats like AD/Omnivamp
             if 0 < val < 1:
                 cleaned_effects[key] = round(val * 100)
             else:
                 cleaned_effects[key] = round(val)
 
-    # Final whitespace cleanup
-    rendered_desc = re.sub(r'\s+', ' ', rendered_desc).strip()
+    # Final cleanup
+    rendered_desc = re.sub(r'[^\S\n]+', ' ', rendered_desc)
+    rendered_desc = re.sub(r'\n{3,}', '\n\n', rendered_desc).strip()
     
     return rendered_desc
