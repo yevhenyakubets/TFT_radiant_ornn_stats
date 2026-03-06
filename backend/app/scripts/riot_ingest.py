@@ -2,7 +2,7 @@ import os
 import time
 import requests
 import argparse
-from app.utils.patch_utils import get_current_patch, PATCH_SCHEDULE, get_patch_for_timestamp
+from app.services.patch_service import get_current_patch, PATCH_SCHEDULE, get_patch_for_timestamp
 
 
 from dotenv import load_dotenv
