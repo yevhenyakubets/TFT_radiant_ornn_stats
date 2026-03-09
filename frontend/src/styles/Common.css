@@ -66,3 +66,239 @@
     width: 100%;
   }
 }
+
+:root {
+  --magic-damage: #4e98ff;
+  --physical-damage: #ff4e4e;
+  --true-damage: #ffffff;
+  --utility-green: #6bff82;
+  --text-main: #f0e6d2;
+  --panel-bg: #16161a;
+  --border-muted: rgb(4, 53, 74);
+}
+
+/* Page wrapper */
+.page-wrapper {
+  padding: 30px;
+  background-color: var(--bg-dark);
+  min-height: 100vh;
+  color: white;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Filter bar */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background: black;
+  border-radius: 10px;
+  border: 1px solid var(--border-muted);
+}
+
+.filter-bar-title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.filter-options {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #aaa;
+  cursor: pointer;
+}
+
+/* Table shared styles */
+.stats-table-container {
+  background: black;
+  border-radius: 12px;
+  border: 1px solid var(--border-muted);
+  overflow: hidden;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stats-table thead tr {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--border-muted);
+}
+
+.stats-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.stats-table th:hover {
+  color: #ccc;
+}
+
+.champ-column-header {
+  width: 40%;
+}
+
+.sort-arrow-placeholder {
+  display: inline-block;
+  width: 12px;
+}
+
+.stats-table-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+}
+
+.stats-table-row:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.stats-table-row:last-child {
+  border-bottom: none;
+}
+
+.champ-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+}
+
+.table-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid #2a2a2a;
+  flex-shrink: 0;
+}
+
+.table-icon-wrapper {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.low-sample-indicator {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ff4e4e;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: bold;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.champ-name-text {
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.col-count,
+.col-avg {
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  color: #ccc;
+}
+
+.col-avg {
+  color: #ffb93b;
+  font-weight: 600;
+}
+
+.invalid-row {
+  opacity: 0.45;
+}
+
+/* Global states */
+.loading-state {
+  color: white;
+  padding: 40px;
+  text-align: center;
+}
+
+.error-state {
+  color: #ff4e4e;
+  padding: 40px;
+  text-align: center;
+}
+
+/* Item/card grid list (used on index pages) */
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.item-card-link {
+  border: 1px solid var(--border-muted);
+  padding: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  background-color: black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.item-card-link:hover {
+  transform: translateY(-5px);
+  border-color: var(--hover-color);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.image-container {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 12px;
+}
+
+.list-item-icon {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background-color: #000;
+  display: block;
+}
+
+.list-item-name {
+  color: var(--text-main);
+  font-size: 1rem;
+  line-height: 1.2;
+  padding: 4px;
+}
+
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #666;
+  padding: 40px;
+}

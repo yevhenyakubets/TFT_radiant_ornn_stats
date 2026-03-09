@@ -4,14 +4,13 @@
   margin-top: 10px;
   background-color: #0f1014;
   border-radius: 4px;
-  border: 1px solid #2d2d31;
+  border: 1px solid rgb(4, 53, 74);
 }
 
 .stats-table {
   width: 100%;
   border-collapse: collapse;
   color: #f0e6d2;
-  font-family: 'Verdana', sans-serif;
   /* Ensures columns don't shift unexpectedly */
   table-layout: auto; 
 }
@@ -26,11 +25,10 @@
 .stats-table th {
   cursor: pointer;
   font-size: 0.85rem;
-  color: #7a7a8c;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  background-color: #1a1b20;
-  border-bottom: 2px solid #2d2d31;
+  background-color: rgb(4, 53, 74);
+  border-bottom: 2px solid rgb(4, 53, 74);
 }
 
 /* Combined Champion Column Logic */
@@ -68,7 +66,8 @@
 }
 
 .stats-table-row {
-  border-bottom: 1px solid #232429;
+  background-color: rgb(5, 30, 41);
+  border-bottom: 1px solid rgb(4, 53, 74);
   transition: background-color 0.2s;
 }
 

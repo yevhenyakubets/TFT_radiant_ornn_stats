@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Tooltip from "../components/Tooltip"; 
 import React from 'react';
-import "../styles/Table.css";
+import "../styles/common.css";
 import "../styles/ChampionPage.css";
 
 const ChampionAbility = ({ champion }) => {
@@ -27,65 +27,65 @@ const ChampionAbility = ({ champion }) => {
     return mapping[s] || stat;
   };
 
-const formatDescription = (text) => {
-  const parts = text.split("<keyword>");
-  const mainBody = parts[0];
-  const keywords = parts.slice(1);
-  const statRegex = /([\d./%]+)\s*\(([^)]+)\)/g;
+  const formatDescription = (text) => {
+    const parts = text.split("<keyword>");
+    const mainBody = parts[0];
+    const keywords = parts.slice(1);
+    const statRegex = /([\d./%]+)\s*\(([^)]+)\)/g;
 
-  const renderLine = (line, lineIdx) => {
-    return line.split(statRegex).map((part, i, arr) => {
-      if (i % 3 === 1) {
-        const contextText = arr[i + 2] || "";
-        return (
-          <span key={`val-${lineIdx}-${i}`} className="ability-stat-value" style={{ color: getDamageColor(contextText) }}>
-            {part}
-          </span>
-        );
-      }
-      if (i % 3 === 2) {
-        const individualStats = part.split(',').map(s => s.trim());
-        return (
-          <span key={`stats-${lineIdx}-${i}`} className="ability-stat-icons">
-            {individualStats.map((stat, idx) => (
-              <img
-                key={idx}
-                src={`/assets/stats/${encodeURIComponent(getStatFileName(stat))}.png`}
-                alt={stat}
-                className="description-stat-icon"
-                onError={(e) => (e.target.style.display = "none")}
-              />
-            ))}
-          </span>
-        );
-      }
-      return part;
-    });
-  };
+    const renderLine = (line, lineIdx) => {
+      return line.split(statRegex).map((part, i, arr) => {
+        if (i % 3 === 1) {
+          const contextText = arr[i + 2] || "";
+          return (
+            <span key={`val-${lineIdx}-${i}`} className="ability-stat-value" style={{ color: getDamageColor(contextText) }}>
+              {part}
+            </span>
+          );
+        }
+        if (i % 3 === 2) {
+          const individualStats = part.split(',').map(s => s.trim());
+          return (
+            <span key={`stats-${lineIdx}-${i}`} className="ability-stat-icons">
+              {individualStats.map((stat, idx) => (
+                <img
+                  key={idx}
+                  src={`/assets/stats/${encodeURIComponent(getStatFileName(stat))}.png`}
+                  alt={stat}
+                  className="description-stat-icon"
+                  onError={(e) => (e.target.style.display = "none")}
+                />
+              ))}
+            </span>
+          );
+        }
+        return part;
+      });
+    };
 
-  const lines = mainBody.split('\n').filter(line => line.trim() !== '');
-
-  return (
-    <>
-      <div className="main-ability-text">
-        {lines.map((line, lineIdx) => (
-          <p key={lineIdx} className="ability-line">
-            {renderLine(line, lineIdx)}
-          </p>
-        ))}
-      </div>
-      {keywords.length > 0 && (
-        <div className="keywords-container">
-          {keywords.map((kw, idx) => (
-            <p key={idx} className="keyword-item">
-              • {kw.replace("</keyword>", "").trim()}
+    const lines = mainBody.split('\n').filter(line => line.trim() !== '');
+    
+    return (
+      <>
+        <div className="main-ability-text">
+          {lines.map((line, lineIdx) => (
+            <p key={lineIdx} className="ability-line">
+              {renderLine(line, lineIdx)}
             </p>
           ))}
         </div>
-      )}
-    </>
-  );
-};
+        {keywords.length > 0 && (
+          <div className="keywords-container">
+            {keywords.map((kw, idx) => (
+              <p key={idx} className="keyword-item">
+                • {kw.replace("</keyword>", "").trim()}
+              </p>
+            ))}
+          </div>
+        )}
+      </>
+    );
+  };
 
   return (
     <div className="ability-container">
@@ -114,6 +114,8 @@ function ChampionPage() {
   const [showLowSample, setShowLowSample] = useState(false);
   const [sortConfig, setSortConfig] = useState({ key: 'average_placement', direction: 'asc' });
 
+  const buttonColor = "rgb(5, 30, 41)";
+
   const requestSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -123,10 +125,9 @@ function ChampionPage() {
   };
 
   const getSortIcon = (key) => {
-  if (sortConfig.key !== key) return <span className="sort-arrow-placeholder"></span>;
-  return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
+    if (sortConfig.key !== key) return <span className="sort-arrow-placeholder"></span>;
+    return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
   };
-
 
   const getRarityColor = (cost) => {
     switch (cost) {
@@ -166,7 +167,7 @@ function ChampionPage() {
     <div className="champion-page-wrapper">
       
       {/* --- Header Section --- */}
-      <div className="champion-header" style={{ borderLeftColor: rarityColor }}>
+      <div className="champion-header">
         <div className="splash-container">
           <img 
             src={`/assets/champ_splashes/${championId}.png`} 
@@ -191,10 +192,6 @@ function ChampionPage() {
         </div>
 
         <div className="champ-info-main">
-          <h1 className="champ-name-big">{data.name}</h1>
-          <div className="champ-cost-label" style={{ color: rarityColor }}>
-            {data.cost} Cost 
-          </div>
           <ChampionAbility champion={data}/>
         </div>
       </div>
@@ -207,7 +204,7 @@ function ChampionPage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`tab-button ${activeTab === tab ? 'active' : ''}`}
-              style={{ backgroundColor: activeTab === tab ? rarityColor : 'transparent' }}
+              style={{ backgroundColor: activeTab === tab ? buttonColor : 'transparent' }}
             >
               {tab}s
             </button>
@@ -226,7 +223,6 @@ function ChampionPage() {
         </div>
       </div>
 
-      {/* --- Items Grid --- */}
       {/* --- Items Table --- */}
       <div className="stats-table-container">
         <table className="stats-table">
@@ -245,17 +241,15 @@ function ChampionPage() {
           </thead>
           <tbody>
             {itemsToShow.sort((a, b) => {
-                // Applying the same sorting logic as ItemPage
-                const valA = sortConfig.key === 'name' ? a[1].name : a[1][sortConfig.key];
-                const valB = sortConfig.key === 'name' ? b[1].name : b[1][sortConfig.key];
-                return sortConfig.direction === 'asc' ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
+              const valA = sortConfig.key === 'name' ? a[1].name : a[1][sortConfig.key];
+              const valB = sortConfig.key === 'name' ? b[1].name : b[1][sortConfig.key];
+              return sortConfig.direction === 'asc' ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
             }).map(([itemId, info]) => (
               <tr 
                 key={itemId} 
                 className={`stats-table-row ${!info.valid ? 'invalid-row' : ''}`}
                 onClick={() => window.location.href=`/${activeTab === 'artifact' ? 'artifacts' : 'radiant'}/${itemId}`}
               >
-                {/* Combined Icon and Name Cell */}
                 <td className="champ-cell">
                   <div className="table-icon-wrapper">
                     <img 
@@ -268,12 +262,8 @@ function ChampionPage() {
                   </div>
                   <span className="champ-name-text">{info.name}</span>
                 </td>
-
                 <td className="col-count">{info.count.toLocaleString()}</td>
-                
-                <td className="col-avg">
-                  {info.average_placement.toFixed(2)}
-                </td>
+                <td className="col-avg">{info.average_placement.toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
