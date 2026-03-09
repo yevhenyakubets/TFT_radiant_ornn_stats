@@ -16,16 +16,12 @@ from app.models.traits import Trait
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[3] / ".env", override=True)
 
-API_KEY = os.getenv("RIOT_API_KEY")
 
 MAX_INSERTS_PER_RUN = 500
 
 PLATFORM_URL = "https://euw1.api.riotgames.com"
 REGIONAL_URL = "https://europe.api.riotgames.com"
 
-HEADERS = {
-    "X-Riot-Token": API_KEY
-}
 
 def get_existing_match_ids(db):
     rows = db.query(Match.match_id).all()
@@ -36,8 +32,11 @@ def get_existing_match_ids(db):
 # ---------- Utility: Safe Request with Rate Handling ----------
 
 def riot_get(url, params=None):
+    headers = {
+        "X-Riot-Token": os.getenv("RIOT_API_KEY")
+    }
     while True:
-        response = requests.get(url, headers=HEADERS, params=params)
+        response = requests.get(url, headers=headers, params=params)
 
         if response.status_code == 429:
             retry_after = int(response.headers.get("Retry-After", 1))
@@ -47,7 +46,6 @@ def riot_get(url, params=None):
 
         response.raise_for_status()
         return response.json()
-
 
 # ---------- Step 1: Get PUUIDs ----------
 
