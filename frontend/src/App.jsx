@@ -30,19 +30,19 @@ function App() {
         <Route path="/champions/:championId" element={<ChampionPage />} />
         <Route 
           path="/artifacts/:itemId" 
-          element={<ItemPage key={window.location.pathname} />} 
+          element={<ItemPage />} 
         />
         <Route 
           path="/radiant-items/:itemId" 
-          element={<ItemPage key={window.location.pathname} />} 
+          element={<ItemPage />} 
         />
         <Route 
           path="/radiant-items" 
-          element={<ItemListPage key={window.location.pathname} />} 
+          element={<ItemListPage />} 
         />
         <Route 
           path="/artifacts" 
-          element={<ItemListPage key={window.location.pathname} />} 
+          element={<ItemListPage />} 
         />
         </Route>
         
