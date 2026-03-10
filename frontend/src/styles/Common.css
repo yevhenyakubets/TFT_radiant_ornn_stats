@@ -326,3 +326,89 @@
   color: #666;
   padding: 40px;
 }
+
+.shop-card {
+  background-color: #0c1218;
+  border: 1px solid #2d2d31;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  position: relative;
+}
+
+.shop-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 15px var(--rarity-color);
+  z-index: 2;
+}
+
+.shop-splash-container {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+}
+
+.shop-splash-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  filter: brightness(0.8);
+}
+
+.shop-traits-overlay {
+  position: absolute;
+  bottom: 5px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shop-trait-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 2px;
+  color: #eee;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.shop-trait-icon {
+  width: 12px;
+  height: 12px;
+  filter: brightness(0) invert(1);
+}
+
+.shop-info-stripe {
+  background-color: var(--rarity-color);
+  padding: 4px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  font-weight: 800;
+}
+
+.shop-name {
+  letter-spacing: -0.5px;
+  font-size: 20px;
+}
+
+.shop-cost-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.shop-cost-value {
+  font-size: 1rem;
+}
+
+.shop-gold-icon {
+  width: 14px;
+  height: 14px;
+}
