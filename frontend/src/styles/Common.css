@@ -141,7 +141,7 @@
 }
 
 .stats-table th {
-  padding: 14px 16px;
+  padding: 12px 16px;
   text-align: left;
   font-size: 0.8rem;
   text-transform: uppercase;
@@ -156,8 +156,27 @@
   color: #ccc;
 }
 
+.stats-table td {
+  padding: 12px 16px;
+  vertical-align: middle;
+  text-align: left;
+}
+
+.stats-table th:first-child {
+  padding-left: 16px; /* keep this the same as td padding */
+}
+
+.stats-table td:first-child {
+  padding: 0;  /* let champ-cell control all spacing */
+}
+
+.stats-table th:not(:first-child),
+.stats-table td:not(:first-child) {
+  text-align: center;
+}
+
 .champ-column-header {
-  width: 40%;
+  width: 50%;
 }
 
 .sort-arrow-placeholder {
@@ -184,7 +203,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 8px 16px;  /* restore full padding here */
 }
 
 .table-icon {
