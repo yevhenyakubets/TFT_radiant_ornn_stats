@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/Common.css"; // ADDED
-// import "../styles/ItemListPage.css";
 
 function ItemListPage() {
   const [items, setItems] = useState([]);
