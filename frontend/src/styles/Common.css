@@ -122,15 +122,17 @@
 
 /* Table shared styles */
 .stats-table-container {
-  background: black;
+  background-color: #0f1014;
   border-radius: 12px;
   border: 1px solid var(--border-muted);
   overflow: hidden;
+  border: 1px solid rgb(4, 53, 74);
 }
 
 .stats-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: auto; 
 }
 
 .stats-table thead tr {
@@ -167,10 +169,11 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   transition: background-color 0.15s ease;
   cursor: pointer;
+  background-color: rgb(5, 30, 41);
 }
 
 .stats-table-row:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: #1c1d24 !important;
 }
 
 .stats-table-row:last-child {
@@ -228,7 +231,9 @@
 
 .col-avg {
   color: #ffb93b;
-  font-weight: 600;
+  font-weight: 800;
+  font-size: 1.1rem;
+  width: 20%;
 }
 
 .invalid-row {
