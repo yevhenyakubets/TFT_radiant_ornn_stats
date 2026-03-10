@@ -168,26 +168,38 @@ function ChampionPage() {
       
       {/* --- Header Section --- */}
       <div className="champion-header">
-        <div className="splash-container">
-          <img 
-            src={`/assets/champ_splashes/${championId}.png`} 
-            className="champ-splash"
-            style={{ borderColor: rarityColor, boxShadow: `0 0 20px ${rarityColor}33` }}
-            alt={data.name} 
-          />
-          <div className="traits-overlay">
-            {data.traits && data.traits.map((trait, index) => (
-              <Tooltip key={index} text={trait.name}>
-                <div className="trait-badge">
-                  <img 
-                    src={`/assets/traits/${trait.name}.png`} 
-                    alt={trait.name} 
-                    onError={(e) => (e.target.style.display = "none")}
+        <div
+          className="shop-card"
+          style={{ "--rarity-color": rarityColor, width: "220px", cursor: "default" }}
+        >
+          <div className="shop-splash-container">
+            <img
+              src={`/assets/champ_splashes/${championId}.png`}
+              alt={data.name}
+              className="shop-splash-img"
+              onError={(e) => { e.target.src = `/assets/champ_logos/${championId}.png`; }}
+            />
+            <div className="shop-traits-overlay">
+              {data.traits && data.traits.map((trait, idx) => (
+                <div key={idx} className="shop-trait-item">
+                  <img
+                    src={`/assets/traits/${trait.name.toLowerCase()}.png`}
+                    className="shop-trait-icon"
+                    alt=""
+                    onError={(e) => e.target.style.display = 'none'}
                   />
-                  {trait.name}
+                  <span>{trait.name}</span>
                 </div>
-              </Tooltip>
-            ))}
+              ))}
+            </div>
+          </div>
+
+          <div className="shop-info-stripe">
+            <span className="shop-name">{data.name}</span>
+            <div className="shop-cost-wrapper">
+              <span className="shop-cost-value">{data.cost}</span>
+              <img src="/assets/other/gold.png" className="shop-gold-icon" alt="" />
+            </div>
           </div>
         </div>
 
