@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import Tooltip from "../components/Tooltip";
 import "../styles/common.css";
 import "../styles/ItemPage.css";
 
