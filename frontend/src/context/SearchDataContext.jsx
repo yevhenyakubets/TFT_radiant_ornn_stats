@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 
-export function useSearchData() {
+export const SearchDataContext = createContext([]);
+
+export function SearchDataProvider({ children }) {
   const [searchPool, setSearchPool] = useState([]);
 
   useEffect(() => {
@@ -13,15 +15,13 @@ export function useSearchData() {
         ]);
 
         const combined = [
-          // FIX: Access the .champions array specifically
           ...(champsData.champions || []).map((champ) => ({
             id: champ.id,
-            name: champ.name.trim(), // Added trim() to fix trailing spaces in "Aatrox "
+            name: champ.name.trim(),
             type: 'champion',
             route: `/champions/${champ.id}`,
             icon: `/assets/champ_logos/${champ.id}.png`
           })),
-    
           ...Object.entries(artifacts).map(([id, info]) => ({
             id,
             name: info.name,
@@ -29,16 +29,15 @@ export function useSearchData() {
             route: `/artifacts/${id}`,
             icon: `/assets/artifacts/${id}.png`
           })),
-          
           ...Object.entries(radiants).map(([id, info]) => ({
             id,
             name: info.name,
             type: 'radiant',
             route: `/radiant-items/${id}`,
-            icon: `/assets/radiant_items/${id}.png` // Matches your folder: radiant_items
+            icon: `/assets/radiant_items/${id}.png`
           }))
         ];
-        
+
         setSearchPool(combined);
       } catch (e) {
         console.error("Search data fetch failed", e);
@@ -47,5 +46,9 @@ export function useSearchData() {
     fetchData();
   }, []);
 
-  return searchPool;
+  return (
+    <SearchDataContext.Provider value={searchPool}>
+      {children}
+    </SearchDataContext.Provider>
+  );
 }
