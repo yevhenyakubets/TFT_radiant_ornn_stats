@@ -71,3 +71,23 @@
   letter-spacing: 0.5px;
   margin-top: 2px;
 }
+
+/* Existing hover style */
+.searchbar-result-item:hover,
+.searchbar-result-item.active { /* Add .active here */
+  background-color: #2d2d31;
+  border-left: 3px solid #ca9333; /* Optional: adds a nice "selected" accent line */
+  padding-left: 12px; /* Adjust padding if adding a border accent */
+}
+
+/* Ensure the accent doesn't shift text too much */
+.searchbar-result-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #2d2d31;
+  border-left: 3px solid transparent; /* Match the active border width */
+  transition: all 0.2s; /* Changed to 'all' to animate padding/border */
+}
