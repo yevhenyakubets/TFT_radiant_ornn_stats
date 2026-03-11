@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import SearchBar from "./SearchBar"; // Ensure the import path is correct
+import SearchBar from "./SearchBar";
+import "../styles/Header.css";
 
 function Header() {
   const navigate = useNavigate();
@@ -13,38 +14,15 @@ function Header() {
   ];
 
   return (
-    <header style={{
-      backgroundColor: "rgb(0, 0, 0)",
-      padding: "10px 30px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      // borderBottom: "5px solid rgb(4, 53, 74)",
-      position: "sticky",
-      top: 0,
-      zIndex: 1000,
-
-    }}>
-      {/* Navigation Buttons */}
-      <div style={{ display: "flex", gap: "10px" }}>
+    <header className="header">
+      <div className="header-nav">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <button
               key={item.name}
               onClick={() => navigate(item.path)}
-              style={{
-                backgroundColor: isActive ? "#2d2d31" : "transparent",
-                color: isActive ? "#c8aa6e" : "#888",
-                border: "none",
-                padding: "8px 16px",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                transition: "0.2s",
-                fontFamily:"Beaufort W01 Regular",
-                fontSize:"1.25rem"
-              }}
+              className={`header-nav-button ${isActive ? "active" : ""}`}
             >
               {item.name}
             </button>
@@ -52,9 +30,8 @@ function Header() {
         })}
       </div>
 
-      {/* Functional Search Bar */}
-      <div>
-        <SearchBar customStyles={{ width: "280px" , marginRight: "60px"}} /> 
+      <div className="header-search-wrapper">
+        <SearchBar customStyles={{ width: "280px" }} />
       </div>
     </header>
   );
