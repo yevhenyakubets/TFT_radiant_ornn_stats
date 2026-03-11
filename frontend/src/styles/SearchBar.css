@@ -53,15 +53,19 @@
 .searchbar-result-text {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
+  justify-content: center; /* Keeps text vertically centered relative to the icon */
+  align-items: flex-start;  /* Ensures all lines start at the left */
   line-height: 1.2;
+  flex: 1;                  /* New: Allows text container to fill remaining space */
+  min-width: 0;             /* New: Prevents flex children from overflowing */
 }
 
 .searchbar-result-name {
   color: white;
   font-size: 1.1rem;
   font-weight: 600;
+  text-align: left;         /* New: Forces the actual text to align left if it wraps */
+  width: 100%;              /* New: Ensures it takes up the full width of the container */
 }
 
 .searchbar-result-type {
