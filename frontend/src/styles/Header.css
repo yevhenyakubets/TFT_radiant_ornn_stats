@@ -1,0 +1,37 @@
+.header {
+  background-color: rgb(0, 0, 0);
+  padding: 10px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-nav {
+  display: flex;
+  gap: 10px;
+}
+
+.header-nav-button {
+  background-color: transparent;
+  color: #888;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+  font-family: "Beaufort W01 Regular";
+  font-size: 1.25rem;
+}
+
+.header-nav-button.active {
+  background-color: #2d2d31;
+  color: #c8aa6e;
+}
+
+.header-search-wrapper {
+  margin-right: 60px;
+}
