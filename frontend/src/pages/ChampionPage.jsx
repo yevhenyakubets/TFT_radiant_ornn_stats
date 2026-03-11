@@ -141,14 +141,26 @@ function ChampionPage() {
     }
   };
 
-  useEffect(() => {
-    fetch(`http://127.0.0.1:8000/champions/${championId}`)
-      .then(res => res.json())
-      .then(json => {
+useEffect(() => {
+  let isMounted = true;
+
+  fetch(`http://127.0.0.1:8000/champions/${championId}`)
+    .then(res => res.json())
+    .then(json => {
+      if (isMounted) {
         setData(json);
         setLoading(false);
-      });
-  }, [championId]);
+      }
+    })
+    .catch(() => {
+      if (isMounted) {
+        setData({ error: "Failed to load champion data" });
+        setLoading(false);
+      }
+    });
+
+  return () => { isMounted = false; };
+}, [championId]);
 
   if (loading) return <div className="loading-state">Loading...</div>;
   if (data.error) return <div className="error-state">{data.error}</div>;
