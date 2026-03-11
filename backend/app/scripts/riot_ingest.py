@@ -17,7 +17,7 @@ from app.models.traits import Trait
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[3] / ".env", override=True)
 
 
-MAX_INSERTS_PER_RUN = 500
+MAX_INSERTS_PER_RUN = 100
 
 PLATFORM_URL = "https://euw1.api.riotgames.com"
 REGIONAL_URL = "https://europe.api.riotgames.com"
