@@ -39,10 +39,6 @@ function SearchBar({ customStyles = {}, inputStyles = {} }) {
         .slice(0, 8)
     : [];
 
-  useEffect(() => {
-    setActiveIndex(-1);
-  }, [query]);
-
   const handleKeyDown = (e) => {
     if (!isOpen || results.length === 0) return;
 
@@ -74,8 +70,9 @@ function SearchBar({ customStyles = {}, inputStyles = {} }) {
         onChange={(e) => {
           setQuery(e.target.value);
           setIsOpen(true);
+          setActiveIndex(-1); // <-- ADD THIS LINE HERE
         }}
-        onKeyDown={handleKeyDown} // New: Keyboard listener
+        onKeyDown={handleKeyDown}
         className="searchbar-input"
         style={inputStyles}
       />
