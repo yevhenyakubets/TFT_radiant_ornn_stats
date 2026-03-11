@@ -21,6 +21,14 @@ CURRENT_PATCH = get_current_patch()
 
 DECREASING_STATS = ["attacks", "mana", "requirement", "cooldown"]
 
+keyword_map = {
+        "{{TFT_Keyword_Sunder}}": "Sunder: Reduce Armor",
+        "{{TFT_Keyword_Shred}}": "Shred: Reduce Magic Resist",
+        "{{TFT_Keyword_Chill}}": "Chill: Reduce Attack Speed",
+        "{{TFT_Keyword_Wound}}": "Wound: Reduce healing received by 33%",
+        "{{TFT_Keyword_Burn}}": "Burn: Deal a percent of the target's max Health as true damage every second",
+    }
+
 CHAMP_BASE_STATS = {
     "ashe": {"hp": None, "ad": 58},
     "dr. mundo": {"hp": 900, "ad": None},
@@ -632,13 +640,6 @@ def render_champion_description(desc, data_block, champion_name):
         return format_star_values(star_values, suffix)
 
     # 6. KEYWORD HANDLING
-    keyword_map = {
-        "{{TFT_Keyword_Sunder}}": "Sunder: Reduce Armor",
-        "{{TFT_Keyword_Shred}}": "Shred: Reduce Magic Resist",
-        "{{TFT_Keyword_Chill}}": "Chill: Reduce Attack Speed",
-        "{{TFT_Keyword_Wound}}": "Wound: Reduce healing received by 33%",
-        "{{TFT_Keyword_Burn}}": "Burn: Deal a percent of the target's max Health as true damage every second",
-    }
 
     # Execute Token Replacement
     final_desc = re.sub(r'@([^@]+)@', replace_token, desc)
@@ -671,53 +672,79 @@ def render_item_data(desc, effects_raw):
     # Preserve content of shadow/bonus tags but remove the tags themselves
     desc = re.sub(r'<TFTShadowItemBonus>(.*?)</TFTShadowItemBonus>', r'\1', desc, flags=re.IGNORECASE|re.DOTALL)
     
-    # Remove rule tags AND their content (flavor text not needed)
+    # Extract flavor text from rule tags
+    flavor_texts = re.findall(r'<tftitemrules>(.*?)</tftitemrules>', desc, flags=re.IGNORECASE|re.DOTALL)
+    flavor_texts += re.findall(r'<rules>(.*?)</rules>', desc, flags=re.IGNORECASE|re.DOTALL)
+    flavor_texts = [t.strip() for t in flavor_texts if t.strip()]
+
+    # Remove rule tags and their content from main desc
     desc = re.sub(r'<tftitemrules>.*?</tftitemrules>', '', desc, flags=re.IGNORECASE|re.DOTALL)
     desc = re.sub(r'<rules>.*?</rules>', '', desc, flags=re.IGNORECASE|re.DOTALL)
+    desc = re.sub(r'<tftbold>(.*?)</tftbold>', r'\1', desc, flags=re.IGNORECASE|re.DOTALL)
+    desc = re.sub(r'<keyword>(.*?)</keyword>', r'KEYWORD_START\1KEYWORD_END', desc, flags=re.IGNORECASE|re.DOTALL)
     
-    # Remove remaining tags
+    # Remove remaining tags and clean whitespace
     desc = re.sub(r'<[^>]*>', '', desc)
     desc = desc.replace('&nbsp;', ' ')
+    desc = desc.replace('KEYWORD_START', '<keyword>').replace('KEYWORD_END', '</keyword>')
     
-    # Remove all icon tokens entirely (goldCoins, scaleAS, etc.)
+    # Remove all icon tokens entirely
     desc = re.sub(r'%i:[^%]+%', '', desc)
 
-    # 2. RENDER DESCRIPTION
+    # 2. RENDER DESCRIPTION (Token Replacement)
     def replace_item_token(match):
         token = match.group(1)
-        
-        # Runtime-tracked values — show placeholder
         if "TFTUnitProperty" in token:
-            return "X (scales with stage)"
+            return "" 
 
         multiplier = 1.0
         if '*' in token:
             token, factor = token.split('*')
-            multiplier = float(factor)
+            try: multiplier = float(factor)
+            except: multiplier = 1.0
 
         val = effects_raw.get(token)
-        
         if val is None:
             return "???"
 
         num = float(val)
         result = num * multiplier
-        # Preserve decimals for small values like 0.5
         return str(round(result, 2)).rstrip('0').rstrip('.')
 
     rendered_desc = re.sub(r'@([^@]+)@', replace_item_token, desc)
     
-    # 3. CLEAN UP EFFECTS FOR FRONTEND
-    cleaned_effects = {}
-    for key, val in effects_raw.items():
-        if isinstance(val, (int, float)):
-            if 0 < val < 1:
-                cleaned_effects[key] = round(val * 100)
-            else:
-                cleaned_effects[key] = round(val)
-
-    # Final cleanup
-    rendered_desc = re.sub(r'[^\S\n]+', ' ', rendered_desc)
-    rendered_desc = re.sub(r'\n{3,}', '\n\n', rendered_desc).strip()
+# 3. KEYWORD PROCESSING
+    found_keywords = []
     
+    # First: Handle Map-based keywords (Sunder, Shred, etc.)
+    for key, text in keyword_map.items():
+        if key in rendered_desc:
+            rendered_desc = rendered_desc.replace(key, "")
+            found_keywords.append(re.sub(r'<[^>]*>', '', text).strip())
+
+    # Second: Handle Extracted Flavor Texts/Rules
+    if flavor_texts:
+        for t in flavor_texts:
+            # Strip tags first
+            clean_t = re.sub(r'<[^>]*>', '', t).strip()
+            # Split if multiple keywords are stuck together (detecting "Word: " or periods)
+            # This splits "Burn: ... second Wound: ..." into two separate entries
+            sub_parts = re.split(r'(?=[A-Z][a-z]+:)', clean_t) 
+            for part in sub_parts:
+                if part.strip():
+                    found_keywords.append(part.strip())
+
+    # 4. FINAL CLEANUP & APPEND
+    rendered_desc = re.sub(r'[^\S\n]+', ' ', rendered_desc).strip()
+
+    if found_keywords:
+        # Use a Set to avoid duplicates if a keyword was in both the map and rules
+        unique_keywords = []
+        for kw in found_keywords:
+            if kw not in unique_keywords:
+                unique_keywords.append(kw)
+        
+        keyword_block = "\n" + "\n".join([f"<keyword>{kw}</keyword>" for kw in unique_keywords])
+        rendered_desc = rendered_desc.rstrip() + keyword_block
+
     return rendered_desc

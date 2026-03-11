@@ -412,3 +412,29 @@
   width: 14px;
   height: 14px;
 }
+
+/* --- Shared Keyword Styling --- */
+.keywords-container {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.keyword-item {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #a0a0a8;
+  font-style: italic;
+  text-align: left;
+  line-height: 1.4;
+}
+
+/* Optional: add a bullet point or accent via CSS */
+.keyword-item::before {
+  content: "• ";
+  color: var(--magic-damage); /* Uses your existing magic blue as an accent */
+  margin-right: 4px;
+}
