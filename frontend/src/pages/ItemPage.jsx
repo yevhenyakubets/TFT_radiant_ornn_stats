@@ -47,11 +47,12 @@ function ItemPage() {
     "ManaRegen": "scalemanaregen",
     "{cd951938}": "scaleDR",
     "StatOmnivamp": "scaleSV",
-    "DamageAmp": "scaleDA"
+    "DamageAmp": "scaleDA",
+    "BonusDamage" : "scaleDA"
   };
 
   const formatStatValue = (value, key) => {
-    if (key === "BuffDamageAmp" || key === "AD" || key === "StatOmnivamp" || key === "DamageAmp" || key === "{cd951938}") {
+    if (key === "BuffDamageAmp" || key === "AD" || key === "StatOmnivamp" || key === "DamageAmp" || key === "{cd951938}"|| key === "BonusDamage") {
       return `+${Math.round(value * 100)}%`;
     }
     if (key === "AS" || key === "CritChance") {
