@@ -37,7 +37,7 @@ function HomePage() {
       </div>
 
       <div className="search-bar-wrapper" style={{ maxWidth: "800px" }}> {/* Changed from 600px */}
-        <SearchBar customStyles={{ fontSize: "1.6rem" }} />
+        <SearchBar inputStyles={{ fontSize: "1.6rem", padding: "18px 24px", borderRadius: "12px" }} />
       </div>
 
       <div className="nav-grid">

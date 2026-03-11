@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSearchData } from "../hooks/useSearchData";
 
-function SearchBar({ customStyles = {} }) {
+function SearchBar({ customStyles = {}, inputStyles = {} }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const searchPool = useSearchData();
@@ -62,8 +62,9 @@ const results = query.length > 1
           backgroundColor: "#0a0a0c",
           color: "white",
           outline: "none",
-          fontFamily:"Beaufort W01 Regular",
-          fontSize:"1.3rem"
+          fontFamily: "Beaufort W01 Regular",
+          fontSize: "1.3rem",
+          ...inputStyles   // <-- add this
         }}
       />
 
