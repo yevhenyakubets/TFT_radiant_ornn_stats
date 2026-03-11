@@ -105,18 +105,6 @@
   vertical-align: middle;
 }
 
-.keywords-container {
-  margin-top: 12px;
-  padding-top: 8px;
-}
-
-.keyword-item {
-  margin: 4px 0;
-  font-size: 0.85rem;
-  color: #a0a0a8;
-  font-style: italic;
-}
-
 /* Tabs */
 .tab-switcher {
   display: flex;

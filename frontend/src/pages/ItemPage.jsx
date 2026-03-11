@@ -60,6 +60,35 @@ function ItemPage() {
     return `+${Math.round(value)}`;
   };
 
+  const formatItemDescription = (text) => {
+  if (!text) return null;
+
+  // Split the text into the main body and the keywords
+  const parts = text.split("<keyword>");
+  const mainBody = parts[0];
+  const keywords = parts.slice(1);
+
+  return (
+    <>
+      <div className="main-description-text">
+        {mainBody.split('\n').map((line, i) => (
+          <p key={i} style={{ margin: '4px 0' }}>{line}</p>
+        ))}
+      </div>
+      
+      {keywords.length > 0 && (
+        <div className="keywords-container">
+          {keywords.map((kw, idx) => (
+            <p key={idx} className="keyword-item">
+              {kw.replace("</keyword>", "").trim()}
+            </p>
+          ))}
+        </div>
+      )}
+    </>
+  );
+};
+
   useEffect(() => {
     let isMounted = true;
 
@@ -129,8 +158,8 @@ function ItemPage() {
 
         </div>
         <div className="item-description">
-            {data.description}
-          </div>
+          {formatItemDescription(data.description)}
+        </div>
       </div>
 
       {/* --- Filter Bar --- */}
