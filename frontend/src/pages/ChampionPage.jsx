@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Tooltip from "../components/Tooltip"; 
 import React from 'react';
 import "../styles/common.css";
 import "../styles/ChampionPage.css";
+import { ItemTooltip } from "../components/ItemTooltip";
+import { useTooltip } from "../hooks/useTooltip";
 
 const ChampionAbility = ({ champion }) => {
   if (!champion || !champion.ability_description) return null;
 
   const getDamageColor = (sentencePart) => {
     const text = sentencePart.toLowerCase();
-    if (text.includes("magic damage")) return "var(--magic-damage)"; 
-    if (text.includes("physical damage")) return "var(--physical-damage)"; 
-    if (text.includes("true damage")) return "var(--true-damage)"; 
-    if (text.includes("shield") || text.includes("health")) return "var(--utility-green)"; 
-    return "var(--text-main)"; 
+    if (text.includes("magic damage")) return "var(--magic-damage)";
+    if (text.includes("physical damage")) return "var(--physical-damage)";
+    if (text.includes("true damage")) return "var(--true-damage)";
+    if (text.includes("shield") || text.includes("health")) return "var(--utility-green)";
+    return "var(--text-main)";
   };
 
   const getStatFileName = (stat) => {
@@ -64,14 +65,12 @@ const ChampionAbility = ({ champion }) => {
     };
 
     const lines = mainBody.split('\n').filter(line => line.trim() !== '');
-    
+
     return (
       <>
         <div className="main-ability-text">
           {lines.map((line, lineIdx) => (
-            <p key={lineIdx} className="ability-line">
-              {renderLine(line, lineIdx)}
-            </p>
+            <p key={lineIdx} className="ability-line">{renderLine(line, lineIdx)}</p>
           ))}
         </div>
         {keywords.length > 0 && (
@@ -90,8 +89,8 @@ const ChampionAbility = ({ champion }) => {
   return (
     <div className="ability-container">
       <div className="ability-header">
-        <img 
-          src={`/assets/ability_icons/${champion.champion.toLowerCase()}.png`} 
+        <img
+          src={`/assets/ability_icons/${champion.champion.toLowerCase()}.png`}
           className="ability-icon"
           alt={champion.ability_name}
           onError={(e) => (e.target.src = "/assets/ability_icons/default.png")}
@@ -104,6 +103,40 @@ const ChampionAbility = ({ champion }) => {
     </div>
   );
 };
+
+function ItemRow({ itemId, info, itemFolderPath, activeTab, isValid }) {
+  const { visible, position, handleMouseEnter, handleMouseLeave } = useTooltip(400);
+
+  return (
+    <tr
+      className={`stats-table-row ${!isValid ? 'invalid-row' : ''}`}
+      onClick={() => window.location.href = `/${activeTab === 'artifact' ? 'artifacts' : 'radiant-items'}/${itemId}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <td className="champ-cell">
+        <div className="table-icon-wrapper">
+          <img
+            src={`${itemFolderPath}/${itemId}.png`}
+            className="table-icon"
+            alt={info.name}
+            onError={(e) => { e.target.src = "/assets/artifacts/tft_item_unknown.png"; }}
+          />
+          {info.low_sample && <span className="low-sample-indicator">!</span>}
+        </div>
+        <span className="champ-name-text">{info.name}</span>
+      </td>
+      <td className="col-count">{info.count.toLocaleString()}</td>
+      <td className="col-avg">{info.average_placement.toFixed(2)}</td>
+      <ItemTooltip
+        itemId={itemId}
+        itemType={activeTab === 'artifact' ? 'artifact' : 'radiant'}
+        visible={visible}
+        position={position}
+      />
+    </tr>
+  );
+}
 
 function ChampionPage() {
   const { championId } = useParams();
@@ -141,26 +174,18 @@ function ChampionPage() {
     }
   };
 
-useEffect(() => {
-  let isMounted = true;
-
-  fetch(`http://127.0.0.1:8000/champions/${championId}`)
-    .then(res => res.json())
-    .then(json => {
-      if (isMounted) {
-        setData(json);
-        setLoading(false);
-      }
-    })
-    .catch(() => {
-      if (isMounted) {
-        setData({ error: "Failed to load champion data" });
-        setLoading(false);
-      }
-    });
-
-  return () => { isMounted = false; };
-}, [championId]);
+  useEffect(() => {
+    let isMounted = true;
+    fetch(`http://127.0.0.1:8000/champions/${championId}`)
+      .then(res => res.json())
+      .then(json => {
+        if (isMounted) { setData(json); setLoading(false); }
+      })
+      .catch(() => {
+        if (isMounted) { setData({ error: "Failed to load champion data" }); setLoading(false); }
+      });
+    return () => { isMounted = false; };
+  }, [championId]);
 
   if (loading) return <div className="loading-state">Loading...</div>;
   if (data.error) return <div className="error-state">{data.error}</div>;
@@ -177,13 +202,9 @@ useEffect(() => {
 
   return (
     <div className="champion-page-wrapper">
-      
-      {/* --- Header Section --- */}
+
       <div className="champion-header">
-        <div
-          className="shop-card"
-          style={{ "--rarity-color": rarityColor, width: "220px", cursor: "default" }}
-        >
+        <div className="shop-card" style={{ "--rarity-color": rarityColor, width: "220px", cursor: "default" }}>
           <div className="shop-splash-container">
             <img
               src={`/assets/champ_splashes/${championId}.png`}
@@ -205,7 +226,6 @@ useEffect(() => {
               ))}
             </div>
           </div>
-
           <div className="shop-info-stripe">
             <span className="shop-name">{data.name}</span>
             <div className="shop-cost-wrapper">
@@ -216,11 +236,10 @@ useEffect(() => {
         </div>
 
         <div className="champ-info-main">
-          <ChampionAbility champion={data}/>
+          <ChampionAbility champion={data} />
         </div>
       </div>
 
-      {/* --- Filter Bar --- */}
       <div className="filter-bar">
         <div className="tab-switcher">
           {["artifact", "radiant"].map((tab) => (
@@ -234,7 +253,6 @@ useEffect(() => {
             </button>
           ))}
         </div>
-
         <div className="filter-options">
           <label className="filter-label">
             Show low sample size
@@ -247,7 +265,6 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* --- Items Table --- */}
       <div className="stats-table-container">
         <table className="stats-table">
           <thead>
@@ -255,12 +272,8 @@ useEffect(() => {
               <th onClick={() => requestSort('name')} className="champ-column-header">
                 Item {getSortIcon('name')}
               </th>
-              <th onClick={() => requestSort('count')}>
-                Frequency {getSortIcon('count')}
-              </th>
-              <th onClick={() => requestSort('average_placement')}>
-                Avg Place {getSortIcon('average_placement')}
-              </th>
+              <th onClick={() => requestSort('count')}>Frequency {getSortIcon('count')}</th>
+              <th onClick={() => requestSort('average_placement')}>Avg Place {getSortIcon('average_placement')}</th>
             </tr>
           </thead>
           <tbody>
@@ -269,26 +282,14 @@ useEffect(() => {
               const valB = sortConfig.key === 'name' ? b[1].name : b[1][sortConfig.key];
               return sortConfig.direction === 'asc' ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
             }).map(([itemId, info]) => (
-              <tr 
-                key={itemId} 
-                className={`stats-table-row ${!info.valid ? 'invalid-row' : ''}`}
-                onClick={() => window.location.href=`/${activeTab === 'artifact' ? 'artifacts' : 'radiant'}/${itemId}`}
-              >
-                <td className="champ-cell">
-                  <div className="table-icon-wrapper">
-                    <img 
-                      src={`${itemFolderPath}/${itemId}.png`} 
-                      className="table-icon" 
-                      alt={info.name}
-                      onError={(e) => { e.target.src = "/assets/artifacts/tft_item_unknown.png" }}
-                    />
-                    {info.low_sample && <span className="low-sample-indicator">!</span>}
-                  </div>
-                  <span className="champ-name-text">{info.name}</span>
-                </td>
-                <td className="col-count">{info.count.toLocaleString()}</td>
-                <td className="col-avg">{info.average_placement.toFixed(2)}</td>
-              </tr>
+              <ItemRow
+                key={itemId}
+                itemId={itemId}
+                info={info}
+                itemFolderPath={itemFolderPath}
+                activeTab={activeTab}
+                isValid={info.valid}
+              />
             ))}
           </tbody>
         </table>

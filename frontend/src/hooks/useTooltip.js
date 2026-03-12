@@ -6,19 +6,21 @@ export function useTooltip(delay = 400) {
   const timerRef = useRef(null);
 
   const handleMouseEnter = useCallback((e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const scrollY = window.scrollY;
+    const x = e.clientX;
+    const y = e.clientY;
 
-    // Default: appear to the right of the element
-    let x = rect.right + 12;
-    let y = rect.top + scrollY;
+    const tooltipWidth = 320;
+    const tooltipHeight = 350;
 
-    // Flip to left if tooltip would overflow viewport
-    if (x + 320 > window.innerWidth) {
-      x = rect.left - 332;
-    }
+    const finalX = x + tooltipWidth + 20 > window.innerWidth
+      ? x - tooltipWidth - 12
+      : x + 12;
 
-    setPosition({ x, y });
+    const finalY = y + tooltipHeight > window.innerHeight
+      ? window.innerHeight - tooltipHeight - 12
+      : y;
+
+    setPosition({ x: finalX, y: finalY });
     timerRef.current = setTimeout(() => setVisible(true), delay);
   }, [delay]);
 
