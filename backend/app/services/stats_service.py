@@ -669,18 +669,25 @@ def render_item_data(desc, effects_raw):
     # 1. CLEAN HTML AND ITEM RULE TAGS
     desc = re.sub(r'<br\s*/?>', '\n', desc, flags=re.IGNORECASE)
     
-    # Preserve content of shadow/bonus tags but remove the tags themselves
+    # Preserve content of various tags but remove the tags themselves
     desc = re.sub(r'<TFTShadowItemBonus>(.*?)</TFTShadowItemBonus>', r'\1', desc, flags=re.IGNORECASE|re.DOTALL)
-    
-    # Extract flavor text from rule tags
-    flavor_texts = re.findall(r'<tftitemrules>(.*?)</tftitemrules>', desc, flags=re.IGNORECASE|re.DOTALL)
-    flavor_texts += re.findall(r'<rules>(.*?)</rules>', desc, flags=re.IGNORECASE|re.DOTALL)
-    flavor_texts = [t.strip() for t in flavor_texts if t.strip()]
+    desc = re.sub(r'<TFTRadiantItemBonus>(.*?)</TFTRadiantItemBonus>', r'\1', desc, flags=re.IGNORECASE|re.DOTALL)
+    desc = re.sub(r'<TFTKeyword>(.*?)</TFTKeyword>', r'\1', desc, flags=re.IGNORECASE|re.DOTALL)
+    desc = re.sub(r'<tftbold>(.*?)</tftbold>', r'\1', desc, flags=re.IGNORECASE|re.DOTALL)
+
+    # Remove tracker labels and their associated highlight values entirely
+    desc = re.sub(r'<TFTTrackerLabel>.*?</TFTTrackerLabel>\s*<TFTHighlight>.*?</TFTHighlight>', '', desc, flags=re.IGNORECASE|re.DOTALL)
+
+    # Extract flavor text from rule tags BEFORE removing them (still raw, tokens unresolved)
+    flavor_texts_raw = re.findall(r'<tftitemrules>(.*?)</tftitemrules>', desc, flags=re.IGNORECASE|re.DOTALL)
+    flavor_texts_raw += re.findall(r'<rules>(.*?)</rules>', desc, flags=re.IGNORECASE|re.DOTALL)
+    flavor_texts_raw = [t.strip() for t in flavor_texts_raw if t.strip()]
 
     # Remove rule tags and their content from main desc
     desc = re.sub(r'<tftitemrules>.*?</tftitemrules>', '', desc, flags=re.IGNORECASE|re.DOTALL)
     desc = re.sub(r'<rules>.*?</rules>', '', desc, flags=re.IGNORECASE|re.DOTALL)
-    desc = re.sub(r'<tftbold>(.*?)</tftbold>', r'\1', desc, flags=re.IGNORECASE|re.DOTALL)
+
+    # Protect keyword tags from general stripping
     desc = re.sub(r'<keyword>(.*?)</keyword>', r'KEYWORD_START\1KEYWORD_END', desc, flags=re.IGNORECASE|re.DOTALL)
     
     # Remove remaining tags and clean whitespace
@@ -691,19 +698,18 @@ def render_item_data(desc, effects_raw):
     # Remove all icon tokens entirely
     desc = re.sub(r'%i:[^%]+%', '', desc)
 
-    # 2. RENDER DESCRIPTION (Token Replacement)
-    def replace_item_token(match):
-        token = match.group(1)
-        if "TFTUnitProperty" in token:
-            return "" 
+    # 2. TOKEN REPLACEMENT FUNCTION
+    def replace_token(token_str):
+        if "TFTUnitProperty" in token_str:
+            return "X"
 
         multiplier = 1.0
-        if '*' in token:
-            token, factor = token.split('*')
+        if '*' in token_str:
+            token_str, factor = token_str.split('*')
             try: multiplier = float(factor)
             except: multiplier = 1.0
 
-        val = effects_raw.get(token)
+        val = effects_raw.get(token_str)
         if val is None:
             return "???"
 
@@ -711,34 +717,61 @@ def render_item_data(desc, effects_raw):
         result = num * multiplier
         return str(round(result, 2)).rstrip('0').rstrip('.')
 
-    rendered_desc = re.sub(r'@([^@]+)@', replace_item_token, desc)
-    
-# 3. KEYWORD PROCESSING
+    def replace_token_match(match):
+        return replace_token(match.group(1))
+
+    # 3. RENDER MAIN DESCRIPTION
+    rendered_desc = re.sub(r'@([^@]+)@', replace_token_match, desc)
+
+    # Remove lines that contained TFTUnitProperty — now returns "X" so skip this
+    # (X is the desired output per requirements)
+
+    # 4. PROCESS FLAVOR TEXTS — resolve tokens THEN extract as keywords
+    STRIP_FROM_KEYWORDS = ["[Direct damage item]"]
     found_keywords = []
-    
+
     # First: Handle Map-based keywords (Sunder, Shred, etc.)
     for key, text in keyword_map.items():
         if key in rendered_desc:
             rendered_desc = rendered_desc.replace(key, "")
             found_keywords.append(re.sub(r'<[^>]*>', '', text).strip())
 
-    # Second: Handle Extracted Flavor Texts/Rules
-    if flavor_texts:
-        for t in flavor_texts:
-            # Strip tags first
-            clean_t = re.sub(r'<[^>]*>', '', t).strip()
-            # Split if multiple keywords are stuck together (detecting "Word: " or periods)
-            # This splits "Burn: ... second Wound: ..." into two separate entries
-            sub_parts = re.split(r'(?=[A-Z][a-z]+:)', clean_t) 
-            for part in sub_parts:
-                if part.strip():
-                    found_keywords.append(part.strip())
+    # Second: Process flavor texts with token replacement
+    for raw_text in flavor_texts_raw:
+    # Resolve tokens inside the flavor text
+        resolved = re.sub(r'@([^@]+)@', replace_token_match, raw_text)
+        # Strip remaining tags
+        resolved = re.sub(r'<tftbold>(.*?)</tftbold>', r'\1', resolved, flags=re.IGNORECASE|re.DOTALL)
+        resolved = re.sub(r'<br\s*/?>', '\n', resolved, flags=re.IGNORECASE)
+        resolved = re.sub(r'<[^>]*>', '', resolved)
+        resolved = re.sub(r'%i:[^%]+%', '', resolved)
+        resolved = resolved.strip()
 
-    # 4. FINAL CLEANUP & APPEND
-    rendered_desc = re.sub(r'[^\S\n]+', ' ', rendered_desc).strip()
+        if not resolved:
+            continue
+
+        # Split on newlines first to handle multiple items in one block
+        lines = [line.strip() for line in resolved.split('\n') if line.strip()]
+        
+        for line in lines:
+            # Skip blacklisted entries
+            if line in STRIP_FROM_KEYWORDS:
+                continue
+
+            # Split if multiple keywords are stuck together
+            # But protect known two-word prefixes first
+            line = line.replace('Dash Cooldown:', 'DASH_COOLDOWN_PLACEHOLDER')
+            sub_parts = re.split(r'(?=[A-Z][a-z]+:)', line)
+            for part in sub_parts:
+                part = part.replace('DASH_COOLDOWN_PLACEHOLDER', 'Dash Cooldown:').strip()
+                if part:
+                    found_keywords.append(part)
+
+    # 5. FINAL CLEANUP & APPEND
+    rendered_desc = re.sub(r'[^\S\n]+', ' ', rendered_desc)
+    rendered_desc = re.sub(r'\n{3,}', '\n\n', rendered_desc).strip()
 
     if found_keywords:
-        # Use a Set to avoid duplicates if a keyword was in both the map and rules
         unique_keywords = []
         for kw in found_keywords:
             if kw not in unique_keywords:
@@ -746,5 +779,14 @@ def render_item_data(desc, effects_raw):
         
         keyword_block = "\n" + "\n".join([f"<keyword>{kw}</keyword>" for kw in unique_keywords])
         rendered_desc = rendered_desc.rstrip() + keyword_block
+
+    # 6. CLEAN UP EFFECTS FOR FRONTEND
+    cleaned_effects = {}
+    for key, val in effects_raw.items():
+        if isinstance(val, (int, float)):
+            if 0 < val < 1:
+                cleaned_effects[key] = round(val * 100)
+            else:
+                cleaned_effects[key] = round(val)
 
     return rendered_desc
