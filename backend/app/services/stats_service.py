@@ -565,8 +565,9 @@ def render_champion_description(desc, data_block, champion_name):
                     val = val_list[i] if i < len(val_list) else val_list[0]
                     
                     is_decreasing_stat = any(word in token_lower for word in DECREASING_STATS)
+                    is_time = any(word in token_lower for word in ["seconds", "duration"])
                     
-                    if i == 3 and not is_decreasing_stat:
+                    if i == 3 and not is_decreasing_stat and not is_time:
                         if float(val) < float(val_list[1]) and any(x > val for x in val_list):
                             val = max(val_list)
                     base_sum += float(val) * local_mult
@@ -600,7 +601,9 @@ def render_champion_description(desc, data_block, champion_name):
                         val = val_list[i] if i < len(val_list) else val_list[0]
 
                         is_decreasing_stat = any(w in token_lower for w in DECREASING_STATS)
-                        if i == 3 and not is_decreasing_stat:
+                        is_time = any(word in token_lower for word in ["seconds", "duration"])
+
+                        if i == 3 and not is_decreasing_stat and not is_time:
                             if float(val) < float(val_list[1]) and any(x > val for x in val_list):
                                 val = max(val_list)
 
