@@ -1,0 +1,114 @@
+.tooltip-container {
+  position: absolute;
+  z-index: 9999;
+  width: 320px;
+  background: #0c1218;
+  border: 1px solid var(--border-muted);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  animation: tooltip-fade-in 0.15s ease;
+}
+
+@keyframes tooltip-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Champion Tooltip */
+.champion-tooltip .shop-card {
+  border-radius: 0;
+  border: none;
+}
+
+.tooltip-ability {
+  padding: 12px;
+  border-top: 1px solid var(--border-muted);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.tooltip-ability-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.tooltip-ability-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid #444;
+}
+
+.tooltip-ability-name {
+  font-weight: bold;
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.tooltip-ability-desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #aaa;
+  line-height: 1.5;
+}
+
+/* Item Tooltip */
+.item-tooltip {
+  padding: 14px;
+}
+
+.tooltip-item-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tooltip-item-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  border: 1px solid var(--border-muted);
+}
+
+.tooltip-item-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--text-main);
+}
+
+.tooltip-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tooltip-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-muted);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+
+.tooltip-stat-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.tooltip-description {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #aaa;
+  line-height: 1.5;
+  border-top: 1px solid var(--border-muted);
+  padding-top: 10px;
+}
