@@ -290,12 +290,14 @@
   align-items: center;
   text-align: center;
   transition: all 0.2s ease-in-out;
+  z-index: 1;
 }
 
 .item-card-link:hover {
   transform: translateY(-5px);
   border-color: var(--hover-color);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  z-index: 1;  /* add this */
 }
 
 .image-container {
