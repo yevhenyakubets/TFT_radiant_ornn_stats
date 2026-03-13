@@ -113,3 +113,20 @@
   border-top: 1px solid var(--border-muted);
   padding-top: 10px;
 }
+
+.tooltip-ability .ability-title {
+  font-size: 1.2rem;
+}
+
+.tooltip-ability .main-ability-text {
+  font-size: 0.8rem;
+}
+
+.tooltip-ability .keyword-item {
+  font-size: 0.75rem;
+}
+
+.tooltip-ability .ability-icon {
+  width: 24px;
+  height: 24px;
+}
