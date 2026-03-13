@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "../styles/Tooltip.css";
 import { getRarityColor } from "../utils/helper";
 import ChampionAbility from "./ChampionAbility";
+import { createPortal } from "react-dom";
 
 const cache = {};
 
@@ -23,7 +24,7 @@ useEffect(() => {
 
   const rarityColor = getRarityColor(data.cost);
 
-  return (
+  return createPortal(
     <div
       className="tooltip-container champion-tooltip"
       style={{ top: position.y, left: position.x }}
@@ -66,6 +67,7 @@ useEffect(() => {
           <ChampionAbility champion={data} />
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }
