@@ -75,6 +75,7 @@
   --text-main: #f0e6d2;
   --panel-bg: #16161a;
   --border-muted: rgb(4, 53, 74);
+  --button-active-bg: rgb(5, 30, 41);
 }
 
 /* Page wrapper */

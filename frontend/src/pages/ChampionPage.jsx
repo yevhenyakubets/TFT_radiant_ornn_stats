@@ -48,8 +48,6 @@ function ChampionPage() {
   const [showInvalid, setShowInvalid] = useState(false);
   const [showLowSample, setShowLowSample] = useState(false);
 
-  const buttonColor = "rgb(5, 30, 41)";
-
   const { sortConfig, requestSort, getSortIcon } = useSortConfig('average_placement');
 
   useEffect(() => {
@@ -125,7 +123,7 @@ function ChampionPage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`tab-button ${activeTab === tab ? 'active' : ''}`}
-              style={{ backgroundColor: activeTab === tab ? buttonColor : 'transparent' }}
+              style={{ backgroundColor: activeTab === tab ? 'var(--button-active-bg)' : 'transparent' }}
             >
               {tab}s
             </button>
