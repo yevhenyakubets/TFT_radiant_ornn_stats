@@ -1,4 +1,4 @@
-export const ChampionAbility = ({ champion }) => {
+const ChampionAbility = ({ champion }) => {
   if (!champion || !champion.ability_description) return null;
 
   const getDamageColor = (sentencePart) => {
@@ -95,3 +95,5 @@ export const ChampionAbility = ({ champion }) => {
     </div>
   );
 };
+
+export default ChampionAbility;

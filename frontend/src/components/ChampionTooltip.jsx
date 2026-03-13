@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "../styles/Tooltip.css";
 import { getRarityColor } from "../utils/helper";
-import { ChampionAbility } from "./ChampionAbility";
+import ChampionAbility from "./ChampionAbility";
 
 const cache = {};
 
