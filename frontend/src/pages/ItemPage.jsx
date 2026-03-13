@@ -12,10 +12,11 @@ function ChampionRow({ champId, info }) {
     <tr
       className="stats-table-row"
       onClick={() => window.location.href = `/champions/${champId}`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
-      <td className="champ-cell">
+      <td className="champ-cell"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <div className="table-icon-wrapper">
           <img
             src={`/assets/champ_logos/${champId}.png`}
