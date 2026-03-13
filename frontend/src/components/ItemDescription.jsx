@@ -28,7 +28,7 @@ function ItemDescription({ data, showStats = true, showDescription = true }) {
           {parsed.keywords.length > 0 && (
             <div className="keywords-container">
               {parsed.keywords.map((kw, idx) => (
-                <p key={idx} className="keyword-item">• {kw}</p>
+                <p key={idx} className="keyword-item"> {kw}</p>
               ))}
             </div>
           )}
