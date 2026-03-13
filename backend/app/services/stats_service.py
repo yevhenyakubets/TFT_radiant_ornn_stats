@@ -332,7 +332,7 @@ def get_champion_special_items(champion_riot_id: str):
                 "average_placement": float(avg),
                 "type": item.type,
                 "valid": item_id in valid_item_ids,
-                "low_sample": percentage < 0.001,
+                "low_sample": percentage < 0.01,
             }
 
             if item.type == "artifact":
@@ -418,7 +418,7 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
                 "count": count,
                 "average_placement": float(avg),
                 "valid": champion_id in valid_champion_ids,
-                "low_sample": percentage < 0.001,
+                "low_sample": percentage < 0.01,
             }
 
     sorted_result = dict(sorted(result.items(), key=lambda x: x[1]["average_placement"]))
