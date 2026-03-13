@@ -94,7 +94,10 @@ function ItemPage() {
         />
         <div className="item-info-container">
           <h1 className="item-name">{data.name}</h1>
-          <ItemDescription data={data} />
+          <ItemDescription data={data} showDescription={false} />
+        </div>
+        <div className="item-description">
+          <ItemDescription data={data} showStats={false} />
         </div>
       </div>
 
