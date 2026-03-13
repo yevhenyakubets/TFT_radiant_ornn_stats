@@ -4,6 +4,7 @@ import "../styles/common.css";
 import "../styles/ItemPage.css";
 import { ChampionTooltip } from "../components/ChampionTooltip";
 import { useTooltip } from "../hooks/useTooltip";
+import { useSortConfig } from "../hooks/useSortConfig";
 
 function ChampionRow({ champId, info }) {
   const { visible, position, handleMouseEnter, handleMouseLeave } = useTooltip(400);
@@ -38,15 +39,8 @@ function ItemPage() {
   const { itemId } = useParams();
   const location = useLocation();
   const isArtifact = location.pathname.includes("artifact");
-  const [sortConfig, setSortConfig] = useState({ key: 'average_placement', direction: 'asc' });
 
-  const requestSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-  };
+  const { sortConfig, requestSort, getSortIcon } = useSortConfig('average_placement');
 
   const config = isArtifact ? {
     endpoint: "artifacts",
@@ -60,11 +54,6 @@ function ItemPage() {
   const [loading, setLoading] = useState(true);
   const [showInvalid, setShowInvalid] = useState(false);
   const [showLowSample, setShowLowSample] = useState(false);
-
-  const getSortIcon = (key) => {
-    if (sortConfig.key !== key) return <span className="sort-arrow-placeholder"></span>;
-    return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
-  };
 
   const stat_map = {
     "AD": "AD", "AP": "AP", "AS": "AS", "Armor": "Armor",
