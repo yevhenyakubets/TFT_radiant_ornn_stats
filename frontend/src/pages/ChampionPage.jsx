@@ -6,7 +6,7 @@ import "../styles/ChampionPage.css";
 import { ItemTooltip } from "../components/ItemTooltip";
 import { useTooltip } from "../hooks/useTooltip";
 import { getRarityColor } from "../utils/helper";
-import { ChampionAbility } from "../components/ChampionAbility";
+import ChampionAbility from "../components/ChampionAbility";
 import { useSortConfig } from "../hooks/useSortConfig";
 
 
