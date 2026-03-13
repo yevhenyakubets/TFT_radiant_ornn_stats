@@ -69,7 +69,7 @@ const ChampionAbility = ({ champion }) => {
           <div className="keywords-container">
             {keywords.map((kw, idx) => (
               <p key={idx} className="keyword-item">
-                • {kw.replace("</keyword>", "").trim()}
+                {kw.replace("</keyword>", "").trim()}
               </p>
             ))}
           </div>
