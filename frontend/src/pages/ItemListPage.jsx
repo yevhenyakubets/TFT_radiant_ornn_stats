@@ -5,7 +5,7 @@ import { ItemTooltip } from "../components/ItemTooltip";
 import { useTooltip } from "../hooks/useTooltip";
 
 function ItemCard({ item, config }) {
-  const { visible, position, handleMouseEnter, handleMouseLeave } = useTooltip(400);
+  const { visible, position, handleMouseEnter, handleMouseMove, handleMouseLeave } = useTooltip(400);
   const navigate = useNavigate();
 
   return (
@@ -13,6 +13,7 @@ function ItemCard({ item, config }) {
       className="item-card-link"
       style={{ "--hover-color": config.themeColor, position: "relative" }}
       onClick={() => navigate(`/${config.linkPath}/${item.id}`)}
+      onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

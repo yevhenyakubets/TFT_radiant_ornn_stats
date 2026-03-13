@@ -8,7 +8,7 @@ import { useSortConfig } from "../hooks/useSortConfig";
 import ItemDescription from "../components/ItemDescription";
 
 function ChampionRow({ champId, info }) {
-  const { visible, position, handleMouseEnter, handleMouseLeave } = useTooltip(400);
+  const { visible, position, handleMouseEnter, handleMouseMove, handleMouseLeave } = useTooltip(400);
 
   return (
     <tr
@@ -17,6 +17,7 @@ function ChampionRow({ champId, info }) {
     >
       <td className="champ-cell"
         onMouseEnter={handleMouseEnter}
+        onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
         <div className="table-icon-wrapper">
