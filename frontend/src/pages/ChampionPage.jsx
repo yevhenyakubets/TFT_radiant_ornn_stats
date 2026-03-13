@@ -111,10 +111,11 @@ function ItemRow({ itemId, info, itemFolderPath, activeTab, isValid }) {
     <tr
       className={`stats-table-row ${!isValid ? 'invalid-row' : ''}`}
       onClick={() => window.location.href = `/${activeTab === 'artifact' ? 'artifacts' : 'radiant-items'}/${itemId}`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
-      <td className="champ-cell">
+      <td className="champ-cell"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <div className="table-icon-wrapper">
           <img
             src={`${itemFolderPath}/${itemId}.png`}
@@ -128,12 +129,7 @@ function ItemRow({ itemId, info, itemFolderPath, activeTab, isValid }) {
       </td>
       <td className="col-count">{info.count.toLocaleString()}</td>
       <td className="col-avg">{info.average_placement.toFixed(2)}</td>
-      <ItemTooltip
-        itemId={itemId}
-        itemType={activeTab === 'artifact' ? 'artifact' : 'radiant'}
-        visible={visible}
-        position={position}
-      />
+      <ItemTooltip itemId={itemId} itemType={activeTab === 'artifact' ? 'artifact' : 'radiant'} visible={visible} position={position} />
     </tr>
   );
 }
