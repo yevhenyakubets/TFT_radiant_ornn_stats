@@ -2,24 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Common.css"; // ADDED
 import "../styles/ChampionListPage.css";
+import { getRarityColor } from "../utils/helper";
 
 function ChampionsListPage() {
   const [champions, setChampions] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
-  const getRarityColor = (cost) => {
-    switch (cost) {
-      case 1: return "rgb(24, 36, 49)";
-      case 2: return "rgb(20, 77, 29)";
-      case 3: return "rgb(28, 52, 93)";
-      case 4: return "rgb(102, 20, 79)";
-      case 5:
-      case 7: return "rgb(134, 84, 11)";
-      default: return "#ccc";
-    }
-  };
 
   const sortTraits = (traits) => {
     if (!traits) return [];
