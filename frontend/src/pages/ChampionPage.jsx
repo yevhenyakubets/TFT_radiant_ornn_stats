@@ -125,7 +125,7 @@ function ChampionPage() {
               className={`tab-button ${activeTab === tab ? 'active' : ''}`}
               style={{ backgroundColor: activeTab === tab ? 'var(--button-active-bg)' : 'transparent' }}
             >
-              {tab}s
+              {tab === 'artifact' ? 'Artifacts' : 'Radiant Items'}
             </button>
           ))}
         </div>
