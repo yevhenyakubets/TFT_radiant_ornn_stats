@@ -7,6 +7,7 @@ import { ItemTooltip } from "../components/ItemTooltip";
 import { useTooltip } from "../hooks/useTooltip";
 import { getRarityColor } from "../utils/helper";
 import { ChampionAbility } from "../components/ChampionAbility";
+import { useSortConfig } from "../hooks/useSortConfig";
 
 
 function ItemRow({ itemId, info, itemFolderPath, activeTab, isValid }) {
@@ -46,22 +47,10 @@ function ChampionPage() {
   const [activeTab, setActiveTab] = useState("artifact");
   const [showInvalid, setShowInvalid] = useState(false);
   const [showLowSample, setShowLowSample] = useState(false);
-  const [sortConfig, setSortConfig] = useState({ key: 'average_placement', direction: 'asc' });
 
   const buttonColor = "rgb(5, 30, 41)";
 
-  const requestSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const getSortIcon = (key) => {
-    if (sortConfig.key !== key) return <span className="sort-arrow-placeholder"></span>;
-    return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
-  };
+  const { sortConfig, requestSort, getSortIcon } = useSortConfig('average_placement');
 
   useEffect(() => {
     let isMounted = true;
