@@ -1,26 +1,12 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";  // missing
+import { createPortal } from "react-dom";
 import "../styles/Tooltip.css";
+import ItemDescription from "./ItemDescription";
 
 const cache = {};
 
-const stat_map = {
-  "AD": "AD", "AP": "AP", "AS": "AS", "Armor": "Armor",
-  "Health": "Health", "MagicResist": "MR", "CritChance": "CritChance",
-  "BuffDamageAmp": "scaleDA", "ManaRegen": "scalemanaregen",
-  "{cd951938}": "scaleDR", "StatOmnivamp": "scaleSV", "DamageAmp": "scaleDA"
-};
-
-const formatStatValue = (value, key) => {
-  if (["BuffDamageAmp", "AD", "StatOmnivamp", "DamageAmp", "{cd951938}"].includes(key)) {
-    return `+${Math.round(value * 100)}%`;
-  }
-  if (["AS", "CritChance"].includes(key)) return `+${Math.round(value)}%`;
-  return `+${Math.round(value)}`;
-};
-
 export function ItemTooltip({ itemId, itemType, visible, position }) {
-  const [data, setData] = useState(() => cache[itemId] || null);
+  const [data, setData] = useState(() => (itemId ? cache[itemId] : null) || null);
 
   useEffect(() => {
     if (!visible || !itemId || cache[itemId]) return;
@@ -34,7 +20,7 @@ export function ItemTooltip({ itemId, itemType, visible, position }) {
       .catch(() => {});
   }, [visible, itemId, itemType]);
 
-  if (!visible || !data) return null;
+  if (!visible || !data || !itemId) return null;
 
   return createPortal(
     <div className="tooltip-container item-tooltip" style={{ top: position.y, left: position.x }}>
@@ -45,29 +31,14 @@ export function ItemTooltip({ itemId, itemType, visible, position }) {
           className="tooltip-item-icon"
           onError={(e) => e.target.style.display = "none"}
         />
-        <span className="tooltip-item-name">{data.name}</span>
-      </div>
-
-      {data.stats && Object.keys(data.stats).some(k => k in stat_map) && (
-        <div className="tooltip-stats-row">
-          {Object.entries(data.stats)
-            .filter(([key]) => key in stat_map)
-            .map(([key, val]) => (
-              <div key={key} className="tooltip-stat-pill">
-                <img src={`/assets/stats/${stat_map[key]}.png`} alt={key} className="tooltip-stat-icon" />
-                <span>{formatStatValue(val, key)}</span>
-              </div>
-            ))}
+        <div className="tooltip-item-header-text">
+          <span className="tooltip-item-name">{data.name}</span>
+          <ItemDescription data={data} showDescription={false} />
         </div>
-      )}
-
-      {data.description && (
-        <p className="tooltip-description">
-          {data.description.split("<keyword>")[0].split("\n").filter(l => l.trim()).map((line, i) => (
-            <span key={i} style={{ display: "block" }}>{line}</span>
-          ))}
-        </p>
-      )}
+      </div>
+      <div className="tooltip-item-body">
+        <ItemDescription data={data} showStats={false} />
+      </div>
     </div>,
     document.body
   );

@@ -9,3 +9,28 @@
       default: return "#ccc";
     }
   };
+
+  export const stat_map = {
+    "AD": "AD", "AP": "AP", "AS": "AS", "Armor": "Armor",
+    "Health": "Health", "MagicResist": "MR", "CritChance": "CritChance",
+    "BuffDamageAmp": "scaleDA", "ManaRegen": "scalemanaregen",
+    "{cd951938}": "scaleDR", "StatOmnivamp": "scaleSV",
+    "DamageAmp": "scaleDA", "BonusDamage": "scaleDA"
+  };
+
+  export const formatStatValue = (value, key) => {
+    if (["BuffDamageAmp", "AD", "StatOmnivamp", "DamageAmp", "{cd951938}", "BonusDamage"].includes(key)) {
+      return `+${Math.round(value * 100)}%`;
+    }
+    if (["AS", "CritChance"].includes(key)) return `+${Math.round(value)}%`;
+    return `+${Math.round(value)}`;
+  };
+
+export const formatItemDescription = (text) => {
+  if (!text) return null;
+  const parts = text.split("<keyword>");
+  return {
+    mainBody: parts[0].split('\n').filter(l => l.trim()),
+    keywords: parts.slice(1).map(kw => kw.replace("</keyword>", "").trim())
+  };
+};
