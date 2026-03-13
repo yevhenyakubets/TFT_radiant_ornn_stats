@@ -11,7 +11,7 @@ import { useSortConfig } from "../hooks/useSortConfig";
 
 
 function ItemRow({ itemId, info, itemFolderPath, activeTab, isValid }) {
-  const { visible, position, handleMouseEnter, handleMouseLeave } = useTooltip(400);
+  const { visible, position, handleMouseEnter, handleMouseMove, handleMouseLeave } = useTooltip(400);
 
   return (
     <tr
@@ -20,6 +20,7 @@ function ItemRow({ itemId, info, itemFolderPath, activeTab, isValid }) {
     >
       <td className="champ-cell"
         onMouseEnter={handleMouseEnter}
+        onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
         <div className="table-icon-wrapper">
