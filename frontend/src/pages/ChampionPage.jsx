@@ -5,6 +5,7 @@ import "../styles/common.css";
 import "../styles/ChampionPage.css";
 import { ItemTooltip } from "../components/ItemTooltip";
 import { useTooltip } from "../hooks/useTooltip";
+import { getRarityColor } from "../utils/helper";
 
 const ChampionAbility = ({ champion }) => {
   if (!champion || !champion.ability_description) return null;
@@ -156,18 +157,6 @@ function ChampionPage() {
   const getSortIcon = (key) => {
     if (sortConfig.key !== key) return <span className="sort-arrow-placeholder"></span>;
     return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
-  };
-
-  const getRarityColor = (cost) => {
-    switch (cost) {
-      case 1: return "rgb(24, 36, 49)";
-      case 2: return "rgb(20, 77, 29)";
-      case 3: return "rgb(28, 52, 93)";
-      case 4: return "rgb(102, 20, 79)";
-      case 5:
-      case 7: return "rgb(134, 84, 11)";
-      default: return "#ccc";
-    }
   };
 
   useEffect(() => {
