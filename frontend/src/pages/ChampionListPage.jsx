@@ -10,14 +10,6 @@ function ChampionsListPage() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const sortTraits = (traits) => {
-    if (!traits) return [];
-    return [...traits].sort((a, b) => {
-      const order = { unique: 1, origin: 2, class: 3 };
-      return (order[a.type] || 4) - (order[b.type] || 4);
-    });
-  };
-
   useEffect(() => {
     fetch("http://127.0.0.1:8000/champions")
       .then(res => res.json())
@@ -59,7 +51,6 @@ function ChampionsListPage() {
       <div className="champions-shop-grid">
         {filteredChampions.map(champ => {
           const rarityColor = getRarityColor(champ.cost);
-          const sortedTraits = sortTraits(champ.traits);
 
           return (
             <div
@@ -76,7 +67,7 @@ function ChampionsListPage() {
                   onError={(e) => { e.target.src = `/assets/champ_logos/${champ.id}.png`; }}
                 />
                 <div className="shop-traits-overlay">
-                  {sortedTraits.map((trait, idx) => (
+                  {champ.traits.map((trait, idx) => (
                     <div key={idx} className="shop-trait-item">
                       <img 
                         src={`/assets/traits/${trait.name.toLowerCase()}.png`} 
