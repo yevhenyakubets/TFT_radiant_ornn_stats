@@ -48,13 +48,13 @@ function ItemListPage() {
     title: "Artifacts",
     endpoint: "artifacts",
     assetFolder: "artifacts",
-    themeColor: "#c8aa6e",
+    themeColor: "#e65d08",
     linkPath: "artifacts"
   } : {
     title: "Radiant Items",
     endpoint: "radiant-items",
     assetFolder: "radiant_items",
-    themeColor: "#31c1ca",
+    themeColor: "#c8aa6e",
     linkPath: "radiant-items"
   };
 
