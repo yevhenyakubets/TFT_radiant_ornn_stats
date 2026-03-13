@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "../styles/Tooltip.css";
 import { getRarityColor } from "../utils/helper";
+import { ChampionAbility } from "./ChampionAbility";
 
 const cache = {};
 
@@ -62,22 +63,7 @@ useEffect(() => {
       {/* Ability Section */}
       {data.ability_name && (
         <div className="tooltip-ability">
-          <div className="tooltip-ability-header">
-            <img
-              src={`/assets/ability_icons/${championId}.png`}
-              alt={data.ability_name}
-              className="tooltip-ability-icon"
-              onError={(e) => e.target.style.display = "none"}
-            />
-            <span className="tooltip-ability-name">{data.ability_name}</span>
-          </div>
-          {data.ability_description && (
-            <p className="tooltip-ability-desc">
-              {data.ability_description.split("<keyword>")[0].split("\n").filter(l => l.trim()).map((line, i) => (
-                <span key={i} style={{ display: "block" }}>{line}</span>
-              ))}
-            </p>
-          )}
+          <ChampionAbility champion={data} />
         </div>
       )}
     </div>
