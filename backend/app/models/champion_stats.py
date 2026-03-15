@@ -7,5 +7,6 @@ class ChampionStat(Base):
 
     champion_id = Column(String, primary_key=True)
     match_id = Column(String, primary_key=True)
+    puuid = Column(String, primary_key=True)
     patch = Column(String)
     placement = Column(Integer)

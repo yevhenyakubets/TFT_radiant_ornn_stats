@@ -41,15 +41,17 @@ def populate_champion_stats():
                     participants = raw["info"]["participants"]
                     for participant in participants:
                         placement = participant["placement"]
+                        puuid = participant["puuid"]
                         for unit in participant["units"]:
                             champion_id = unit["character_id"]
                             db.execute(text("""
-                                INSERT INTO champion_stats (champion_id, match_id, patch, placement)
-                                VALUES (:champion_id, :match_id, :patch, :placement)
-                                ON CONFLICT (champion_id, match_id) DO NOTHING
+                                INSERT INTO champion_stats (champion_id, match_id, puuid, patch, placement)
+                                VALUES (:champion_id, :match_id, :puuid, :patch, :placement)
+                                ON CONFLICT (champion_id, match_id, puuid) DO NOTHING
                             """), {
                                 "champion_id": champion_id,
                                 "match_id": match_id,
+                                "puuid": puuid,
                                 "patch": match_patch,
                                 "placement": placement
                             })
