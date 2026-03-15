@@ -16,7 +16,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173"],  # TODO: Should be envs
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,12 +32,14 @@ def root():
 # CHAMPIONS LIST
 # ================================
 
+
 @app.get("/champions")
 def get_champions():
     db = SessionLocal()
 
     # Use joinedload to avoid N+1 query problem (loading traits for all champs at once)
     from sqlalchemy.orm import joinedload
+
     champions = db.query(Champion).options(joinedload(Champion.traits)).all()
 
     result = [
@@ -45,22 +47,20 @@ def get_champions():
             "id": champ.riot_id,
             "name": champ.name,
             "cost": champ.cost,
-            "traits": get_sorted_traits(champ.traits) # <--- Added
+            "traits": get_sorted_traits(champ.traits),  # <--- Added
         }
         for champ in champions
     ]
 
     db.close()
 
-    return {
-        "count": len(result),
-        "champions": sorted(result, key=lambda c: c["name"])
-    }
+    return {"count": len(result), "champions": sorted(result, key=lambda c: c["name"])}
 
 
 # ================================
 # CHAMPION PAGE
 # ================================
+
 
 @app.get("/champions/{champion_id}")
 def get_champion_items(champion_id: str):
@@ -75,6 +75,7 @@ def get_champion_items(champion_id: str):
 # ================================
 # ITEMS LIST
 # ================================
+
 
 @app.get("/radiant-items")
 def get_radiant_items():
@@ -114,6 +115,7 @@ def get_artifact_items():
 # ARTIFACT PAGE
 # ================================
 
+
 @app.get("/artifacts/{artifact_id}")
 def get_artifact_page(artifact_id: str):
     data = get_item_stats_by_id(artifact_id, "artifact")
@@ -127,6 +129,7 @@ def get_artifact_page(artifact_id: str):
 # ================================
 # RADIANT PAGE
 # ================================
+
 
 @app.get("/radiant-items/{radiant_id}")
 def get_radiant_page(radiant_id: str):

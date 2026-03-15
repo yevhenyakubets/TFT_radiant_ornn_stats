@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.sql import func
 from app.database import Base
 
+
 class ChampionRole(Base):
     __tablename__ = "champion_roles"
 

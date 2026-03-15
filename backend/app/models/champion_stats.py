@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer
 from app.database import Base
 
+
 class ChampionStat(Base):
     __tablename__ = "champion_stats"
 

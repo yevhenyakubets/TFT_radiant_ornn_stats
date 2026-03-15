@@ -11,5 +11,5 @@ class Item(Base):
     name = Column(String, nullable=False)
     type = Column(String, nullable=False)  # "radiant" or "artifact"
 
-    description = Column(Text) # The string with @Variables@
-    effects = Column(JSON)      # The dictionary of stats
+    description = Column(Text)  # The string with @Variables@
+    effects = Column(JSON)  # The dictionary of stats
