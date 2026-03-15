@@ -27,6 +27,7 @@ PATCH_SCHEDULE = {
     "19.2": datetime(2026, 12, 7, tzinfo=timezone.utc),
 }
 
+
 def get_current_patch():
     now = datetime.now(timezone.utc)
 

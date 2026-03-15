@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.sql import func
 from app.database import Base
 
+
 class Role(Base):
     __tablename__ = "roles"
 
