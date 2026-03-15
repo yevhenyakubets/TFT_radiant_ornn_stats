@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import SessionLocal
 from app.models.champion import Champion
 from app.models.items import Item
+from app.models.traits import Trait
 
 from app.services.stats_service import (
     get_champion_special_items,
