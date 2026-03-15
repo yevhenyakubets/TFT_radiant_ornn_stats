@@ -11,3 +11,4 @@ python -m backend.app.scripts.riot_ingest --tier grandmaster
 python -m backend.app.scripts.riot_ingest --tier challenger
 python -m backend.app.scripts.populate_champion_stats_table
 python -m backend.app.scripts.populate_champion_item_stats_table
+python -m backend.app.scripts.db_cleanup
