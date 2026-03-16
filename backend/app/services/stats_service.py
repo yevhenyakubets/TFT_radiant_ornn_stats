@@ -7,6 +7,7 @@ from app.models.champion import Champion
 from app.models.items import Item
 from app.models.champion_item_stats import ChampionItemStats
 from app.models.champion_item_valid_pairs import ChampionItemValidPairs
+from app.models.champion_stats import ChampionStat
 from app.services.patch_service import get_current_patch
 
 
@@ -285,15 +286,6 @@ def get_champion_special_items(champion_riot_id: str):
             champion.ability_desc, champion.ability_variables, champion.name
         )
 
-        total_games = (
-            db.query(func.count())
-            .filter(
-                ChampionItemStats.champion_id == champion.id,
-                ChampionItemStats.normalized_patch == CURRENT_PATCH,
-            )
-            .scalar()
-        )
-
         stats = (
             db.query(
                 ChampionItemStats.item_id,
@@ -308,6 +300,8 @@ def get_champion_special_items(champion_riot_id: str):
             .all()
         )
 
+        total_games = sum(row.count for row in stats)
+
         item_ids = [row.item_id for row in stats]
 
         item_map = {i.id: i for i in db.query(Item).filter(Item.id.in_(item_ids)).all()}
@@ -316,6 +310,18 @@ def get_champion_special_items(champion_riot_id: str):
             row.item_id
             for row in db.query(ChampionItemValidPairs.item_id)
             .filter(ChampionItemValidPairs.champion_id == champion.id)
+            .all()
+        }
+
+        # One query to get overall average placement per item across all champions
+        overall_avgs_by_item_id = {
+            row.item_id: float(row.avg_placement)
+            for row in db.query(
+                ChampionItemStats.item_id,
+                func.avg(ChampionItemStats.placement).label("avg_placement"),
+            )
+            .filter(ChampionItemStats.normalized_patch == CURRENT_PATCH)
+            .group_by(ChampionItemStats.item_id)
             .all()
         }
 
@@ -328,11 +334,15 @@ def get_champion_special_items(champion_riot_id: str):
                 continue
 
             percentage = count / total_games if total_games else 0
+            avg_placement = float(avg)
+            overall_avg = overall_avgs_by_item_id.get(item_id)
+            delta = round(avg_placement - overall_avg, 2) if overall_avg is not None else None
 
             data = {
                 "name": item.name,
                 "count": count,
-                "average_placement": float(avg),
+                "average_placement": avg_placement,
+                "delta": delta,
                 "type": item.type,
                 "valid": item_id in valid_item_ids,
                 "low_sample": percentage < 0.01,
@@ -343,8 +353,8 @@ def get_champion_special_items(champion_riot_id: str):
             elif item.type == "radiant":
                 radiants[item.riot_id] = data
 
-    artifacts = dict(sorted(artifacts.items(), key=lambda x: x[1]["average_placement"]))
-    radiants = dict(sorted(radiants.items(), key=lambda x: x[1]["average_placement"]))
+    artifacts = dict(sorted(artifacts.items(), key=lambda x: (x[1]["average_placement"] is None, x[1]["average_placement"])))
+    radiants = dict(sorted(radiants.items(), key=lambda x: (x[1]["average_placement"] is None, x[1]["average_placement"])))
 
     return {
         "champion": champion.riot_id,
@@ -403,12 +413,13 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
 
         overall_avgs_by_riot_id = {
             row.champion_id: float(row.avg_placement)
-            for row in db.execute(text("""
-                SELECT cs.champion_id, AVG(cs.placement) as avg_placement
-                FROM champion_stats cs
-                INNER JOIN champions c ON c.riot_id = cs.champion_id
-                GROUP BY cs.champion_id
-            """)).fetchall()
+            for row in db.query(
+                ChampionStat.champion_id,
+                func.avg(ChampionStat.placement).label("avg_placement"),
+            )
+            .join(Champion, Champion.riot_id == ChampionStat.champion_id)
+            .group_by(ChampionStat.champion_id)
+            .all()
         }
 
         result = {}
