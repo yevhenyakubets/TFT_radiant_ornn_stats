@@ -1,4 +1,4 @@
-from sqlalchemy import func
+from sqlalchemy import func, text
 import re
 from contextlib import contextmanager
 
@@ -371,15 +371,6 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
 
         readable_desc = render_item_data(item.description, item.effects)
 
-        total_games = (
-            db.query(func.count())
-            .filter(
-                ChampionItemStats.item_id == item.id,
-                ChampionItemStats.normalized_patch == CURRENT_PATCH,
-            )
-            .scalar()
-        )
-
         stats = (
             db.query(
                 ChampionItemStats.champion_id,
@@ -393,6 +384,8 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
             .group_by(ChampionItemStats.champion_id)
             .all()
         )
+
+        total_games = sum(row.count for row in stats)
 
         champion_ids = [row.champion_id for row in stats]
 
@@ -408,6 +401,16 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
             .all()
         }
 
+        overall_avgs_by_riot_id = {
+            row.champion_id: float(row.avg_placement)
+            for row in db.execute(text("""
+                SELECT cs.champion_id, AVG(cs.placement) as avg_placement
+                FROM champion_stats cs
+                INNER JOIN champions c ON c.riot_id = cs.champion_id
+                GROUP BY cs.champion_id
+            """)).fetchall()
+        }
+
         result = {}
 
         for champion_id, count, avg in stats:
@@ -416,17 +419,21 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
                 continue
 
             percentage = count / total_games if total_games else 0
+            avg_placement = float(avg)
+            overall_avg = overall_avgs_by_riot_id.get(champion.riot_id)
+            delta = round(avg_placement - overall_avg, 2) if overall_avg is not None else None
 
             result[champion.riot_id] = {
                 "name": champion.name,
                 "count": count,
-                "average_placement": float(avg),
+                "average_placement": avg_placement,
+                "delta": delta,
                 "valid": champion_id in valid_champion_ids,
                 "low_sample": percentage < 0.01,
             }
 
     sorted_result = dict(
-        sorted(result.items(), key=lambda x: x[1]["average_placement"])
+    sorted(result.items(), key=lambda x: (x[1]["delta"] is None, x[1]["delta"]))
     )
 
     return {
