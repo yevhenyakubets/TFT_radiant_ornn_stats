@@ -8,6 +8,7 @@ import { useTooltip } from "../hooks/useTooltip";
 import { getRarityColor } from "../utils/helper";
 import ChampionAbility from "../components/ChampionAbility";
 import { useSortConfig } from "../hooks/useSortConfig";
+import { getDeltaColor } from '../utils/helper';
 
 
 function ItemRow({ itemId, info, itemFolderPath, activeTab, isValid }) {
@@ -35,6 +36,9 @@ function ItemRow({ itemId, info, itemFolderPath, activeTab, isValid }) {
         <span className="champ-name-text">{info.name}</span>
       </td>
       <td className="col-count">{info.count.toLocaleString()}</td>
+      <td className="col-delta" style={{ color: getDeltaColor(info.delta) }}>
+        {info.delta !== null ? (info.delta > 0 ? `+${info.delta}` : info.delta) : '—'}
+      </td>
       <td className="col-avg">{info.average_placement.toFixed(2)}</td>
       <ItemTooltip itemId={itemId} itemType={activeTab === 'artifact' ? 'artifact' : 'radiant'} visible={visible} position={position} />
     </tr>
@@ -150,6 +154,7 @@ function ChampionPage() {
                 Item {getSortIcon('name')}
               </th>
               <th onClick={() => requestSort('count')}>Frequency {getSortIcon('count')}</th>
+              <th onClick={() => requestSort('delta')}>Delta {getSortIcon('delta')}</th>
               <th onClick={() => requestSort('average_placement')}>Avg Place {getSortIcon('average_placement')}</th>
             </tr>
           </thead>

@@ -5,6 +5,7 @@ import "../styles/ItemPage.css";
 import { ChampionTooltip } from "../components/ChampionTooltip";
 import { useTooltip } from "../hooks/useTooltip";
 import { useSortConfig } from "../hooks/useSortConfig";
+import { getDeltaColor } from "../utils/helper";
 import ItemDescription from "../components/ItemDescription";
 
 function ChampionRow({ champId, info }) {
@@ -31,6 +32,9 @@ function ChampionRow({ champId, info }) {
         <span className="champ-name-text">{info.name}</span>
       </td>
       <td className="col-count">{info.count.toLocaleString()}</td>
+      <td className="col-delta" style={{ color: getDeltaColor(info.delta) }}>
+        {info.delta !== null ? (info.delta > 0 ? `+${info.delta}` : info.delta) : '—'}
+      </td>
       <td className="col-avg">{info.average_placement.toFixed(2)}</td>
       <ChampionTooltip championId={champId} visible={visible} position={position} />
     </tr>
@@ -42,7 +46,7 @@ function ItemPage() {
   const location = useLocation();
   const isArtifact = location.pathname.includes("artifact");
 
-  const { sortConfig, requestSort, getSortIcon } = useSortConfig('average_placement');
+  const { sortConfig, requestSort, getSortIcon } = useSortConfig('delta');
 
   const config = isArtifact ? {
     endpoint: "artifacts",
@@ -124,6 +128,7 @@ function ItemPage() {
                 Champion {getSortIcon('name')}
               </th>
               <th onClick={() => requestSort('count')}>Frequency {getSortIcon('count')}</th>
+              <th onClick={() => requestSort('delta')}>Delta {getSortIcon('delta')}</th>
               <th onClick={() => requestSort('average_placement')}>Avg Place {getSortIcon('average_placement')}</th>
             </tr>
           </thead>

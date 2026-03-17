@@ -34,3 +34,10 @@ export const formatItemDescription = (text) => {
     keywords: parts.slice(1).map(kw => kw.replace("</keyword>", "").trim())
   };
 };
+
+export const getDeltaColor = (delta) => {
+  if (delta === null || delta === undefined) return 'var(--text-main)';
+  if (delta < 0) return 'var(--utility-green)';
+  if (delta > 0) return 'var(--physical-damage)';
+  return 'var(--text-main)';
+};
