@@ -66,10 +66,6 @@ function HomePage() {
           </div>
         ))}
       </div>
-
-      <div className="footer-decoration">DATA POWERED BY RIOT GAMES API
-        , Fonts made from <a href="http://www.onlinewebfonts.com">Web Fonts</a> is licensed by CC BY 4.0
-      </div>
     </div>
     
   );
