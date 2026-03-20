@@ -30,7 +30,7 @@ export const formatItemDescription = (text) => {
   if (!text) return null;
   const parts = text.split("<keyword>");
   return {
-    mainBody: parts[0].split('\n').filter(l => l.trim()),
+    mainBody: parts[0].split('\n').filter(l => l.trim() && l.trim() !== 'X'),
     keywords: parts.slice(1).map(kw => kw.replace("</keyword>", "").trim())
   };
 };
