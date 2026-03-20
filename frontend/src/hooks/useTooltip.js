@@ -1,11 +1,33 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 export function useTooltip(delay = 400) {
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const timerRef = useRef(null);
+  const elementRef = useRef(null);
+
+  useEffect(() => {
+    const handleGlobalMove = (e) => {
+      if (!visible) return;
+      if (!elementRef.current) return;
+      const rect = elementRef.current.getBoundingClientRect();
+      const inside =
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom;
+      if (!inside) {
+        clearTimeout(timerRef.current);
+        setVisible(false);
+      }
+    };
+
+    document.addEventListener("mousemove", handleGlobalMove);
+    return () => document.removeEventListener("mousemove", handleGlobalMove);
+  }, [visible]);
 
   const handleMouseEnter = useCallback((e) => {
+    elementRef.current = e.currentTarget;
     const x = e.clientX;
     const y = e.clientY;
     const tooltipWidth = 320;
@@ -25,6 +47,7 @@ export function useTooltip(delay = 400) {
   }, [delay]);
 
   const handleMouseMove = useCallback((e) => {
+    elementRef.current = e.currentTarget;
     const x = e.clientX;
     const y = e.clientY;
     const tooltipWidth = 320;
@@ -42,10 +65,10 @@ export function useTooltip(delay = 400) {
   }, []);
 
   const handleMouseLeave = useCallback((e) => {
-  if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) return;
-  clearTimeout(timerRef.current);
-  setVisible(false);
-}, []);
+    if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) return;
+    clearTimeout(timerRef.current);
+    setVisible(false);
+  }, []);
 
   return { visible, position, handleMouseEnter, handleMouseMove, handleMouseLeave };
 }
