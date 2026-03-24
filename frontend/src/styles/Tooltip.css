@@ -1,5 +1,5 @@
 .tooltip-container {
-  position: fixed;  /* changed from absolute */
+  position: fixed;
   z-index: 9999;
   width: 320px;
   background: #0c1218;
@@ -9,7 +9,6 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
   pointer-events: none;
   animation: tooltip-fade-in 0.15s ease;
-  /* isolation: isolate; */
 }
 
 @keyframes tooltip-fade-in {
@@ -17,7 +16,6 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Champion Tooltip */
 .champion-tooltip .shop-card {
   border-radius: 0;
   border: none;
@@ -56,7 +54,6 @@
   line-height: 1.5;
 }
 
-/* Item Tooltip */
 .item-tooltip {
   padding: 14px;
 }

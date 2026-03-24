@@ -79,7 +79,7 @@ def run():
         print(f"Current scheduled patch: {target_patch}")
 
         matches = (
-            db.execute(select(Match).where(Match.processed == False)).scalars().all()
+            db.execute(select(Match).where(not Match.processed)).scalars().all()
         )
 
         champion_map = {
@@ -102,7 +102,6 @@ def run():
 
             normalized_patch = get_patch_for_timestamp(timestamp)
 
-            # Only process matches from CURRENT patch
             if normalized_patch != target_patch:
                 continue
 

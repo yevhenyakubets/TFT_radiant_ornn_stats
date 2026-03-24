@@ -6,12 +6,11 @@ import "../styles/SearchBar.css";
 function SearchBar({ customStyles = {}, inputStyles = {} }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1); // New: Track keyboard position
+  const [activeIndex, setActiveIndex] = useState(-1);
   const searchPool = useSearchData();
   const navigate = useNavigate();
   const wrapperRef = useRef(null);
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
@@ -22,7 +21,6 @@ function SearchBar({ customStyles = {}, inputStyles = {} }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Reset active index when search results change
   const results = query.length > 1
     ? searchPool
         .filter(item => item.name?.toLowerCase().includes(query.toLowerCase()))
@@ -70,7 +68,7 @@ function SearchBar({ customStyles = {}, inputStyles = {} }) {
         onChange={(e) => {
           setQuery(e.target.value);
           setIsOpen(true);
-          setActiveIndex(-1); // <-- ADD THIS LINE HERE
+          setActiveIndex(-1);
         }}
         onKeyDown={handleKeyDown}
         className="searchbar-input"
@@ -82,8 +80,8 @@ function SearchBar({ customStyles = {}, inputStyles = {} }) {
           {results.map((item, index) => (
             <div
               key={`${item.type}-${item.id}`}
-              className={`searchbar-result-item ${index === activeIndex ? "active" : ""}`} // New: Active class
-              onMouseEnter={() => setActiveIndex(index)} // Optional: sync hover with keyboard index
+              className={`searchbar-result-item ${index === activeIndex ? "active" : ""}`}
+              onMouseEnter={() => setActiveIndex(index)}
               onClick={() => {
                 navigate(item.route);
                 setIsOpen(false);

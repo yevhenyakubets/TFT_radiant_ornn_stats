@@ -53,19 +53,19 @@
 .searchbar-result-text {
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Keeps text vertically centered relative to the icon */
-  align-items: flex-start;  /* Ensures all lines start at the left */
+  justify-content: center;
+  align-items: flex-start;
   line-height: 1.2;
-  flex: 1;                  /* New: Allows text container to fill remaining space */
-  min-width: 0;             /* New: Prevents flex children from overflowing */
+  flex: 1;
+  min-width: 0;
 }
 
 .searchbar-result-name {
   color: white;
   font-size: 1.1rem;
   font-weight: 600;
-  text-align: left;         /* New: Forces the actual text to align left if it wraps */
-  width: 100%;              /* New: Ensures it takes up the full width of the container */
+  text-align: left;
+  width: 100%;
 }
 
 .searchbar-result-type {
@@ -76,15 +76,13 @@
   margin-top: 2px;
 }
 
-/* Existing hover style */
 .searchbar-result-item:hover,
-.searchbar-result-item.active { /* Add .active here */
+.searchbar-result-item.active {
   background-color: #2d2d31;
-  border-left: 3px solid #ca9333; /* Optional: adds a nice "selected" accent line */
-  padding-left: 12px; /* Adjust padding if adding a border accent */
+  border-left: 3px solid #ca9333;
+  padding-left: 12px;
 }
 
-/* Ensure the accent doesn't shift text too much */
 .searchbar-result-item {
   display: flex;
   align-items: center;
@@ -92,6 +90,6 @@
   padding: 8px 15px;
   cursor: pointer;
   border-bottom: 1px solid #2d2d31;
-  border-left: 3px solid transparent; /* Match the active border width */
-  transition: all 0.2s; /* Changed to 'all' to animate padding/border */
+  border-left: 3px solid transparent;
+  transition: all 0.2s;
 }

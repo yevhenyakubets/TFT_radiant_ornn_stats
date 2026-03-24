@@ -1,4 +1,3 @@
-// hooks/useSortConfig.js
 import { useState } from "react";
 
 export function useSortConfig(defaultKey = 'average_placement') {

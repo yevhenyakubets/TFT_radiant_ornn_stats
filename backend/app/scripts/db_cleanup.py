@@ -8,21 +8,18 @@ def cleanup_old_data():
     print(f"Current patch: {current_patch}, cleaning up old and processed data...")
 
     try:
-        # --- Clean champion_item_stats (old patch only) ---
         deleted_cis = db.execute(text("""
             DELETE FROM champion_item_stats
             WHERE normalized_patch != :current_patch
         """), {"current_patch": current_patch}).rowcount
         print(f"Deleted {deleted_cis} champion_item_stats rows.")
 
-        # --- Clean champion_stats (old patch only) ---
         deleted_cs = db.execute(text("""
             DELETE FROM champion_stats
             WHERE patch != :current_patch
         """), {"current_patch": current_patch}).rowcount
         print(f"Deleted {deleted_cs} champion_stats rows.")
 
-        # --- Clean matches ---
         print("Fetching matches...")
         matches = db.execute(text("""
             SELECT match_id,

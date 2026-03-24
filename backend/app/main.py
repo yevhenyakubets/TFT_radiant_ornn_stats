@@ -28,16 +28,10 @@ def root():
     return {"status": "ok"}
 
 
-# ================================
-# CHAMPIONS LIST
-# ================================
-
-
 @app.get("/champions")
 def get_champions():
     db = SessionLocal()
 
-    # Use joinedload to avoid N+1 query problem (loading traits for all champs at once)
     from sqlalchemy.orm import joinedload
 
     champions = db.query(Champion).options(joinedload(Champion.traits)).all()
@@ -47,7 +41,7 @@ def get_champions():
             "id": champ.riot_id,
             "name": champ.name,
             "cost": champ.cost,
-            "traits": get_sorted_traits(champ.traits),  # <--- Added
+            "traits": get_sorted_traits(champ.traits),
         }
         for champ in champions
     ]
@@ -56,10 +50,6 @@ def get_champions():
 
     return {"count": len(result), "champions": sorted(result, key=lambda c: c["name"])}
 
-
-# ================================
-# CHAMPION PAGE
-# ================================
 
 
 @app.get("/champions/{champion_id}")
@@ -72,9 +62,6 @@ def get_champion_items(champion_id: str):
     return data
 
 
-# ================================
-# ITEMS LIST
-# ================================
 
 
 @app.get("/radiant-items")
@@ -111,10 +98,6 @@ def get_artifact_items():
     return result
 
 
-# ================================
-# ARTIFACT PAGE
-# ================================
-
 
 @app.get("/artifacts/{artifact_id}")
 def get_artifact_page(artifact_id: str):
@@ -126,9 +109,6 @@ def get_artifact_page(artifact_id: str):
     return data
 
 
-# ================================
-# RADIANT PAGE
-# ================================
 
 
 @app.get("/radiant-items/{radiant_id}")

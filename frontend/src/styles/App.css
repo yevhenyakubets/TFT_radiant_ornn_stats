@@ -18,9 +18,9 @@
 }
 
 body {
-   margin: 0;          /* This removes the white gaps around the edges */
-  padding: 0;          /* Optional: ensures no internal gaps either */
-  overflow-x: hidden;  /* Optional: prevents accidental horizontal scrolling */
+   margin: 0;
+  padding: 0;
+  overflow-x: hidden;
   font-family: 'Beaufort W01 Regular';
 }
 
@@ -47,28 +47,21 @@ body {
   color: #888;
 }
 
-/* .description-text {
-  line-height: 1.6;
-  color: #e0e0e0;
-  font-size: 0.95rem;
-} */
-
-/* Optional: If you want to highlight the scaling tags we created */
 .description-text :contains("(AP)") {
-  color: #ff00ff; /* AP Purple */
+  color: #ff00ff;
   font-weight: bold;
 }
 
 .description-text :contains("(AD)") {
-  color: #ffa500; /* AD Orange */
+  color: #ffa500;
   font-weight: bold;
 }
 
 @font-face {
-  font-family: 'Beaufort W01 Regular'; /* A name you choose to use later */
+  font-family: 'Beaufort W01 Regular';
   src: url('assets/fonts/Beaufort W01 Regular.woff2') format('woff2'),
        url('assets/fonts/Beaufort W01 Regular.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-  font-display: swap; /* Controls font loading behavior */
+  font-display: swap;
 }

@@ -9,7 +9,7 @@ class Item(Base):
     id = Column(Integer, primary_key=True)
     riot_id = Column(String, unique=True, nullable=False)
     name = Column(String, nullable=False)
-    type = Column(String, nullable=False)  # "radiant" or "artifact"
+    type = Column(String, nullable=False)
 
-    description = Column(Text)  # The string with @Variables@
-    effects = Column(JSON)  # The dictionary of stats
+    description = Column(Text)
+    effects = Column(JSON)

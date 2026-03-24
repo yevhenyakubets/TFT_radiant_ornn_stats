@@ -149,7 +149,6 @@ SPECIFIC_EXCEPTIONS = {
     },
     "rumble": {
         "modifiedshield": (["apshield"], None),
-        # PercentArmorDamage * Base Armor (60)
         "totaldamage": (["percentarmordamage*40"], None),
     },
     "ryze": {
@@ -257,13 +256,10 @@ def get_sorted_traits(traits):
     Filters out 'duo' traits, then sorts: Unique > Origin > Class.
     Alphabetical within the same type.
     """
-    # 1. Filter out duo traits immediately
     filtered_traits = [t for t in traits if t.type != "duo"]
 
-    # 2. Define priority weights for the remaining types
     priority = {"unique": 0, "origin": 1, "class": 2}
 
-    # 3. Sort by priority first, then by name
     sorted_list = sorted(
         filtered_traits, key=lambda t: (priority.get(t.type, 99), t.name)
     )
@@ -313,7 +309,6 @@ def get_champion_special_items(champion_riot_id: str):
             .all()
         }
 
-        # One query to get overall average placement per item across all champions
         overall_avgs_by_item_id = {
             row.item_id: float(row.avg_placement)
             for row in db.query(
@@ -477,7 +472,6 @@ def _resolve_token_fuzzy(token_lower: str, stats: dict) -> dict | None:
     if not matches:
         return None
 
-    # Prefer non-percent/non-ratio vars — only fall back to them if nothing else found
     non_percent = {
         k: v for k, v in matches.items() if "percent" not in k and "ratio" not in k
     }
@@ -489,8 +483,6 @@ def render_champion_description(desc, data_block, champion_name):
     if not desc:
         return ""
 
-    # 1. CLEANING
-    # Replace tags + the word that follows them to avoid duplication
     desc = re.sub(
         r"<spellPassive>\s*Passive\s*:\s*</spellPassive>\s*",
         "\nPassive: ",
@@ -503,7 +495,6 @@ def render_champion_description(desc, data_block, champion_name):
         desc,
         flags=re.IGNORECASE,
     )
-    # Fallback in case some champions don't have the word inside the tag
     desc = re.sub(r"<spellPassive>|</spellPassive>", "", desc, flags=re.IGNORECASE)
     desc = re.sub(r"<spellActive>|</spellActive>", "", desc, flags=re.IGNORECASE)
     desc = re.sub(r"<br\s*/?>", "\n", desc, flags=re.IGNORECASE)
@@ -511,7 +502,6 @@ def render_champion_description(desc, data_block, champion_name):
     desc = desc.replace("&nbsp;", " ")
     desc = re.sub(r"%i:(?!scale)[^%]+%", "", desc)
 
-    # 2. DATA PREP
     stats = {v["name"].strip().lower(): v["value"] for v in data_block.get("vars", [])}
 
     if not champion_name:
@@ -531,7 +521,6 @@ def render_champion_description(desc, data_block, champion_name):
         "modifieddamagereduction",
     ]
 
-    # 3. HELPER FUNCTIONS
     def needs_percent_suffix(token_lower):
         return any(kw in token_lower for kw in PERCENT_TOKENS)
 
@@ -549,7 +538,6 @@ def render_champion_description(desc, data_block, champion_name):
             return f"{vals[0]}{suffix}/{vals[1]}{suffix}"
         return "/".join(f"{v}{suffix}" for v in str_vals)
 
-    # 4. ICON REPLACEMENT
     icon_map = {
         "%i:scaleap%": "AP",
         "%i:scalead%": "AD",
@@ -570,7 +558,6 @@ def render_champion_description(desc, data_block, champion_name):
 
     desc = re.sub(r"\((%i:scale\w+%)+\)", clean_icons, desc, flags=re.IGNORECASE)
 
-    # 5. TOKEN REPLACEMENT
     def replace_token(match):
         raw_token = match.group(1)
         multiplier = 1.0
@@ -585,7 +572,6 @@ def render_champion_description(desc, data_block, champion_name):
 
         token_lower = token_name.lower().strip()
 
-        # --- SETUP BASE STATS ---
         base_info = CHAMP_BASE_STATS.get(champ_key, {"hp": 0, "ad": 0})
         scaling_map = {
             1: {"hp": (base_info.get("hp") or 0), "ad": (base_info.get("ad") or 0)},
@@ -669,10 +655,9 @@ def render_champion_description(desc, data_block, champion_name):
                 if not is_time and is_percent and 0 < final < 2:
                     final *= 100
                 formatted = round(final, 2) if is_time else round(final)
-                star_values.append(formatted)  # always raw number now
+                star_values.append(formatted)
             return format_star_values(star_values, suffix)
 
-        # FUZZY RESOLUTION
         fuzzy_matches = _resolve_token_fuzzy(token_lower, stats)
         if fuzzy_matches:
             star_values = []
@@ -712,7 +697,6 @@ def render_champion_description(desc, data_block, champion_name):
                 star_values.append(formatted)
             return format_star_values(star_values, suffix)
 
-        # STANDARD AGGREGATION FALLBACK
         base_name = token_lower.replace("modified", "").replace("total", "")
         relevant_vals = [
             val
@@ -749,23 +733,18 @@ def render_champion_description(desc, data_block, champion_name):
             star_values.append(formatted)
         return format_star_values(star_values, suffix)
 
-    # 6. KEYWORD HANDLING
 
-    # Execute Token Replacement
     final_desc = re.sub(r"@([^@]+)@", replace_token, desc)
     final_desc = final_desc.replace("%%", "%")
 
-    # Process Keywords
     found_keywords = []
     for key, text in keyword_map.items():
         if key in final_desc:
             final_desc = final_desc.replace(key, "")
             found_keywords.append(text)
 
-    # Cleanup extra whitespace before adding keyword block
     final_desc = re.sub(r"[^\S\n]+", " ", final_desc).strip()
 
-    # Append keyword block at the bottom
     if found_keywords:
         keyword_block = "\n" + "\n".join(
             [f"<keyword>{kw}</keyword>" for kw in found_keywords]
@@ -779,10 +758,8 @@ def render_item_data(desc, effects_raw):
     if not desc:
         return "", effects_raw
 
-    # 1. CLEAN HTML AND ITEM RULE TAGS
     desc = re.sub(r"<br\s*/?>", "\n", desc, flags=re.IGNORECASE)
 
-    # Preserve content of various tags but remove the tags themselves
     desc = re.sub(
         r"<TFTShadowItemBonus>(.*?)</TFTShadowItemBonus>",
         r"\1",
@@ -802,7 +779,6 @@ def render_item_data(desc, effects_raw):
         r"<tftbold>(.*?)</tftbold>", r"\1", desc, flags=re.IGNORECASE | re.DOTALL
     )
 
-    # Remove tracker labels and their associated highlight values entirely
     desc = re.sub(
         r"<TFTTrackerLabel>.*?</TFTTrackerLabel>\s*<TFTHighlight>.*?</TFTHighlight>",
         "",
@@ -810,7 +786,6 @@ def render_item_data(desc, effects_raw):
         flags=re.IGNORECASE | re.DOTALL,
     )
 
-    # Extract flavor text from rule tags BEFORE removing them (still raw, tokens unresolved)
     flavor_texts_raw = re.findall(
         r"<tftitemrules>(.*?)</tftitemrules>", desc, flags=re.IGNORECASE | re.DOTALL
     )
@@ -819,13 +794,11 @@ def render_item_data(desc, effects_raw):
     )
     flavor_texts_raw = [t.strip() for t in flavor_texts_raw if t.strip()]
 
-    # Remove rule tags and their content from main desc
     desc = re.sub(
         r"<tftitemrules>.*?</tftitemrules>", "", desc, flags=re.IGNORECASE | re.DOTALL
     )
     desc = re.sub(r"<rules>.*?</rules>", "", desc, flags=re.IGNORECASE | re.DOTALL)
 
-    # Protect keyword tags from general stripping
     desc = re.sub(
         r"<keyword>(.*?)</keyword>",
         r"KEYWORD_START\1KEYWORD_END",
@@ -833,17 +806,14 @@ def render_item_data(desc, effects_raw):
         flags=re.IGNORECASE | re.DOTALL,
     )
 
-    # Remove remaining tags and clean whitespace
     desc = re.sub(r"<[^>]*>", "", desc)
     desc = desc.replace("&nbsp;", " ")
     desc = desc.replace("KEYWORD_START", "<keyword>").replace(
         "KEYWORD_END", "</keyword>"
     )
 
-    # Remove all icon tokens entirely
     desc = re.sub(r"%i:[^%]+%", "", desc)
 
-    # 2. TOKEN REPLACEMENT FUNCTION
     def replace_token(token_str):
         if "TFTUnitProperty" in token_str:
             return "X"
@@ -867,27 +837,18 @@ def render_item_data(desc, effects_raw):
     def replace_token_match(match):
         return replace_token(match.group(1))
 
-    # 3. RENDER MAIN DESCRIPTION
     rendered_desc = re.sub(r"@([^@]+)@", replace_token_match, desc)
 
-    # Remove lines that contained TFTUnitProperty — now returns "X" so skip this
-    # (X is the desired output per requirements)
-
-    # 4. PROCESS FLAVOR TEXTS — resolve tokens THEN extract as keywords
     STRIP_FROM_KEYWORDS = ["[Direct damage item]"]
     found_keywords = []
 
-    # First: Handle Map-based keywords (Sunder, Shred, etc.)
     for key, text in keyword_map.items():
         if key in rendered_desc:
             rendered_desc = rendered_desc.replace(key, "")
             found_keywords.append(re.sub(r"<[^>]*>", "", text).strip())
 
-    # Second: Process flavor texts with token replacement
     for raw_text in flavor_texts_raw:
-        # Resolve tokens inside the flavor text
         resolved = re.sub(r"@([^@]+)@", replace_token_match, raw_text)
-        # Strip remaining tags
         resolved = re.sub(
             r"<tftbold>(.*?)</tftbold>",
             r"\1",
@@ -902,16 +863,12 @@ def render_item_data(desc, effects_raw):
         if not resolved:
             continue
 
-        # Split on newlines first to handle multiple items in one block
         lines = [line.strip() for line in resolved.split("\n") if line.strip()]
 
         for line in lines:
-            # Skip blacklisted entries
             if line in STRIP_FROM_KEYWORDS:
                 continue
 
-            # Split if multiple keywords are stuck together
-            # But protect known two-word prefixes first
             line = line.replace("Dash Cooldown:", "DASH_COOLDOWN_PLACEHOLDER")
             sub_parts = re.split(r"(?=[A-Z][a-z]+:)", line)
             for part in sub_parts:
@@ -921,7 +878,6 @@ def render_item_data(desc, effects_raw):
                 if part:
                     found_keywords.append(part)
 
-    # 5. FINAL CLEANUP & APPEND
     rendered_desc = re.sub(r"[^\S\n]+", " ", rendered_desc)
     rendered_desc = re.sub(r"\n{3,}", "\n\n", rendered_desc).strip()
 
@@ -936,7 +892,6 @@ def render_item_data(desc, effects_raw):
         )
         rendered_desc = rendered_desc.rstrip() + keyword_block
 
-    # 6. CLEAN UP EFFECTS FOR FRONTEND
     cleaned_effects = {}
     for key, val in effects_raw.items():
         if isinstance(val, (int, float)):

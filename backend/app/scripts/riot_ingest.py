@@ -32,9 +32,6 @@ def get_existing_match_ids(db):
     return set(r[0] for r in rows)
 
 
-# ---------- Utility: Safe Request with Rate Handling ----------
-
-
 def riot_get(url, params=None):
     headers = {"X-Riot-Token": os.getenv("RIOT_API_KEY")}
     while True:
@@ -50,30 +47,24 @@ def riot_get(url, params=None):
         return response.json()
 
 
-# ---------- Step 1: Get PUUIDs ----------
-
 
 def get_puuids_by_tier(tier: str, division: str | None):
     if tier in ["challenger", "grandmaster", "master"]:
         url = f"{PLATFORM_URL}/tft/league/v1/{tier}"
-        # Use your safe helper here!
         data = riot_get(url)
         return [entry["puuid"] for entry in data.get("entries", [])]
     else:
         puuids = []
         page = 1
         while True:
-            # Note: Move api_key to headers via riot_get or keep in URL
             url = f"{PLATFORM_URL}/tft/league/v1/entries/{tier.upper()}/{division}"
             params = {"page": page}
 
-            # Use your safe helper!
             data = riot_get(url, params=params)
 
             if not data:
                 break
 
-            # Safety check: ensure data is a list
             if isinstance(data, list):
                 puuids.extend([entry["puuid"] for entry in data])
                 print(f"Fetched page {page} - {len(data)} players")
@@ -82,32 +73,25 @@ def get_puuids_by_tier(tier: str, division: str | None):
                 break
 
             page += 1
-            # Optional: Sleep slightly to be kind to the League API
             time.sleep(0.05)
 
         return puuids
 
 
-# ---------- Step 2: Get Match IDs ----------
 
 
 def get_match_ids(puuid, start_time=None, count=20):
     url = f"{REGIONAL_URL}/tft/match/v1/matches/by-puuid/{puuid}/ids"
     params = {"start": 0, "count": count}
     if start_time:
-        params["start_time"] = int(start_time)  # Epoch seconds
+        params["start_time"] = int(start_time)
     return riot_get(url, params=params)
-
-
-# ---------- Step 3: Get Match Details ----------
 
 
 def get_match(match_id):
     url = f"{REGIONAL_URL}/tft/match/v1/matches/{match_id}"
     return riot_get(url)
 
-
-# ---------- Step 4: Insert Match ----------
 
 
 def insert_match(db: Session, match_id: str, data: dict):
@@ -147,16 +131,12 @@ def parse_args():
     return parser.parse_args()
 
 
-# ---------- Main Pipeline ----------
-
 
 def run():
     db = SessionLocal()
 
-    # 1. Determine the current patch and its start threshold
     current_patch_name = get_current_patch()
     patch_start_dt = PATCH_SCHEDULE.get(current_patch_name)
-    # Convert datetime to epoch seconds for the API parameter
     start_time_epoch = int(patch_start_dt.timestamp()) if patch_start_dt else None
 
     print(f"Targeting Patch: {current_patch_name} (Starting {patch_start_dt})")
@@ -165,28 +145,21 @@ def run():
     existing_match_ids = get_existing_match_ids(db)
     args = parse_args()
 
-    # ... (args validation logic)
 
     puuids = get_puuids_by_tier(args.tier, args.division)
 
     for puuid in puuids:
-        # Fetch IDs newest -> oldest
         match_ids = get_match_ids(puuid, start_time=start_time_epoch)
 
         for match_id in match_ids:
-            # 1. Skip immediately if we already have it in DB
             if match_id in existing_match_ids:
                 continue
 
-            # 2. Fetch match details
             match_data = get_match(match_id)
 
             game_ms = match_data.get("info", {}).get("game_datetime")
             match_patch = get_patch_for_timestamp(game_ms)
 
-            # 3. THE OPTIMIZATION:
-            # If this match is from an old patch, all matches after it (older)
-            # are also invalid. Break the loop for this player.
             if match_patch != current_patch_name:
                 print(
                     f"Reached end of patch for player (Match {match_id} is {match_patch}). Moving to next player."

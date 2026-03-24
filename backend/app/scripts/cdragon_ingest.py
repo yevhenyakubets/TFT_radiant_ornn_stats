@@ -15,7 +15,6 @@ def sync_data():
     response = requests.get(CDRAGON_URL)
     data = response.json()
 
-    # 1. Sync Items
     print("\n--- Syncing Items ---")
     for item_data in data.get("items", []):
         riot_id = item_data.get("apiName")
@@ -25,17 +24,14 @@ def sync_data():
             new_desc = item_data.get("desc")
             new_effects = item_data.get("effects")
 
-            # Only update if the description or effects have changed
             if db_item.description != new_desc or db_item.effects != new_effects:
                 db_item.description = new_desc
                 db_item.effects = new_effects
                 print(f"  [UPDATED] {db_item.name}")
             else:
-                pass  # No change detected
+                pass
 
-    # 2. Sync Champions
     print("\n--- Syncing Champions ---")
-    # Accessing Set 16 Champions
     champions_list = data.get("sets", {}).get("16", {}).get("champions", [])
 
     for unit_data in champions_list:
@@ -47,14 +43,11 @@ def sync_data():
             new_ability_name = ability.get("name")
             new_ability_desc = ability.get("desc")
 
-            # Prepare the new merged data for comparison
             new_merged_data = {
                 "vars": ability.get("variables", []),
                 "calculations": ability.get("calculations", {}),
             }
 
-            # Comparison Check
-            # Note: Python dictionaries/lists comparison works deep-level here
             has_changes = (
                 db_char.ability_name != new_ability_name
                 or db_char.ability_desc != new_ability_desc
@@ -67,7 +60,7 @@ def sync_data():
                 db_char.ability_variables = new_merged_data
                 print(f"  [UPDATED] {db_char.name}")
             else:
-                pass  # Already up to date
+                pass
 
     print("\nFinalizing changes...")
     db.commit()

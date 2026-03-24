@@ -1,6 +1,5 @@
-/* src/index.css */
 html, body, #root {
   width: 100%;
   min-height: 100vh;
-  background-color: rgb(1, 10, 19); /* Force the whole browser to be dark */
+  background-color: rgb(1, 10, 19);
 }

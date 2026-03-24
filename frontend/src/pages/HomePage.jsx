@@ -9,19 +9,19 @@ function HomePage() {
     {
       name: "Champions",
       path: "/champions",
-      icon: "champions.png", // Corrected filename
+      icon: "champions.png",
       description: "Find the best items for specified champions."
     },
     {
       name: "Artifacts",
       path: "/artifacts",
-      icon: "artifacts.png", // Corrected filename
+      icon: "artifacts.png",
       description: "Find the best users for specified Artifacts."
     },
     {
       name: "Radiant Items",
       path: "/radiant-items",
-      icon: "radiant-items.png", // Corrected filename
+      icon: "radiant-items.png",
       description: "Find the best users for specified Radiant items."
     }
   ];
