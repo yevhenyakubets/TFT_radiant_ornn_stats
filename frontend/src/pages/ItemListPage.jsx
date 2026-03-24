@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/common.css";
 import { ItemTooltip } from "../components/ItemTooltip";
 import { useTooltip } from "../hooks/useTooltip";
+import { apiClient } from '../api';
 
 function ItemCard({ item, config }) {
   const { visible, position, handleMouseEnter, handleMouseMove, handleMouseLeave } = useTooltip(400);
@@ -61,8 +62,7 @@ function ItemListPage() {
 
   useEffect(() => {
     let isMounted = true;
-    fetch(`http://127.0.0.1:8000/${config.endpoint}`)
-      .then(res => res.json())
+    apiClient.get(`/${config.endpoint}`)
       .then(data => {
         if (isMounted) { setItems(Object.values(data)); setLoading(false); }
       })

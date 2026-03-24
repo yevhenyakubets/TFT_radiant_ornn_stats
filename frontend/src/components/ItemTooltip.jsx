@@ -2,23 +2,26 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import "../styles/Tooltip.css";
 import ItemDescription from "./ItemDescription";
+import { apiClient } from '../api';
 
 const cache = {};
 
 export function ItemTooltip({ itemId, itemType, visible, position }) {
   const [data, setData] = useState(() => (itemId ? cache[itemId] : null) || null);
 
-  useEffect(() => {
-    if (!visible || !itemId || cache[itemId]) return;
-    const endpoint = itemType === 'artifact' ? 'artifacts' : 'radiant-items';
-    fetch(`http://127.0.0.1:8000/${endpoint}/${itemId}`)
-      .then(res => res.json())
-      .then(json => {
-        cache[itemId] = json;
-        setData(json);
-      })
-      .catch(() => {});
-  }, [visible, itemId, itemType]);
+useEffect(() => {
+  if (!visible || !itemId || cache[itemId]) return;
+
+  const endpoint = itemType === 'artifact' ? 'artifacts' : 'radiant-items';
+
+  apiClient.get(`/${endpoint}/${itemId}`)
+    .then(json => {
+      cache[itemId] = json;
+      setData(json);
+    })
+    .catch(err => console.error(`Error fetching ${itemType}:`, err));
+
+}, [visible, itemId, itemType]);
 
   if (!visible || !data || !itemId) return null;
 

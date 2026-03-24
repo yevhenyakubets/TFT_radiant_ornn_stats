@@ -7,6 +7,7 @@ import { useTooltip } from "../hooks/useTooltip";
 import { useSortConfig } from "../hooks/useSortConfig";
 import { getDeltaColor } from "../utils/helper";
 import ItemDescription from "../components/ItemDescription";
+import { apiClient } from '../api';
 
 function ChampionRow({ champId, info }) {
   const { visible, position, handleMouseEnter, handleMouseMove, handleMouseLeave } = useTooltip(400);
@@ -61,10 +62,9 @@ function ItemPage() {
   const [showInvalid, setShowInvalid] = useState(false);
   const [showLowSample, setShowLowSample] = useState(false);
 
-  useEffect(() => {
+useEffect(() => {
     let isMounted = true;
-    fetch(`http://127.0.0.1:8000/${config.endpoint}/${itemId}`)
-      .then((res) => res.json())
+    apiClient.get(`/${config.endpoint}/${itemId}`)
       .then((json) => {
         if (isMounted) { setData(json); setLoading(false); }
       })

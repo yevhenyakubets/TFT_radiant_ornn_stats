@@ -5,6 +5,7 @@ import "../styles/ChampionListPage.css";
 import { getRarityColor } from "../utils/helper";
 import { ChampionTooltip } from "../components/ChampionTooltip";
 import { useTooltip } from "../hooks/useTooltip";
+import { apiClient } from '../api';
 
 const sortTraits = (traits) => {
   if (!traits) return [];
@@ -67,14 +68,17 @@ function ChampionsListPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("http://127.0.0.1:8000/champions")
-      .then(res => res.json())
-      .then(data => {
-        setChampions(data.champions);
-        setLoading(false);
-      });
-  }, []);
+useEffect(() => {
+  apiClient.get("/champions")
+    .then(data => {
+      setChampions(data.champions);
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error("Error loading champions:", err);
+      setLoading(false); 
+    });
+}, []);
 
   const filteredChampions = champions
     .filter(champ => {

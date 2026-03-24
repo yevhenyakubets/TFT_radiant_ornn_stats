@@ -3,6 +3,7 @@ import "../styles/Tooltip.css";
 import { getRarityColor } from "../utils/helper";
 import ChampionAbility from "./ChampionAbility";
 import { createPortal } from "react-dom";
+import { apiClient } from '../api';
 
 const cache = {};
 
@@ -11,13 +12,16 @@ export function ChampionTooltip({ championId, visible, position }) {
 
 useEffect(() => {
   if (!visible || !championId || cache[championId]) return;
-  fetch(`http://127.0.0.1:8000/champions/${championId}`)
-    .then(res => res.json())
+
+  apiClient.get(`/champions/${championId}`)
     .then(json => {
       cache[championId] = json;
       setData(json);
     })
-    .catch(() => {});
+    .catch((error) => {
+      console.error("Failed to fetch champion:", error);
+    });
+    
 }, [visible, championId]);
 
   if (!visible || !data) return null;

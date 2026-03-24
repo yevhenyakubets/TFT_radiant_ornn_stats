@@ -9,6 +9,7 @@ import { getRarityColor } from "../utils/helper";
 import ChampionAbility from "../components/ChampionAbility";
 import { useSortConfig } from "../hooks/useSortConfig";
 import { getDeltaColor } from '../utils/helper';
+import { apiClient } from '../api';
 
 
 function ItemRow({ itemId, info, itemFolderPath, activeTab, isValid }) {
@@ -55,10 +56,9 @@ function ChampionPage() {
 
   const { sortConfig, requestSort, getSortIcon } = useSortConfig('average_placement');
 
-  useEffect(() => {
+useEffect(() => {
     let isMounted = true;
-    fetch(`http://127.0.0.1:8000/champions/${championId}`)
-      .then(res => res.json())
+    apiClient.get(`/champions/${championId}`)
       .then(json => {
         if (isMounted) { setData(json); setLoading(false); }
       })
