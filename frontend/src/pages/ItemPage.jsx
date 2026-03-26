@@ -128,7 +128,20 @@ useEffect(() => {
                 Champion {getSortIcon('name')}
               </th>
               <th onClick={() => requestSort('count')}>Frequency {getSortIcon('count')}</th>
-              <th onClick={() => requestSort('delta')}>Delta {getSortIcon('delta')}</th>
+              <th onClick={() => requestSort('delta')}>
+                <div className="table-header-content">
+                  <div className="info-icon-wrapper delta-info">
+                    <span className="info-icon-trigger">ⓘ</span>
+                    <div className="search-tooltip">
+                      <strong>WHAT IS DELTA?</strong>
+                      <p>Delta is the <span>placement difference</span> compared to the average placement of the champion. Lower (negative) values are better!</p>
+                    </div>
+                  </div>
+                  
+                  <span>Delta</span>
+                  {getSortIcon('delta')}
+                </div>
+              </th>
               <th onClick={() => requestSort('average_placement')}>Avg Place {getSortIcon('average_placement')}</th>
             </tr>
           </thead>

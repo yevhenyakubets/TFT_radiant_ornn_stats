@@ -98,24 +98,33 @@ useEffect(() => {
   if (loading) return <div className="list-loading-container">Loading Champions...</div>;
 
   return (
-    <div className="list-page-wrapper">
-      <div className="list-header-row">
-        <h1 className="list-page-title">CHAMPIONS</h1>
+  <div className="list-page-wrapper">
+    <div className="list-header-row">
+      <h1 className="list-page-title">CHAMPIONS</h1>
+      
+      <div className="search-container">
         <input
           className="list-search-input"
           placeholder="Search..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-      </div>
-
-      <div className="champions-shop-grid">
-        {filteredChampions.map(champ => (
-          <ChampionCard key={champ.id} champ={champ} />
-        ))}
+        <div className="info-icon-wrapper">
+          <span className="info-icon-trigger">🛈</span>
+          <div className="search-tooltip">
+            <p>Use <span>#</span> to filter by trait (e.g. <span>#Bruiser</span>)</p>
+          </div>
+        </div>
       </div>
     </div>
-  );
+
+    <div className="champions-shop-grid">
+      {filteredChampions.map(champ => (
+        <ChampionCard key={champ.id} champ={champ} />
+      ))}
+    </div>
+  </div>
+);
 }
 
 export default ChampionsListPage;
