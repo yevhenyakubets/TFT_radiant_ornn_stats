@@ -1,7 +1,46 @@
+/* ==========================================================================
+   1. VARIABLES (:root)
+   ========================================================================== */
+:root {
+  --bg-dark: rgb(1, 10, 19);
+  --bg-black: black;
+  --bg-panel: #16161a;
+  --bg-table: #0f1014;
+  --bg-row-active: rgb(5, 30, 41);
+  
+  --text-main: #f0e6d2;
+  --text-white: white;
+  --text-muted: #888;
+  --text-grey: #666;
+  --text-label: #aaa;
+  
+  --border-muted: rgb(4, 53, 74);
+  --border-input: #2d2d31;
+  --border-light: rgba(255, 255, 255, 0.04);
+  
+  --physical-damage: #ff4e4e;
+  --magic-damage: #4e98ff;
+  --true-damage: #ffffff;
+  --utility-green: #6bff82;
+  --gold-accent: #c8aa6e;
+}
+
+/* ==========================================================================
+   2. PAGE WRAPPERS & LAYOUT
+   ========================================================================== */
 .list-page-wrapper {
   padding: 30px;
-  background-color: rgb(1, 10, 19);
+  background-color: var(--bg-dark);
   min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-wrapper {
+  padding: 30px;
+  background-color: var(--bg-dark);
+  min-height: 100vh;
+  color: var(--text-white);
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -14,7 +53,7 @@
 }
 
 .list-page-title {
-  color: white;
+  color: var(--text-white);
   margin: 0;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -22,66 +61,30 @@
   font-family: 'Beaufort W01 Regular', sans-serif;
 }
 
+/* ==========================================================================
+   3. SEARCH & FILTERS
+   ========================================================================== */
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .list-search-input {
   width: 300px;
   padding: 10px 15px;
-  background-color: black;
-  border: 1px solid #2d2d31;
+  background-color: var(--bg-black);
+  border: 1px solid var(--border-input);
   border-radius: 6px;
-  color: white;
+  color: var(--text-white);
   font-size: 1.3rem;
   outline: none;
   transition: all 0.2s ease;
   font-family: 'Beaufort W01 Regular', sans-serif;
 }
 
-.list-search-input::placeholder {
-  color: #666;
-}
-
-.list-search-input:focus {
-  border-color: #555;
-}
-
-.loading-state, 
-.list-loading-container {
-  color: white;
-  padding: 40px;
-  text-align: center;
-  font-family: 'Verdana', sans-serif;
-  min-height: 1000px;
-}
-
-@media (max-width: 600px) {
-  .list-header-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-  .list-search-input {
-    width: 100%;
-  }
-}
-
-:root {
-  --magic-damage: #4e98ff;
-  --physical-damage: #ff4e4e;
-  --true-damage: #ffffff;
-  --utility-green: #6bff82;
-  --text-main: #f0e6d2;
-  --panel-bg: #16161a;
-  --border-muted: rgb(4, 53, 74);
-  --button-active-bg: rgb(5, 30, 41);
-}
-
-.page-wrapper {
-  padding: 30px;
-  background-color: var(--bg-dark);
-  min-height: 100vh;
-  color: white;
-  max-width: 1200px;
-  margin: 0 auto;
-}
+.list-search-input::placeholder { color: var(--text-grey); }
+.list-search-input:focus { border-color: #555; }
 
 .filter-bar {
   display: flex;
@@ -89,7 +92,7 @@
   justify-content: space-between;
   margin-bottom: 24px;
   padding: 12px 16px;
-  background: black;
+  background: var(--bg-black);
   border-radius: 10px;
   border: 1px solid var(--border-muted);
 }
@@ -111,16 +114,18 @@
   align-items: center;
   gap: 8px;
   font-size: 0.85rem;
-  color: #aaa;
+  color: var(--text-label);
   cursor: pointer;
 }
 
+/* ==========================================================================
+   4. STATS TABLE
+   ========================================================================== */
 .stats-table-container {
-  background-color: #0f1014;
+  background-color: var(--bg-table);
   border-radius: 12px;
   border: 1px solid var(--border-muted);
   overflow: visible;
-  border: 1px solid rgb(4, 53, 74);
 }
 
 .stats-table {
@@ -140,15 +145,13 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: var(--text-muted);
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
 }
 
-.stats-table th:hover {
-  color: #ccc;
-}
+.stats-table th:hover { color: #ccc; }
 
 .stats-table td {
   padding: 12px 16px;
@@ -156,42 +159,23 @@
   text-align: left;
 }
 
-.stats-table th:first-child {
-  padding-left: 16px;
-}
-
-.stats-table td:first-child {
-  padding: 0;
-}
+.stats-table th:first-child { padding-left: 16px; }
+.stats-table td:first-child { padding: 0; }
 
 .stats-table th:not(:first-child),
 .stats-table td:not(:first-child) {
   text-align: center;
 }
 
-.champ-column-header {
-  width: 50%;
-}
-
-.sort-arrow-placeholder {
-  display: inline-block;
-  width: 12px;
-}
-
 .stats-table-row {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--border-light);
   transition: background-color 0.15s ease;
   cursor: pointer;
-  background-color: rgb(5, 30, 41);
+  background-color: var(--bg-row-active);
 }
 
-.stats-table-row:hover {
-  background-color: #1c1d24 !important;
-}
-
-.stats-table-row:last-child {
-  border-bottom: none;
-}
+.stats-table-row:hover { background-color: #1c1d24 !important; }
+.stats-table-row:last-child { border-bottom: none; }
 
 .champ-cell {
   display: flex;
@@ -200,43 +184,12 @@
   padding: 8px 16px;
 }
 
-.table-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
-  border: 1px solid #2a2a2a;
-  flex-shrink: 0;
-}
-
-.table-icon-wrapper {
-  position: relative;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-.low-sample-indicator {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background: #ff4e4e;
-  color: white;
-  font-size: 0.6rem;
-  font-weight: bold;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .champ-name-text {
   font-size: 0.95rem;
   color: var(--text-main);
 }
 
-.col-count,
-.col-avg {
+.col-count, .col-avg {
   padding: 12px 16px;
   font-size: 0.95rem;
   color: #ccc;
@@ -249,22 +202,11 @@
   width: 20%;
 }
 
-.invalid-row {
-  opacity: 0.45;
-}
+.invalid-row { opacity: 0.45; }
 
-.loading-state {
-  color: white;
-  padding: 40px;
-  text-align: center;
-}
-
-.error-state {
-  color: #ff4e4e;
-  padding: 40px;
-  text-align: center;
-}
-
+/* ==========================================================================
+   5. ITEM GRID & CARDS (RESTORED)
+   ========================================================================== */
 .item-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -276,7 +218,7 @@
   padding: 15px;
   border-radius: 10px;
   cursor: pointer;
-  background-color: black;
+  background-color: var(--bg-black);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -287,7 +229,7 @@
 
 .item-card-link:hover {
   transform: translateY(-5px);
-  border-color: var(--hover-color);
+  border-color: var(--hover-color); /* Kept as requested */
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   z-index: 1;
 }
@@ -314,16 +256,42 @@
   padding: 4px;
 }
 
-.no-results {
-  grid-column: 1 / -1;
-  text-align: center;
-  color: #666;
-  padding: 40px;
+.table-icon-wrapper {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
+.table-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid #2a2a2a;
+  flex-shrink: 0;
+}
+
+.low-sample-indicator {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--physical-damage);
+  color: var(--text-white);
+  font-size: 0.6rem;
+  font-weight: bold;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   6. SHOP CARDS (CHAMPION PAGE)
+   ========================================================================== */
 .shop-card {
   background-color: #0c1218;
-  border: 1px solid #2d2d31;
+  border: 1px solid var(--border-input);
   border-radius: 4px;
   overflow: hidden;
   cursor: pointer;
@@ -365,7 +333,6 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  border-radius: 2px;
   color: #eee;
   font-weight: 600;
   font-size: 15px;
@@ -383,7 +350,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: white;
+  color: var(--text-white);
   font-weight: 800;
 }
 
@@ -398,15 +365,14 @@
   gap: 3px;
 }
 
-.shop-cost-value {
-  font-size: 1rem;
-}
-
 .shop-gold-icon {
   width: 14px;
   height: 14px;
 }
 
+/* ==========================================================================
+   7. KEYWORDS & ABILITIES
+   ========================================================================== */
 .keywords-container {
   margin-top: 16px;
   padding-top: 12px;
@@ -431,32 +397,9 @@
   margin-right: 4px;
 }
 
-.info-icon-container {
-  position: relative;
-  display: inline-block;
-}
-
-.static-tooltip {
-  visibility: hidden;
-  opacity: 0;
-  position: absolute;
-  bottom: 125%;
-  left: 50%;
-  transform: translateX(-50%);
-  transition: opacity 0.2s;
-}
-
-.info-icon-container:hover .static-tooltip {
-  visibility: visible;
-  opacity: 1;
-}
-
-.search-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
+/* ==========================================================================
+   8. TOOLTIPS & INFO WRAPPERS
+   ========================================================================== */
 .info-icon-wrapper {
   position: absolute;
   right: 12px;
@@ -469,12 +412,7 @@
 .info-icon-trigger {
   color: gray !important; 
   font-size: 1.1rem;
-  cursor: help;
   line-height: 1;
-}
-
-.info-icon-wrapper:hover .info-icon-trigger {
-  opacity: 1;
 }
 
 .search-tooltip {
@@ -484,11 +422,11 @@
   bottom: 140%;
   right: -10px;
   width: 200px;
-  background-color: rgb(1, 10, 19);
-  color: #f0e6d2;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
   padding: 12px;
   border-radius: 4px;
-  border: 1px solid rgb(4, 53, 74);
+  border: 1px solid var(--border-muted);
   font-size: 0.85rem;
   box-shadow: 0 8px 16px rgba(0,0,0,0.5);
   transition: opacity 0.2s, transform 0.2s;
@@ -505,7 +443,7 @@
   right: 15px;
   border-width: 6px;
   border-style: solid;
-  border-color: #c8aa6e transparent transparent transparent;
+  border-color: var(--gold-accent) transparent transparent transparent;
 }
 
 .info-icon-wrapper:hover .search-tooltip {
@@ -520,6 +458,7 @@
   font-weight: bold;
 }
 
+/* DELTA SPECIFIC TOOLTIP */
 .table-header-content {
   display: flex;
   align-items: center;
@@ -533,30 +472,16 @@
 }
 
 .info-icon-wrapper.delta-info .search-tooltip {
-  visibility: hidden;
-  opacity: 0;
-  position: absolute;
-  
   bottom: 180%; 
   left: 50%;
   transform: translateX(-50%) translateY(10px);
-  
   width: 220px;
   white-space: normal;
   word-wrap: break-word;
-  padding: 12px;
-  
-  background-color: rgb(1, 10, 19);
-  border: 1px solid rgb(4, 53, 74);
-  border-radius: 4px;
-  color: #f0e6d2;
-  font-size: 0.85rem;
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-muted);
   text-align: left;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-  
   z-index: 10000 !important;
-  pointer-events: none;
-  transition: all 0.2s ease;
 }
 
 .info-icon-wrapper.delta-info:hover .search-tooltip {
@@ -566,12 +491,41 @@
 }
 
 .info-icon-wrapper.delta-info .search-tooltip::after {
-  content: "";
-  position: absolute;
-  top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  border-width: 6px;
-  border-style: solid;
-  border-color: rgb(4, 53, 74) transparent transparent transparent;
+  border-color: var(--border-muted) transparent transparent transparent;
+}
+
+/* ==========================================================================
+   9. STATUS STATES & MEDIA QUERIES
+   ========================================================================== */
+.loading-state, 
+.list-loading-container {
+  color: var(--text-white);
+  padding: 40px;
+  text-align: center;
+  font-family: 'Verdana', sans-serif;
+  min-height: 1000px;
+}
+
+.error-state {
+  color: var(--physical-damage);
+  padding: 40px;
+  text-align: center;
+}
+
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-grey);
+  padding: 40px;
+}
+
+@media (max-width: 600px) {
+  .list-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .list-search-input { width: 100%; }
 }

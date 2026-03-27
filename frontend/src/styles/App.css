@@ -59,8 +59,8 @@ body {
 
 @font-face {
   font-family: 'Beaufort W01 Regular';
-  src: url('assets/fonts/Beaufort W01 Regular.woff2') format('woff2'),
-       url('assets/fonts/Beaufort W01 Regular.woff') format('woff');
+  src: url('/assets/fonts/Beaufort W01 Regular.woff2') format('woff2'),
+       url('/assets/fonts/Beaufort W01 Regular.woff') format('woff');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
