@@ -43,11 +43,13 @@
   border-color: #555;
 }
 
+.loading-state, 
 .list-loading-container {
   color: white;
   padding: 40px;
   text-align: center;
   font-family: 'Verdana', sans-serif;
+  min-height: 1000px;
 }
 
 @media (max-width: 600px) {
