@@ -128,7 +128,7 @@ useEffect(() => {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`tab-button ${activeTab === tab ? 'active' : ''}`}
-              style={{ backgroundColor: activeTab === tab ? 'var(--button-active-bg)' : 'transparent' }}
+              style={{ backgroundColor: activeTab === tab ? 'var(--border-muted)' : 'transparent' }}
             >
               {tab === 'artifact' ? 'Artifacts' : 'Radiant Items'}
             </button>
