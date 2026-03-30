@@ -13,6 +13,7 @@ from app.services.description_service import render_champion_description, render
 
 @contextmanager
 def get_db():
+    """Context manager that provides a database session and ensures it is closed after use."""
     db = SessionLocal()
     try:
         yield db
@@ -22,23 +23,51 @@ def get_db():
 
 CURRENT_PATCH = get_current_patch()
 
+
 def get_sorted_traits(traits):
     """
-    Filters out 'duo' traits, then sorts: Unique > Origin > Class.
-    Alphabetical within the same type.
+    Filters and sorts a champion's traits for display.
+
+    Filters out 'duo' traits (internal Riot trait type, not displayed in game),
+    then sorts by type priority: Unique > Origin > Class, with alphabetical
+    ordering within the same type.
+
+    Args:
+        traits: List of trait ORM objects with .type, .name, .riot_id attributes.
+
+    Returns:
+        List of dicts with keys: name, type, riot_id.
     """
     filtered_traits = [t for t in traits if t.type != "duo"]
-
     priority = {"unique": 0, "origin": 1, "class": 2}
-
     sorted_list = sorted(
         filtered_traits, key=lambda t: (priority.get(t.type, 99), t.name)
     )
-
     return [{"name": t.name, "type": t.type, "riot_id": t.riot_id} for t in sorted_list]
 
 
 def get_champion_special_items(champion_riot_id: str):
+    """
+    Returns stats for all radiant items and artifacts used by a given champion.
+
+    For each item, computes:
+    - count: number of games the champion used this item
+    - average_placement: champion's avg placement when using this item
+    - delta: difference between this champion's avg placement with the item
+             vs the item's overall avg placement across all champions.
+             Negative delta means the champion performs better than average with the item.
+    - valid: whether this item/champion pair is considered a valid pair (item at least somewhat matches the champion's role, 
+            so tank items are ignored for carries and such), data is taken from champion_item_valid_pairs table
+    - low_sample: whether the item appears in fewer than 1% of the champion's games
+
+    Args:
+        champion_riot_id: Riot's string ID for the champion (e.g. "TFT16_Jinx").
+
+    Returns:
+        Dict with champion info and two sub-dicts: artifacts and radiants,
+        each sorted by average_placement ascending.
+        Returns None if the champion is not found.
+    """
     with get_db() as db:
         champion = (
             db.query(Champion).filter(Champion.riot_id == champion_riot_id).first()
@@ -68,9 +97,7 @@ def get_champion_special_items(champion_riot_id: str):
         )
 
         total_games = sum(row.count for row in stats)
-
         item_ids = [row.item_id for row in stats]
-
         item_map = {i.id: i for i in db.query(Item).filter(Item.id.in_(item_ids)).all()}
 
         valid_item_ids = {
@@ -80,6 +107,7 @@ def get_champion_special_items(champion_riot_id: str):
             .all()
         }
 
+        # One query to get each item's overall avg placement across all champions
         overall_avgs_by_item_id = {
             row.item_id: float(row.avg_placement)
             for row in db.query(
@@ -135,6 +163,29 @@ def get_champion_special_items(champion_riot_id: str):
 
 
 def get_item_stats_by_id(item_riot_id: str, item_type: str):
+    """
+    Returns stats for all champions who used a given item.
+
+    For each champion, computes:
+    - count: number of games this champion used the item
+    - average_placement: champion's avg placement when using this item
+    - delta: difference between the champion's avg placement with this item
+             vs their overall avg placement across all games (from champion_stats table).
+             Negative delta means the champion performs better than their baseline when using this item.
+    - valid: whether this item/champion pair is considered a valid pair (item at least somewhat matches the champion's role, 
+            so tank items are ignored for carries and such), data is taken from champion_item_valid_pairs table
+    - low_sample: whether the champion appears in fewer than 1% of the item's games
+
+    Results are sorted by delta ascending (best performing champions first).
+
+    Args:
+        item_riot_id: Riot's string ID for the item (e.g. "TFT_Item_Artifact_Fishbones").
+        item_type: Either "artifact" or "radiant".
+
+    Returns:
+        Dict with item info and a champions sub-dict sorted by delta ascending.
+        Returns None if the item is not found.
+    """
     with get_db() as db:
         item = (
             db.query(Item)
@@ -162,7 +213,6 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
         )
 
         total_games = sum(row.count for row in stats)
-
         champion_ids = [row.champion_id for row in stats]
 
         champion_map = {
@@ -177,6 +227,8 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
             .all()
         }
 
+        # One query to get each champion's overall avg placement from champion_stats.
+        # Joined against champions table to filter out non-champion units (summons, etc).
         overall_avgs_by_riot_id = {
             row.champion_id: float(row.avg_placement)
             for row in db.query(
@@ -210,7 +262,7 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
             }
 
     sorted_result = dict(
-    sorted(result.items(), key=lambda x: (x[1]["delta"] is None, x[1]["delta"]))
+        sorted(result.items(), key=lambda x: (x[1]["delta"] is None, x[1]["delta"]))
     )
 
     return {

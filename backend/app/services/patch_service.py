@@ -1,5 +1,8 @@
 from datetime import datetime, timezone
 
+# Maps each TFT patch version to its release date.
+# Note: the Riot API reports the previous patch in the game_version string,
+# so patch detection is done by match timestamp rather than parsing the version string.
 PATCH_SCHEDULE = {
     "16.2": datetime(2026, 1, 8, tzinfo=timezone.utc),
     "16.3": datetime(2026, 1, 22, tzinfo=timezone.utc),
@@ -28,9 +31,14 @@ PATCH_SCHEDULE = {
 }
 
 
-def get_current_patch():
+def get_current_patch() -> str | None:
+    """
+    Returns the current TFT patch version based on today's date.
+    Iterates through PATCH_SCHEDULE in chronological order and returns
+    the last patch whose start date is on or before now.
+    Returns None if the current date is before all known patches.
+    """
     now = datetime.now(timezone.utc)
-
     sorted_patches = sorted(PATCH_SCHEDULE.items(), key=lambda x: x[1])
     current_patch = None
 
@@ -43,9 +51,17 @@ def get_current_patch():
     return current_patch
 
 
-def get_patch_for_timestamp(timestamp_ms: int):
-    match_date = datetime.fromtimestamp(timestamp_ms / 1000, timezone.utc)
+def get_patch_for_timestamp(timestamp_ms: int) -> str | None:
+    """
+    Returns the TFT patch version that was active when a match was played.
 
+    Args:
+        timestamp_ms: Match start time in milliseconds (from Riot API game_datetime field).
+
+    Returns:
+        Patch version string (e.g. "16.7") or None if the match predates all known patches.
+    """
+    match_date = datetime.fromtimestamp(timestamp_ms / 1000, timezone.utc)
     sorted_patches = sorted(PATCH_SCHEDULE.items(), key=lambda x: x[1])
     current_patch = None
 
