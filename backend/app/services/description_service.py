@@ -157,7 +157,7 @@ def render_champion_description(desc, data_block, champion_name):
             token_name, factor = raw_token.split("*")
             try:
                 multiplier = float(factor)
-            except:
+            except ValueError:
                 multiplier = 1.0
 
         token_lower = token_name.lower().strip()
@@ -188,7 +188,7 @@ def render_champion_description(desc, data_block, champion_name):
                         else:
                             try:
                                 local_mult = float(factor)
-                            except:
+                            except ValueError:
                                 local_mult = 1.0
 
                     val_raw = stats.get(clean_key.strip().lower(), [0] * 7)
@@ -246,7 +246,7 @@ def render_champion_description(desc, data_block, champion_name):
                                 val = max(val_list)
 
                         current_sum += float(val) * multiplier
-                    except:
+                    except (IndexError, TypeError, ValueError):
                         continue
 
                 is_time = any(w in token_lower for w in ["seconds", "duration"])
@@ -279,7 +279,7 @@ def render_champion_description(desc, data_block, champion_name):
                         val = max(v)
                     if val is not None:
                         current_sum += float(val)
-                except:
+                except (ValueError, TypeError):
                     continue
             final = current_sum * multiplier
             is_time = any(word in token_lower for word in ["seconds", "duration"])
@@ -373,7 +373,7 @@ def render_item_description(desc, effects_raw):
             token_str, factor = token_str.split("*")
             try:
                 multiplier = float(factor)
-            except:
+            except ValueError:
                 multiplier = 1.0
 
         val = effects_raw.get(token_str)
