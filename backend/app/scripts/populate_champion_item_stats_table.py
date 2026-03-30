@@ -1,6 +1,7 @@
-from datetime import datetime, UTC, timezone
+import json
+import traceback
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, False_
 from app.database import SessionLocal
 from app.models.match import Match
 from app.models.champion_item_stats import ChampionItemStats
@@ -10,7 +11,6 @@ from app.models.traits import Trait
 from app.services.patch_service import get_current_patch, get_patch_for_timestamp
 
 def run():
-
     db: Session = SessionLocal()
 
     try:
@@ -18,7 +18,7 @@ def run():
         print(f"Current scheduled patch: {target_patch}")
 
         matches = (
-            db.execute(select(Match).where(not Match.processed)).scalars().all()
+            db.execute(select(Match).where(Match.processed == False_())).scalars().all()
         )
 
         champion_map = {
@@ -31,9 +31,21 @@ def run():
         total_processed = 0
 
         for match in matches:
-            match_json = match.data
-            info = match_json.get("info", {})
+            raw_data = getattr(match, 'data', None)
+            if raw_data is None:
+                print(f"Skipping match {match.match_id}: No data column found.")
+                continue
 
+            if isinstance(raw_data, str):
+                try:
+                    match_json = json.loads(raw_data)
+                except json.JSONDecodeError:
+                    print(f"Skipping match {match.match_id}: Invalid JSON string.")
+                    continue
+            else:
+                match_json = raw_data
+
+            info = match_json.get("info", {})
             timestamp = info.get("gameCreation")
 
             if not timestamp:
@@ -85,9 +97,10 @@ def run():
         print(f"Inserted rows: {total_inserted}")
         print("Done.")
 
-    except Exception as e:
+    except Exception:
         db.rollback()
-        print("Error:", e)
+        print("An error occurred during processing:")
+        traceback.print_exc()
 
     finally:
         db.close()
