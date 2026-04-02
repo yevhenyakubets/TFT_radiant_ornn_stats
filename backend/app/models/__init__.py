@@ -4,3 +4,8 @@ from .roles import Role
 from .item_role import ItemRole
 from .champion import Champion
 from .champion_role import ChampionRole
+from .champion_item_valid_pairs import ChampionItemValidPairs
+from .traits import Trait
+from .champion_item_stats import ChampionItemStats
+from .champion_stats import ChampionStat
+from .champion_traits import ChampionTraits

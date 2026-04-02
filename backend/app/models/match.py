@@ -10,6 +10,8 @@ class Match(Base):
     id = Column(Integer, primary_key=True, index=True)
     match_id = Column(String, unique=True, index=True, nullable=False)
     data = Column(JSONB, nullable=False)
-
+    
+    processed_item_stats = Column(Boolean, default=False, nullable=False, index=True)
+    processed_champion_stats = Column(Boolean, default=False, nullable=False, index=True)
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    processed = Column(Boolean, default=False, nullable=False, index=True)
