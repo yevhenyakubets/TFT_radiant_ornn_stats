@@ -72,3 +72,41 @@ def get_patch_for_timestamp(timestamp_ms: int) -> str | None:
             break
 
     return current_patch
+
+def get_current_set() -> int | None:
+    """
+    Returns the current TFT Set number based on today's date.
+    
+    Extracts the major version number from the current patch identified 
+    in the PATCH_SCHEDULE. For example, if the current patch is "17.2", 
+    this returns 17.
+    
+    Returns:
+        The current Set as an integer (e.g., 17) or None if no patch is active.
+    """
+    patch = get_current_patch()
+    if patch:
+        try:
+            # Splits "17.2" into ["17", "2"] and takes the first part
+            return int(patch.split('.')[0])
+        except (ValueError, IndexError):
+            return None
+    return None
+
+def get_set_for_timestamp(timestamp_ms: int) -> int | None:
+    """
+    Returns the TFT Set number that was active when a match was played.
+
+    Args:
+        timestamp_ms: Match start time in milliseconds.
+
+    Returns:
+        The Set number as an integer or None if the match predates the schedule.
+    """
+    patch = get_patch_for_timestamp(timestamp_ms)
+    if patch:
+        try:
+            return int(patch.split('.')[0])
+        except (ValueError, IndexError):
+            return None
+    return None
