@@ -90,7 +90,7 @@ def get_champion_special_items(champion_riot_id: str):
             )
             .filter(
                 ChampionItemStats.champion_id == champion.id,
-                ChampionItemStats.normalized_patch == CURRENT_PATCH,
+                ChampionItemStats.patch == CURRENT_PATCH,
             )
             .group_by(ChampionItemStats.item_id)
             .all()
@@ -114,7 +114,7 @@ def get_champion_special_items(champion_riot_id: str):
                 ChampionItemStats.item_id,
                 func.avg(ChampionItemStats.placement).label("avg_placement"),
             )
-            .filter(ChampionItemStats.normalized_patch == CURRENT_PATCH)
+            .filter(ChampionItemStats.patch == CURRENT_PATCH)
             .group_by(ChampionItemStats.item_id)
             .all()
         }
@@ -206,7 +206,7 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
             )
             .filter(
                 ChampionItemStats.item_id == item.id,
-                ChampionItemStats.normalized_patch == CURRENT_PATCH,
+                ChampionItemStats.patch == CURRENT_PATCH,
             )
             .group_by(ChampionItemStats.champion_id)
             .all()
@@ -235,7 +235,7 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
                 ChampionStat.champion_id,
                 func.avg(ChampionStat.placement).label("avg_placement"),
             )
-            .join(Champion, Champion.riot_id == ChampionStat.champion_id)
+            .join(Champion, Champion.id == ChampionStat.champion_id)
             .group_by(ChampionStat.champion_id)
             .all()
         }

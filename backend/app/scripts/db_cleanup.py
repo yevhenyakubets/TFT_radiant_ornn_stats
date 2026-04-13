@@ -10,7 +10,7 @@ def cleanup_old_data():
     try:
         deleted_cis = db.execute(text("""
             DELETE FROM champion_item_stats
-            WHERE normalized_patch != :current_patch
+            WHERE patch != :current_patch
         """), {"current_patch": current_patch}).rowcount
         print(f"Deleted {deleted_cis} champion_item_stats rows.")
 

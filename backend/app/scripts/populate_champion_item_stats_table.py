@@ -82,7 +82,7 @@ def run():
                             champion_id=champion_id,
                             item_id=item_id,
                             placement=placement,
-                            normalized_patch=normalized_patch,
+                            patch=normalized_patch,
                         )
 
                         db.add(stat)
