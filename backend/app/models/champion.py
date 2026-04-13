@@ -14,4 +14,6 @@ class Champion(Base):
     ability_name = Column(String)
     ability_desc = Column(Text)
     ability_variables = Column(JSON)
-    traits = relationship("Trait", secondary="champion_traits", back_populates="champions")
+
+    traits = relationship("Trait", secondary="champion_traits", back_populates="champions", collection_class=list)
+    roles = relationship("Role", secondary="champion_roles", backref="champions")

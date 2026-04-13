@@ -10,4 +10,5 @@ class Trait(Base):
     riot_id = Column(String, unique=True, index=True)
     name = Column(String)
     type = Column(String)
+    
     champions = relationship("Champion", secondary="champion_traits", back_populates="traits")

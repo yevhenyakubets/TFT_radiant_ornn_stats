@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, JSON
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 
@@ -12,3 +13,5 @@ class Item(Base):
 
     description = Column(Text)
     effects = Column(JSON)
+
+    roles = relationship("Role", secondary="item_roles", backref="items")
