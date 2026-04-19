@@ -39,7 +39,7 @@ def get_sorted_traits(traits):
         List of dicts with keys: name, type, riot_id.
     """
     filtered_traits = [t for t in traits if t.type != "duo"]
-    priority = {"unique": 0, "origin": 1, "class": 2}
+    priority = {"Unique": 0, "Origin": 1, "Class": 2}
     sorted_list = sorted(
         filtered_traits, key=lambda t: (priority.get(t.type, 99), t.name)
     )
