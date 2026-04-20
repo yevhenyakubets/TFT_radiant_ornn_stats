@@ -14,19 +14,6 @@ KEYWORD_MAP = {
     
 }
 
-#New set 17 artifacts have hashes for their some of their stats/effects
-ARTIFACT_HASH_MAP = {
-    "FlatMagicDamage": "{430aee8c}",
-    "PercentSpeedIncrease": "{0efd1965}",
-    "AbilityDA": "{54531c4a}",
-    "DecayingAS": "{1e28e4ef}",
-    "ExecuteThresholdForTarget": "{72fa3d6f}",
-    "NumMiracles": "{820af257}",
-    "HPThreshold": "{cd951938}",
-    "TotalHealRatio": "{b888d296}",
-    "StackingStats": "{1b6f9b58}" 
-}
-
 #Base stats for champion that have values that scale with them. These need to be changed manually every set
 CHAMP_BASE_STATS = {
     "TFT17_Aatrox": {"hp": 700, "armor": 45},
@@ -34,11 +21,11 @@ CHAMP_BASE_STATS = {
     "TFT17_Rammus": {"armor": 60},
     "TFT17_Maokai": {"hp": 1100},
     "TFT17_Galio": {"armor": 60, "mr": 60},
-    "TFT17_Gragas": {"hp": 850},
+    "TFT17_Gragas": {"hp": 950},
     "TFT17_Nasus": {"hp": 700, },
-    "TFT17_Jax": {"armor": 50, "mr": 50},
+    "TFT17_Jax": {"armor": 45, "mr": 45},
     "TFT17_Shen": {"hp": 1200},
-    "TFT17_Chogath": {"hp": 1000},
+    "TFT17_Chogath": {"hp": 650},
     "TFT17_Graves": {"ad": 60},
     "TFT17_TahmKench": {"hp": 1300},
     "TFT17_Reksai": {"hp": 700},

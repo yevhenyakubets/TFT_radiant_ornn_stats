@@ -3,8 +3,7 @@ from app.constants.description_constants import (
     CHAMPION_EXCEPTIONS,
     GLOBAL_EXCEPTIONS,
     CHAMP_BASE_STATS,
-    KEYWORD_MAP,
-    ARTIFACT_HASH_MAP
+    KEYWORD_MAP, 
 )
 from app.utils.helper import (
     clean_num, finalize_desc, normalize_item_variables
@@ -67,20 +66,22 @@ def new_render_logic(ability_description, variables_dict, champion_id=None):
         parts = token_raw.split('*')
         token_name = parts[0].replace(".:", "").strip()
 
-        # Check for Artifact mappings (Riot occasionally uses internal hashes).
-        lookup_key = ARTIFACT_HASH_MAP.get(token_name, token_name)
-
         val = None
-        # Pull value from Exceptions (for specialized math) or directly from variables_dict.
-        if champion_id and champion_id in CHAMPION_EXCEPTIONS and lookup_key in CHAMPION_EXCEPTIONS[champion_id]:
-            val = CHAMPION_EXCEPTIONS[champion_id][lookup_key](variables_dict, CHAMP_BASE_STATS)
-        elif lookup_key in GLOBAL_EXCEPTIONS:
-            val = GLOBAL_EXCEPTIONS[lookup_key](variables_dict, CHAMP_BASE_STATS)
+        
+        if champion_id and champion_id in CHAMPION_EXCEPTIONS and token_name in CHAMPION_EXCEPTIONS[champion_id]:
+            val = CHAMPION_EXCEPTIONS[champion_id][token_name](variables_dict, CHAMP_BASE_STATS)
+        
+        elif token_name in GLOBAL_EXCEPTIONS:
+            val = GLOBAL_EXCEPTIONS[token_name](variables_dict, CHAMP_BASE_STATS)
+        
+        # 3. Direct variable lookup with "Modified" fallback logic
         else:
-            val = variables_dict.get(lookup_key)
-            # Support for "Modified" prefix variants.
-            if val is None and lookup_key.startswith("Modified"):
-                val = variables_dict.get(lookup_key.replace("Modified", "", 1))
+            val = variables_dict.get(token_name)
+            
+            # If 'ModifiedX' isn't found, try looking up just 'X'
+            if val is None and token_name.startswith("Modified"):
+                fallback_key = token_name.replace("Modified", "", 1)
+                val = variables_dict.get(fallback_key)
         
         if val is None: 
             return "???"
