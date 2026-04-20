@@ -1,4 +1,5 @@
-import { formatItemDescription, stat_map, formatStatValue } from "../utils/helper";
+import React from 'react';
+import { formatItemDescription, stat_map, formatStatValue, processDescriptionIcons } from "../utils/helper";
 
 function ItemDescription({ data, showStats = true, showDescription = true }) {
   const parsed = formatItemDescription(data.description);
@@ -10,8 +11,12 @@ function ItemDescription({ data, showStats = true, showDescription = true }) {
           {Object.entries(data.stats)
             .filter(([key]) => key in stat_map)
             .map(([key, val]) => (
-              <div key={key}>
-                <img className="stat-image" src={`/assets/stats/${stat_map[key]}.png`} alt={key} />
+              <div key={key} className="stat-item">
+                <img 
+                  className="stat-image" 
+                  src={`/assets/stats/${stat_map[key]}.png`} 
+                  alt={key} 
+                />
                 <span>{formatStatValue(val, key)}</span>
               </div>
             ))}
@@ -22,13 +27,26 @@ function ItemDescription({ data, showStats = true, showDescription = true }) {
         <div className="item-description">
           <div className="main-description-text">
             {parsed.mainBody.map((line, i) => (
-              <p key={i} style={{ margin: '4px 0' }}>{line}</p>
+              <p 
+                key={i} 
+                style={{ margin: '4px 0' }}
+                dangerouslySetInnerHTML={{ 
+                  __html: processDescriptionIcons(line) 
+                }} 
+              />
             ))}
           </div>
+          
           {parsed.keywords.length > 0 && (
             <div className="keywords-container">
               {parsed.keywords.map((kw, idx) => (
-                <p key={idx} className="keyword-item"> {kw}</p>
+                <p 
+                  key={idx} 
+                  className="keyword-item"
+                  dangerouslySetInnerHTML={{ 
+                    __html: processDescriptionIcons(kw) 
+                  }}
+                />
               ))}
             </div>
           )}

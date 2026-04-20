@@ -41,3 +41,30 @@ export const getDeltaColor = (delta) => {
   if (delta > 0) return 'var(--physical-damage)';
   return 'var(--text-main)';
 };
+
+export const processDescriptionIcons = (processed) => {
+  if (!processed) return "";
+  
+  processed = processed.replace(/\(\s*[a-zA-Z]*:\s*\)/g, "");
+  processed = processed.replace(/\(\s*\)/g, "");
+
+  return processed
+    .replace(/([0-9./%]+)(?:<[^>]+>)*\s*\(([^)]+)\)/g, (match, val, stats) => {
+      if (!stats || !stats.trim()) return val;
+
+      const icons = stats.split(',').map(s => s.trim()).map(stat => {
+        const fileName = {
+          'ad': 'AD', 'ap': 'AP', 'armor': 'Armor', 'as': 'AS',
+          'crit': 'CritChance', 'health': 'Health', 'hp': 'Health',
+          'mr': 'MR', 'amp': 'Amp'
+        }[stat.toLowerCase()] || stat;
+        
+        return `<img src="/assets/stats/${fileName}.png" class="description-stat-icon" alt="${stat}" />`;
+      }).join('');
+
+      return `<span class="stat-wrapper"><span class="stat-value">${val}</span>${icons}</span>`;
+    })
+    .replace(/%i:goldCoins%/g, 
+      `<img src="/assets/other/gold.png" class="description-inline-icon" alt="gold" />`
+    );
+};
