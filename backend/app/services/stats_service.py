@@ -107,7 +107,6 @@ def get_champion_special_items(champion_riot_id: str):
             .all()
         }
 
-        # One query to get each item's overall avg placement across all champions
         overall_avgs_by_item_id = {
             row.item_id: float(row.avg_placement)
             for row in db.query(
@@ -227,9 +226,7 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
             .all()
         }
 
-        # One query to get each champion's overall avg placement from champion_stats.
-        # Joined against champions table to filter out non-champion units (summons, etc).
-        overall_avgs_by_riot_id = {
+        overall_avgs_by_id = {
             row.champion_id: float(row.avg_placement)
             for row in db.query(
                 ChampionStat.champion_id,
@@ -249,7 +246,8 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
 
             percentage = count / total_games if total_games else 0
             avg_placement = float(avg)
-            overall_avg = overall_avgs_by_riot_id.get(champion.riot_id)
+            
+            overall_avg = overall_avgs_by_id.get(champion_id)
             delta = round(avg_placement - overall_avg, 2) if overall_avg is not None else None
 
             result[champion.riot_id] = {
