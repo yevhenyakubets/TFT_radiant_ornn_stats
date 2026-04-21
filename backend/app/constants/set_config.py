@@ -154,9 +154,11 @@ ITEM_ROLE_MAPPING = {
     "Evelynn's Instinct" : ["AD Fighter", "AP Fighter"],
     "Thresh's Lantern" : ["Tank"],
     "Ekko's Patience" : ["AD Fighter", "AP Fighter", "AD Caster", "AP Caster"],
-    "Yasuo's Bladework" : ["AD AA", "AP AA", "AD Caster"],
+    "Yasuo's Bladework" : ["AD AA", "AP AA", "AD Caster", "AD Fighter"],
     "Kayle's Exaltation" : ["Tank", "AD Fighter", "AP Fighter", "AD Caster", "AP Caster", "AD AA", "AP AA"],
     "Kayle's Radiant Exaltation" : ["Tank", "AD Fighter", "AP Fighter", "AD Caster", "AP Caster", "AD AA", "AP AA"],
+    "Flickerblades": ["AD Caster", "AD Fighter", "AD AA", "AP Caster", "AP Fighter", "AP AA"],
+    "Statikk Shiv" : ["AP AA", "AP Caster", "AP Fighter"],
 
     # Radiant items
     "Radiant Red Buff": ["AD Caster", "AD Fighter", "AD AA", "AP Caster", "AP Fighter", "AP AA"],
