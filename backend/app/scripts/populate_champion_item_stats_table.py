@@ -11,6 +11,12 @@ from app.models.traits import Trait
 from app.services.patch_service import get_current_patch, get_patch_for_timestamp
 
 def run():
+    """
+    Populates the champion_item_stats table in the db by processing raw match jsons in matches table.
+    Looks for matches where processed_item_stats flag is equal to False, 
+    then flags all processed matches as True(if script finishes running succesfully).
+
+    """
     db: Session = SessionLocal()
 
     try:
@@ -18,7 +24,7 @@ def run():
         print(f"Current scheduled patch: {target_patch}")
 
         matches = (
-            db.execute(select(Match).where(Match.processed == False_())).scalars().all()
+            db.execute(select(Match).where(Match.processed_item_stats == False_())).scalars().all()
         )
 
         champion_map = {
@@ -61,6 +67,7 @@ def run():
             for player in participants:
                 placement = player.get("placement")
                 units = player.get("units", [])
+                player_puuid = player.get("puuid")
 
                 for unit in units:
                     champion_riot_id = unit.get("character_id")
@@ -81,6 +88,7 @@ def run():
                             match_id=match.match_id,
                             champion_id=champion_id,
                             item_id=item_id,
+                            puuid=player_puuid,
                             placement=placement,
                             patch=normalized_patch,
                         )
@@ -88,7 +96,7 @@ def run():
                         db.add(stat)
                         total_inserted += 1
 
-            match.processed = True
+            match.processed_item_stats = True
             total_processed += 1
 
         db.commit()

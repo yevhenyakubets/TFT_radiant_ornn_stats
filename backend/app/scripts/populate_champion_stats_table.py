@@ -1,72 +1,84 @@
-from sqlalchemy import text
-from app.database import SessionLocal
-from app.services.patch_service import get_current_patch, get_patch_for_timestamp
 import json
+from sqlalchemy import select
+from app.database import SessionLocal
+from app.models.match import Match
+from app.models.champion import Champion
+from app.models.champion_stats import ChampionStat
+from app.services.patch_service import get_current_patch, get_patch_for_timestamp
 
 def populate_champion_stats():
+    """
+    Populates the champion_stats table in the db by processing raw match jsons in matches table.
+    Looks for matches where processed_champion_stats flag is equal to False AND processed_item_stats flag is equal to True, 
+    then flags all processed matches as True(if script finishes running succesfully).
+    """
     db = SessionLocal()
     current_patch = get_current_patch()
-    print(f"Current patch: {current_patch}, only processing matches from this patch.")
+    print(f"Current patch: {current_patch}. Filtering for relevant match data.")
+
+    
 
     try:
-        total_count = db.execute(text("""
-            SELECT COUNT(*) FROM matches
-            WHERE processed = TRUE AND processed_champion_stats = FALSE
-        """)).scalar()
-        print(f"Found {total_count} unprocessed matches, processing in batches...")
+        stmt = select(Match).where(
+            Match.processed_item_stats, 
+            ~Match.processed_champion_stats
+        )
+        matches = db.execute(stmt).scalars().all()
+        
+        total_count = len(matches)
+        print(f"Found {total_count} matches requiring champion stat extraction.")
 
         skipped = 0
         inserted = 0
-        processed = 0
-        batch_size = 100
+        processed_count = 0
 
-        while True:
-            matches = db.execute(text("""
-                SELECT match_id, data FROM matches
-                WHERE processed = TRUE AND processed_champion_stats = FALSE
-                LIMIT :limit 
-            """), {"limit": batch_size}).fetchall()
+        champion_map = {
+            c.riot_id: c.id for c in db.execute(select(Champion)).scalars().all()
+        }
 
-            if not matches:
-                break
+        for match in matches:
+            raw = match.data if isinstance(match.data, dict) else json.loads(match.data)
+            game_datetime = raw["info"]["game_datetime"]
+            match_patch = get_patch_for_timestamp(game_datetime)
 
-            for match_id, data in matches:
-                raw = data if isinstance(data, dict) else json.loads(data)
-                game_datetime = raw["info"]["game_datetime"]
-                match_patch = get_patch_for_timestamp(game_datetime)
+            if match_patch != current_patch:
+                skipped += 1
+            else:
+                participants = raw["info"]["participants"]
+                for participant in participants:
+                    placement = participant["placement"]
+                    puuid = participant["puuid"]
+                    
+                    for unit in participant["units"]:
+                        riot_id = unit["character_id"]
+                        champ_db_id = champion_map.get(riot_id)
 
-                if match_patch != current_patch:
-                    skipped += 1
-                else:
-                    participants = raw["info"]["participants"]
-                    for participant in participants:
-                        placement = participant["placement"]
-                        puuid = participant["puuid"]
-                        for unit in participant["units"]:
-                            champion_id = unit["character_id"]
-                            db.execute(text("""
-                                INSERT INTO champion_stats (champion_id, match_id, puuid, patch, placement)
-                                VALUES (:champion_id, :match_id, :puuid, :patch, :placement)
-                                ON CONFLICT (champion_id, match_id, puuid) DO NOTHING
-                            """), {
-                                "champion_id": champion_id,
-                                "match_id": match_id,
-                                "puuid": puuid,
-                                "patch": match_patch,
-                                "placement": placement
-                            })
-                            inserted += 1
+                        if champ_db_id is None:
+                            continue
 
-                db.execute(text("""
-                    UPDATE matches SET processed_champion_stats = TRUE
-                    WHERE match_id = :match_id
-                """), {"match_id": match_id})
-                processed += 1
+                        stat_entry = ChampionStat(
+                            champion_id=champ_db_id,
+                            match_id=match.match_id,
+                            puuid=puuid,
+                            patch=match_patch,
+                            placement=placement
+                        )
+                        db.merge(stat_entry)
+                        inserted += 1
 
-            db.commit()
-            print(f"Processed {processed}/{total_count}...")
+            match.processed_champion_stats = True
+            processed_count += 1
 
-        print(f"Done. Inserted {inserted} rows, skipped {skipped} off-patch matches.")
+            if processed_count % 100 == 0:
+                db.commit()
+                print(f"Progress: {processed_count}/{total_count}...")
+
+        db.commit()
+        print(f"Done. Inserted {inserted} champion rows, skipped {skipped} off-patch matches.")
+    
+    except Exception as e:
+        db.rollback()
+        print(f"Error during champion stat population: {e}")
     finally:
         db.close()
 
