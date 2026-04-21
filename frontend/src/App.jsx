@@ -6,6 +6,7 @@ import ChampionPage from "./pages/ChampionPage";
 import ChampionsListPage from "./pages/ChampionListPage";
 import ItemPage from "./pages/ItemPage";
 import ItemListPage from "./pages/ItemListPage";
+import ScrollToTop from "./components/scrollToTop";
 import "./styles/App.css"
 
 function PageLayout() {
@@ -20,20 +21,24 @@ function PageLayout() {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<><HomePage /><Footer /></>} />
+    <>
+      <ScrollToTop /> 
+      
+      <Routes>
+        <Route path="/" element={<><HomePage /><Footer /></>} />
 
-      <Route element={<PageLayout />}>
-        <Route path="/champions" element={<ChampionsListPage />} />
-        <Route path="/champions/:championId" element={<ChampionPage />} />
-        <Route path="/artifacts/:itemId" element={<ItemPage />} />
-        <Route path="/radiant-items/:itemId" element={<ItemPage />} />
-        <Route path="/radiant-items" element={<ItemListPage />} />
-        <Route path="/artifacts" element={<ItemListPage />} />
-      </Route>
+        <Route element={<PageLayout />}>
+          <Route path="/champions" element={<ChampionsListPage />} />
+          <Route path="/champions/:championId" element={<ChampionPage />} />
+          <Route path="/artifacts/:itemId" element={<ItemPage />} />
+          <Route path="/radiant-items/:itemId" element={<ItemPage />} />
+          <Route path="/radiant-items" element={<ItemListPage />} />
+          <Route path="/artifacts" element={<ItemListPage />} />
+        </Route>
 
-      <Route path="*" element={<><HomePage /><Footer /></>} />
-    </Routes>
+        <Route path="*" element={<><HomePage /><Footer /></>} />
+      </Routes>
+    </>
   );
 }
 
