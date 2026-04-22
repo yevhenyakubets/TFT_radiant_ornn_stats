@@ -1,9 +1,9 @@
 import requests
 import sys
 import os
-from sqlalchemy import text
+import argparse
+from sqlalchemy import text, inspect
 
-# Ensures the script can find the 'app' module when run from the scripts folder.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app.database import SessionLocal
@@ -22,12 +22,27 @@ from app.constants.set_config import (
     ROLES_LIST
 )
 
+def get_changes(obj):
+    """
+    Helper to detect which columns changed on a SQLAlchemy object.
+    Returns a string of changes or None.
+    """
+    inspected = inspect(obj)
+    changes = []
+    for attr in inspected.mapper.column_attrs:
+        history = inspected.get_history(attr.key, True)
+        if history.has_changes():
+            old_val = history.deleted[0] if history.deleted else "None"
+            new_val = getattr(obj, attr.key)
+            changes.append(f"{attr.key}: {old_val} -> {new_val}")
+    return ", ".join(changes) if changes else None
+
 def clear_data(db):
     """
     Wipes existing TFT data to allow for a fresh sync.
     Uses TRUNCATE CASCADE to restart identity sequences without dropping tables.
     """
-    print("Cleaning database...")
+    print("Cleaning database for a fresh start...")
     tables = [
         "champion_item_valid_pairs", "champion_roles", "item_roles",
         "champion_traits", "champions", "items", "traits", "roles"
@@ -36,7 +51,7 @@ def clear_data(db):
     db.execute(truncate_query)
     db.commit()
 
-def ingest_data():
+def ingest_data(fresh_start=False):
     """
     Fetches raw TFT data from CommunityDragon and populates the local database.
     Processes Champions, Traits, Items, and generates Role-based Valid Pairs.
@@ -45,7 +60,8 @@ def ingest_data():
     current_set = get_current_set()
     url = "https://raw.communitydragon.org/pbe/cdragon/tft/en_us.json"
     
-    clear_data(db)
+    if fresh_start:
+        clear_data(db)
     
     try:
         print(f"Fetching data for Set {current_set}...")
@@ -54,11 +70,16 @@ def ingest_data():
         data = response.json()
         current_set_data = next(s for s in data['setData'] if s['number'] == current_set)
 
+        old_pair_count = db.query(ChampionItemValidPairs).count()
+
         role_map = {}
         for r_name in ROLES_LIST:
-            role = Role(name=r_name)
-            db.add(role)
-            db.flush()
+            role = db.query(Role).filter_by(name=r_name).first()
+            if not role:
+                role = Role(name=r_name)
+                db.add(role)
+                db.flush()
+                print(f"  [NEW] Role created: {r_name}")
             role_map[r_name] = role
 
         trait_map_by_name = {}
@@ -70,8 +91,23 @@ def ingest_data():
             name = (t_data.get('name') or "").strip()
             t_type = TRAIT_MAPPING.get(name, "Unique" if "Unique" in rid else "Unknown")
             
-            trait = Trait(riot_id=rid, name=name, type=t_type)
-            db.add(trait)
+            trait = db.query(Trait).filter_by(riot_id=rid).first()
+            is_new = False
+            if not trait:
+                trait = Trait(riot_id=rid)
+                db.add(trait)
+                is_new = True
+            
+            trait.name = name
+            trait.type = t_type
+            
+            if is_new:
+                print(f"  [NEW] Trait: {name}")
+            else:
+                changes = get_changes(trait)
+                if changes: 
+                    print(f"  [UPDATE] Trait {name}: {changes}")
+
             db.flush()
             trait_map_by_name[name] = trait
 
@@ -87,21 +123,35 @@ def ingest_data():
                 continue
 
             ability = c_data.get('ability', {})
-            champ = Champion(
-                riot_id=rid, name=name, cost=c_data['cost'],
-                ability_name=ability.get('name', ""),
-                ability_desc=ability.get('desc', ""),
-                ability_variables={v['name']: v['value'] for v in ability.get('variables', [])}
-            )
             
+            champ = db.query(Champion).filter_by(riot_id=rid).first()
+            is_new = False
+            if not champ:
+                champ = Champion(riot_id=rid)
+                db.add(champ)
+                is_new = True
+
+            champ.name = name
+            champ.cost = c_data['cost']
+            champ.ability_name = ability.get('name', "")
+            champ.ability_desc = ability.get('desc', "")
+            champ.ability_variables = {v['name']: v['value'] for v in ability.get('variables', [])}
+            
+            if is_new:
+                print(f"  [NEW] Champion: {name}")
+            else:
+                changes = get_changes(champ)
+                if changes: 
+                    print(f"  [UPDATE] Champ {name}: {changes}")
+
             assigned_roles = CHAMPION_ROLE_MAPPING.get(name, [])
             champ.roles = [role_map[r] for r in assigned_roles if r in role_map]
             
+            champ.traits = []
             for t_name in c_data.get('traits', []):
                 if t_name in trait_map_by_name:
                     champ.traits.append(trait_map_by_name[t_name])
 
-            db.add(champ)
             db.flush()
             champ_list.append(champ)
 
@@ -123,20 +173,33 @@ def ingest_data():
             if not i_type: 
                 continue
 
-            item = Item(
-                riot_id=rid, name=name, type=i_type,
-                description=i_data.get('desc', ""),
-                effects=i_data.get('effects', {})
-            )
+            item = db.query(Item).filter_by(riot_id=rid).first()
+            is_new = False
+            if not item:
+                item = Item(riot_id=rid)
+                db.add(item)
+                is_new = True
+
+            item.name = name
+            item.type = i_type
+            item.description = i_data.get('desc', "")
+            item.effects = i_data.get('effects', {})
             
+            if is_new:
+                print(f"  [NEW] Item: {name}")
+            else:
+                changes = get_changes(item)
+                if changes: 
+                    print(f"  [UPDATE] Item {name}: {changes}")
+
             assigned_item_roles = ITEM_ROLE_MAPPING.get(name, [])
             item.roles = [role_map[r] for r in assigned_item_roles if r in role_map]
             
-            db.add(item)
             db.flush()
             item_list.append(item)
 
-        # Logic: If a Champion and Item share at least one Role, they are a valid pair.
+        db.execute(text("TRUNCATE champion_item_valid_pairs RESTART IDENTITY;"))
+        
         pairs_created = 0
         for champ in champ_list:
             c_role_ids = {r.id for r in champ.roles}
@@ -151,7 +214,11 @@ def ingest_data():
                     pairs_created += 1
         
         db.commit()
-        print(f"Sync Complete: {len(champ_list)} Champions, {len(item_list)} Items, {pairs_created} Pairs.")
+        
+        if old_pair_count != pairs_created:
+            print(f"  [ROLES] Pairing logic recalculated: {old_pair_count} -> {pairs_created} pairs.")
+            
+        print(f"Sync Complete: {len(champ_list)} Champions, {len(item_list)} Items.")
 
     except Exception as e:
         db.rollback()
@@ -160,4 +227,8 @@ def ingest_data():
         db.close()
 
 if __name__ == "__main__":
-    ingest_data()
+    parser = argparse.ArgumentParser(description="Sync TFT data from CommunityDragon.")
+    parser.add_argument("--fresh", action="store_true", help="Wipe all data before syncing.")
+    args = parser.parse_args()
+    
+    ingest_data(fresh_start=args.fresh)
