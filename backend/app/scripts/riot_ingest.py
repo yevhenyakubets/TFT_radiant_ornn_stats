@@ -21,7 +21,7 @@ from app.models.traits import Trait
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[3] / ".env", override=True)
 
 
-MAX_INSERTS_PER_RUN = 100
+MAX_INSERTS_PER_RUN = 500
 
 PLATFORM_URL = "https://euw1.api.riotgames.com"
 REGIONAL_URL = "https://europe.api.riotgames.com"
@@ -132,7 +132,7 @@ def parse_args():
 
 
 
-def run():
+def run(tier: str, division: str | None = None):
     db = SessionLocal()
 
     current_patch_name = get_current_patch()
@@ -140,13 +140,13 @@ def run():
     start_time_epoch = int(patch_start_dt.timestamp()) if patch_start_dt else None
 
     print(f"Targeting Patch: {current_patch_name} (Starting {patch_start_dt})")
+    print(f"Ingesting Tier: {tier}, Division: {division}")
 
     total_inserted = 0
     existing_match_ids = get_existing_match_ids(db)
-    args = parse_args()
 
 
-    puuids = get_puuids_by_tier(args.tier, args.division)
+    puuids = get_puuids_by_tier(tier, division)
 
     for puuid in puuids:
         match_ids = get_match_ids(puuid, start_time=start_time_epoch)
@@ -185,4 +185,5 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    args = parse_args()
+    run(tier=args.tier, division=args.division)
