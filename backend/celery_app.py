@@ -1,6 +1,8 @@
 import os
 from celery import Celery
+from celery.schedules import crontab
 from dotenv import load_dotenv
+from app.constants.tier_config import TIER_CONFIGS
 
 load_dotenv()
 
@@ -17,3 +19,25 @@ app.conf.update(
     result_expires=3600,
     timezone='UTC',
 )
+
+app.conf.beat_schedule = {
+    'daily-patch-sync': {
+        'task': 'tasks.patch_sync',
+        'schedule': crontab(hour=4, minute=0),
+    },
+    'periodic-stats-processing': {
+        'task': 'tasks.run_stats_pipeline',
+        'schedule': 1800.0,
+    },
+    'bi-weekly-db-cleanup': {
+        'task': 'tasks.cleanup_old_patch_data',
+        'schedule': crontab(hour=3, minute=0, day_of_week='sun', day_of_month='1-7,15-21'),
+    },
+}
+
+for entry in TIER_CONFIGS:
+    app.conf.beat_schedule[f"ingest-{entry['name']}"] = {
+        'task': 'tasks.ingest_matches',
+        'schedule': entry['sch'],
+        'args': (entry['tier'], entry['div']),
+    }

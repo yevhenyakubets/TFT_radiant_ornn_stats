@@ -5,3 +5,7 @@ node_modules/
 .vscode
 run_pipeline.bat
 pre-commit
+
+celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
