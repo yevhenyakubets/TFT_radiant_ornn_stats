@@ -12,5 +12,72 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
 
+  redis:
+    image: redis:7-alpine
+    container_name: tft_stats_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  api:
+    build: ./backend
+    container_name: tft_backend
+    restart: unless-stopped
+    command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+
+  worker:
+    build: ./backend
+    container_name: tft_worker
+    restart: unless-stopped
+    command: uv run celery -A celery_app worker --loglevel=info
+    volumes:
+      - ./backend:/app
+    env_file: .env
+    depends_on:
+      - redis
+      - db
+
+  beat:
+    build: ./backend
+    container_name: tft_beat
+    restart: unless-stopped
+    command: uv run celery -A celery_app beat --loglevel=info
+    volumes:
+      - ./backend:/app
+    env_file: .env
+    depends_on:
+      - redis
+  flower:
+    build: ./backend
+    container_name: tft_flower
+    restart: unless-stopped
+    command: uv run celery -A celery_app flower --port=5555
+    ports:
+      - "5555:5555"
+    env_file: .env
+    depends_on:
+      - redis
+      - worker
+
+  frontend:
+    build: ./frontend
+    container_name: tft_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+
 volumes:
   postgres_data:
