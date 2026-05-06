@@ -51,8 +51,8 @@ function ChampionPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("artifact");
-  const [showInvalid, setShowInvalid] = useState(false);
-  const [showLowSample, setShowLowSample] = useState(false);
+  const [showOnlyRecommended, setShowOnlyRecommended] = useState(true);
+  const [hideLowSample, setHideLowSample] = useState(true);
 
   const { sortConfig, requestSort, getSortIcon } = useSortConfig('average_placement');
 
@@ -76,8 +76,8 @@ useEffect(() => {
   const itemFolderPath = activeTab === "artifact" ? "/assets/artifacts" : "/assets/radiant_items";
 
   const itemsToShow = Object.entries(rawItems).filter(([, info]) => {
-    const matchesValid = info.valid || showInvalid;
-    const matchesSample = !info.low_sample || showLowSample;
+    const matchesValid = showOnlyRecommended ? info.valid : true;
+    const matchesSample = hideLowSample ? !info.low_sample : true;
     return matchesValid && matchesSample;
   });
 
@@ -136,12 +136,12 @@ useEffect(() => {
         </div>
         <div className="filter-options">
           <label className="filter-label">
-            Show low sample size
-            <input type="checkbox" checked={showLowSample} onChange={() => setShowLowSample(!showLowSample)} />
+            Hide low sample size
+            <input type="checkbox" checked={hideLowSample} onChange={() => setHideLowSample(!hideLowSample)} />
           </label>
           <label className="filter-label">
-            Show niche items
-            <input type="checkbox" checked={showInvalid} onChange={() => setShowInvalid(!showInvalid)} />
+            Show only recommended items
+            <input type="checkbox" checked={showOnlyRecommended} onChange={() => setShowOnlyRecommended(!showOnlyRecommended)} />
           </label>
         </div>
       </div>

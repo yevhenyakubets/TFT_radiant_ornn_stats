@@ -61,8 +61,8 @@ function ItemPage() {
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showInvalid, setShowInvalid] = useState(false);
-  const [showLowSample, setShowLowSample] = useState(false);
+  const [showOnlyRecommended, setShowOnlyRecommended] = useState(true);
+  const [hideLowSample, setHideLowSample] = useState(true);
 
 useEffect(() => {
     let isMounted = true;
@@ -80,7 +80,9 @@ useEffect(() => {
   if (data.error) return <div className="error-state">{data.error}</div>;
 
   const championsToShow = Object.entries(data.champions || {}).filter(([, info]) => {
-    return (info.valid || showInvalid) && (!info.low_sample || showLowSample);
+    const matchesValid = showOnlyRecommended ? info.valid : true;
+    const matchesSample = hideLowSample ? !info.low_sample : true;
+    return matchesValid && matchesSample;
   });
 
   const sortedData = [...championsToShow].sort((a, b) => {
@@ -112,12 +114,12 @@ useEffect(() => {
         <h2 className="filter-bar-title">Best users of {data.name}</h2>
         <div className="filter-options">
           <label className="filter-label">
-            Show low sample size
-            <input type="checkbox" checked={showLowSample} onChange={() => setShowLowSample(!showLowSample)} />
+            Hide low sample size
+            <input type="checkbox" checked={hideLowSample} onChange={() => setHideLowSample(!hideLowSample)} />
           </label>
           <label className="filter-label">
-            Show niche units
-            <input type="checkbox" checked={showInvalid} onChange={() => setShowInvalid(!showInvalid)} />
+            Show only recommended champions
+            <input type="checkbox" checked={showOnlyRecommended} onChange={() => setShowOnlyRecommended(!showOnlyRecommended)} />
           </label>
         </div>
       </div>
