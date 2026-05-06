@@ -5,12 +5,13 @@ import "../styles/ItemPage.css";
 import { ChampionTooltip } from "../components/ChampionTooltip";
 import { useTooltip } from "../hooks/useTooltip";
 import { useSortConfig } from "../hooks/useSortConfig";
-import { getDeltaColor } from "../utils/helper";
+import { getDeltaColor, getRarityColor } from "../utils/helper";
 import ItemDescription from "../components/ItemDescription";
 import { apiClient } from '../api';
 
 function ChampionRow({ champId, info }) {
   const { visible, position, handleMouseEnter, handleMouseMove, handleMouseLeave } = useTooltip(400);
+  const borderColor = getRarityColor(info.cost);
 
   return (
     <tr
@@ -25,7 +26,8 @@ function ChampionRow({ champId, info }) {
         <div className="table-icon-wrapper">
           <img
             src={`/assets/champ_logos/${champId}.png`}
-            className="table-icon"
+            style={{ borderColor: borderColor, borderStyle: 'solid' }}
+            className="table-icon champion-cost-border"
             alt={info.name}
           />
           {info.low_sample && <span className="low-sample-indicator">!</span>}

@@ -276,6 +276,13 @@
   flex-shrink: 0;
 }
 
+.table-icon.champion-cost-border {
+  border-width: 4px;
+  border-radius: 4px;
+  object-fit: cover;
+  outline: 1px solid var(--border-muted);
+}
+
 .low-sample-indicator {
   position: absolute;
   top: -4px;
