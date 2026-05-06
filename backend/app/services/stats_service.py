@@ -252,6 +252,7 @@ def get_item_stats_by_id(item_riot_id: str, item_type: str):
 
             result[champion.riot_id] = {
                 "name": champion.name,
+                "cost": champion.cost,
                 "count": count,
                 "average_placement": avg_placement,
                 "delta": delta,
