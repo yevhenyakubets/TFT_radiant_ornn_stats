@@ -208,8 +208,24 @@
   width: 20%;
 }
 
-.invalid-row { opacity: 0.45; }
+.stats-table-row.invalid-row .table-icon,
+.stats-table-row.invalid-row .champ-name-text,
+.stats-table-row.invalid-row .col-count,
+.stats-table-row.invalid-row .col-avg,
+.stats-table-row.invalid-row .col-delta {
+  opacity: 0.45;
+  filter: grayscale(0.8);
+  transition: all 0.2s ease;
+}
 
+.stats-table-row.invalid-row:hover .table-icon,
+.stats-table-row.invalid-row:hover .champ-name-text,
+.stats-table-row.invalid-row:hover .col-count,
+.stats-table-row.invalid-row:hover .col-avg,
+.stats-table-row.invalid-row:hover .col-delta {
+  opacity: 0.8;
+  filter: grayscale(0.3);
+}
 /* ==========================================================================
    5. ITEM GRID & CARDS (RESTORED)
    ========================================================================== */
@@ -235,7 +251,7 @@
 
 .item-card-link:hover {
   transform: translateY(-5px);
-  border-color: var(--hover-color); /* Kept as requested */
+  border-color: var(--hover-color);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   z-index: 1;
 }
@@ -281,22 +297,6 @@
   border-radius: 4px;
   object-fit: cover;
   outline: 1px solid var(--border-muted);
-}
-
-.low-sample-indicator {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background: var(--physical-damage);
-  color: var(--text-white);
-  font-size: 0.6rem;
-  font-weight: bold;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* ==========================================================================
@@ -471,7 +471,6 @@
   font-weight: bold;
 }
 
-/* DELTA SPECIFIC TOOLTIP */
 .table-header-content {
   display: flex;
   align-items: center;
@@ -507,6 +506,59 @@
   left: 50%;
   transform: translateX(-50%);
   border-color: var(--border-muted) transparent transparent transparent;
+}
+.warning-icon-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  cursor: help;
+  font-size: 0.9rem;
+  vertical-align: middle;
+  isolation: isolate;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.warning-icon-img {
+  height: 20px;
+  width: 20px;
+  display: block;
+}
+
+.warning-popup {
+  visibility: hidden;
+  width: 180px;
+  background-color: #1a1a1a;
+  color: #ffffff !important;
+  text-align: center;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 8px;
+  position: absolute;
+  z-index: 9999;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 1;
+  transition: opacity 0.2s;
+  filter: none !important; 
+}
+
+.warning-popup::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #1a1a1a transparent transparent transparent;
+}
+
+.warning-icon-trigger:hover .warning-popup {
+  visibility: visible;
+  opacity: 1;
 }
 
 /* ==========================================================================

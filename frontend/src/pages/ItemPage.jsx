@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import React from 'react';
 import "../styles/common.css";
 import "../styles/ItemPage.css";
 import { ChampionTooltip } from "../components/ChampionTooltip";
@@ -12,27 +13,46 @@ import { apiClient } from '../api';
 function ChampionRow({ champId, info }) {
   const { visible, position, handleMouseEnter, handleMouseMove, handleMouseLeave } = useTooltip(400);
   const borderColor = getRarityColor(info.cost);
+  // Matches the logic in ChampionPage: gray out if both low sample and not valid
+  const isGrayedOut = info.low_sample && !info.valid;
 
   return (
     <tr
-      className="stats-table-row"
+      className={`stats-table-row ${isGrayedOut ? 'invalid-row' : ''}`}
       onClick={() => window.location.href = `/champions/${champId}`}
     >
-      <td className="champ-cell"
-        onMouseEnter={handleMouseEnter}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      >
-        <div className="table-icon-wrapper">
+      <td className="champ-cell">
+        <div 
+          className="table-icon-wrapper"
+          onMouseEnter={handleMouseEnter}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
           <img
             src={`/assets/champ_logos/${champId}.png`}
             style={{ borderColor: borderColor, borderStyle: 'solid' }}
             className="table-icon champion-cost-border"
             alt={info.name}
           />
-          {info.low_sample && <span className="low-sample-indicator">!</span>}
         </div>
         <span className="champ-name-text">{info.name}</span>
+        
+        {(info.low_sample || !info.valid) && (
+          <span className="warning-icon-trigger">
+            <img 
+              src="/assets/other/warning.png" 
+              alt="Warning" 
+              className="warning-icon-img" 
+            />
+            <div className="warning-popup">
+              {info.low_sample && !info.valid 
+                ? "Low sample size & Champion is not recommended" 
+                : info.low_sample 
+                  ? "Low sample size - data may be unreliable" 
+                  : "Champion not recommended - champion does not match champions role"}
+            </div>
+          </span>
+        )}
       </td>
       <td className="col-count">{info.count.toLocaleString()}</td>
       <td className="col-delta" style={{ color: getDeltaColor(info.delta) }}>
@@ -64,7 +84,7 @@ function ItemPage() {
   const [showOnlyRecommended, setShowOnlyRecommended] = useState(true);
   const [hideLowSample, setHideLowSample] = useState(true);
 
-useEffect(() => {
+  useEffect(() => {
     let isMounted = true;
     apiClient.get(`/${config.endpoint}/${itemId}`)
       .then((json) => {

@@ -14,27 +14,45 @@ import { apiClient } from '../api';
 
 function ItemRow({ itemId, info, itemFolderPath, activeTab, isValid }) {
   const { visible, position, handleMouseEnter, handleMouseMove, handleMouseLeave } = useTooltip(400);
+  const isGrayedOut = info.low_sample && !info.valid;
 
   return (
     <tr
-      className={`stats-table-row ${!isValid ? 'invalid-row' : ''}`}
+      className={`stats-table-row ${isGrayedOut ? 'invalid-row' : ''}`}
       onClick={() => window.location.href = `/${activeTab === 'artifact' ? 'artifacts' : 'radiant-items'}/${itemId}`}
     >
-      <td className="champ-cell"
-        onMouseEnter={handleMouseEnter}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      >
-        <div className="table-icon-wrapper">
+      <td className="champ-cell">
+        <div className="table-icon-wrapper"
+          onMouseEnter={handleMouseEnter}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
           <img
             src={`${itemFolderPath}/${itemId}.png`}
             className="table-icon"
             alt={info.name}
             onError={(e) => { e.target.src = "/assets/artifacts/tft_item_unknown.png"; }}
           />
-          {info.low_sample && <span className="low-sample-indicator">!</span>}
         </div>
-        <span className="champ-name-text">{info.name}</span>
+        <span className="champ-name-text">
+          {info.name}
+          </span>
+          {(info.low_sample || !info.valid) && (
+            <span className="warning-icon-trigger">
+              <img 
+                src="/assets/other/warning.png" 
+                alt="Warning" 
+                className="warning-icon-img" 
+              />
+              <div className="warning-popup">
+                {info.low_sample && !info.valid 
+                  ? "Low sample size & Item is not recommended" 
+                  : info.low_sample 
+                    ? "Low sample size - data may be unreliable" 
+                    : "Item not recommended - item does not match champions role"}
+              </div>
+            </span>
+          )}
       </td>
       <td className="col-count">{info.count.toLocaleString()}</td>
       <td className="col-delta" style={{ color: getDeltaColor(info.delta) }}>
