@@ -134,12 +134,12 @@ function ItemPage() {
         <h2 className="filter-bar-title">Best users of {data.name}</h2>
         <div className="filter-options">
           <label className="filter-label">
-            Hide low sample size
             <input type="checkbox" checked={hideLowSample} onChange={() => setHideLowSample(!hideLowSample)} />
+            Hide low sample size
           </label>
           <label className="filter-label">
-            Show only recommended champions
             <input type="checkbox" checked={showOnlyRecommended} onChange={() => setShowOnlyRecommended(!showOnlyRecommended)} />
+            Show only recommended champions
           </label>
         </div>
       </div>

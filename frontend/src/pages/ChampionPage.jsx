@@ -154,12 +154,12 @@ useEffect(() => {
         </div>
         <div className="filter-options">
           <label className="filter-label">
-            Hide low sample size
             <input type="checkbox" checked={hideLowSample} onChange={() => setHideLowSample(!hideLowSample)} />
+            Hide low sample size
           </label>
           <label className="filter-label">
-            Show only recommended items
             <input type="checkbox" checked={showOnlyRecommended} onChange={() => setShowOnlyRecommended(!showOnlyRecommended)} />
+            Show only recommended items
           </label>
         </div>
       </div>
