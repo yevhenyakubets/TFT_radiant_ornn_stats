@@ -49,7 +49,7 @@ function ChampionRow({ champId, info }) {
                 ? "Low sample size & Champion is not recommended" 
                 : info.low_sample 
                   ? "Low sample size - data may be unreliable" 
-                  : "Champion not recommended - champion does not match champions role"}
+                  : "Champion not recommended - champion does not match items role"}
             </div>
           </span>
         )}
