@@ -58,7 +58,7 @@ def get_champion_special_items(champion_riot_id: str):
              Negative delta means the champion performs better than average with the item.
     - valid: whether this item/champion pair is considered a valid pair (item at least somewhat matches the champion's role, 
             so tank items are ignored for carries and such), data is taken from champion_item_valid_pairs table
-    - low_sample: whether the item appears in fewer than 1% of the champion's games
+    - low_sample: whether the item appears with a frequency of less than 1% of the total number of items of that specific type (Artifact or Radiant).
 
     Args:
         champion_riot_id: Riot's string ID for the champion (e.g. "TFT16_Jinx").
@@ -96,9 +96,10 @@ def get_champion_special_items(champion_riot_id: str):
             .all()
         )
 
-        total_games = sum(row.count for row in stats)
         item_ids = [row.item_id for row in stats]
         item_map = {i.id: i for i in db.query(Item).filter(Item.id.in_(item_ids)).all()}
+        total_artifacts = sum(row.count for row in stats if item_map.get(row.item_id) and item_map[row.item_id].type == "artifact")
+        total_radiants = sum(row.count for row in stats if item_map.get(row.item_id) and item_map[row.item_id].type == "radiant")
 
         valid_item_ids = {
             row.item_id
@@ -126,10 +127,16 @@ def get_champion_special_items(champion_riot_id: str):
             if not item:
                 continue
 
-            percentage = count / total_games if total_games else 0
             avg_placement = float(avg)
             overall_avg = overall_avgs_by_item_id.get(item_id)
             delta = round(avg_placement - overall_avg, 2) if overall_avg is not None else None
+
+            if item.type == "artifact":
+                percentage = count / total_artifacts if total_artifacts else 0
+                is_low_sample = percentage < 0.02
+            else: # radiant
+                percentage = count / total_radiants if total_radiants else 0
+                is_low_sample = percentage < 0.02
 
             data = {
                 "name": item.name,
