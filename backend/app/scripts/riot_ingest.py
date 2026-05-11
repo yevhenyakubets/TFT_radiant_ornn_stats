@@ -35,7 +35,7 @@ def get_existing_match_ids(db):
 def riot_get(url, params=None):
     headers = {"X-Riot-Token": os.getenv("RIOT_API_KEY")}
     while True:
-        response = requests.get(url, headers=headers, params=params)
+        response = requests.get(url, headers=headers, params=params, timeout=10)
 
         if response.status_code == 429:
             retry_after = int(response.headers.get("Retry-After", 1))
