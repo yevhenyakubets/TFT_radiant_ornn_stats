@@ -58,7 +58,7 @@ def ingest_data(fresh_start=False):
     """
     db = SessionLocal()
     current_set = get_current_set()
-    url = "https://raw.communitydragon.org/pbe/cdragon/tft/en_us.json"
+    url = "https://raw.communitydragon.org/latest/cdragon/tft/en_us.json"
     
     if fresh_start:
         clear_data(db)
