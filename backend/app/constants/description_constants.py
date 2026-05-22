@@ -30,6 +30,7 @@ CHAMP_BASE_STATS = {
     "TFT17_TahmKench": {"hp": 1300},
     "TFT17_Reksai": {"hp": 700},
     "TFT17_Pantheon": {"hp": 900},
+    "TFT17_Morgana": {"hp": 1300},
 }
 
 #An extensive map for token matching for champion descriptions
@@ -224,7 +225,11 @@ CHAMPION_EXCEPTIONS = {
         "ModifiedDamage": lambda s, m: s.get("TrueDamagePerSecond", 0),
     },
     "Morgana": { 
-        "ModifiedDamagePerSecond": lambda s, m: s.get("TetherDamagePerSecond", 0),
+        "ModifiedHealthGain": lambda s, m: scale_by_base_stat(
+            s, "TFT17_Morgana", "hp", "PercentHPHealthGain", base_stats_map=m, add_key="APHealthGain"
+        ),
+        "ModifiedDamage": lambda s, m: s.get("APDamage", 0),
+        "ModifiedHeal": lambda s, m: s.get("APDamage", 0),
     },
 }
 
