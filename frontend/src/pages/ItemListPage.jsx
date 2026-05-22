@@ -61,6 +61,8 @@ function ItemListPage() {
   };
 
   useEffect(() => {
+    document.title = `${config.title}`;
+
     let isMounted = true;
     apiClient.get(`/${config.endpoint}`)
       .then(data => {
@@ -70,7 +72,7 @@ function ItemListPage() {
         if (isMounted) { console.error("Fetch error:", err); setLoading(false); }
       });
     return () => { isMounted = false; };
-  }, [config.endpoint]);
+  }, [config.endpoint, config.title]);
 
   const filteredItems = items.filter((item) =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())

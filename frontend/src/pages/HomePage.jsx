@@ -1,9 +1,14 @@
+import { useEffect } from "react";
 import SearchBar from "../components/SearchBar";
 import { useNavigate } from "react-router-dom";
 import "../styles/HomePage.css";
 
 function HomePage() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "TFT Boris - Artifact and Radiant Item Stats";
+  }, []);
 
   const navButtons = [
     {

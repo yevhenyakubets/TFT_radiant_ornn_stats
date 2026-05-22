@@ -88,7 +88,9 @@ function ItemPage() {
     let isMounted = true;
     apiClient.get(`/${config.endpoint}/${itemId}`)
       .then((json) => {
-        if (isMounted) { setData(json); setLoading(false); }
+        if (isMounted) { setData(json); setLoading(false); 
+        document.title = `${json.name} Stats`;
+        }
       })
       .catch(() => {
         if (isMounted) { setData({ error: "Failed to fetch data" }); setLoading(false); }

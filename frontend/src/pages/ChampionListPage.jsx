@@ -78,6 +78,7 @@ useEffect(() => {
       console.error("Error loading champions:", err);
       setLoading(false); 
     });
+    document.title = "Champions";
 }, []);
 
   const filteredChampions = champions
