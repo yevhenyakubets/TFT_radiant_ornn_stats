@@ -1,5 +1,5 @@
 import os
-from celery import Celery
+from celery import Celery, chain
 from celery.schedules import crontab
 from dotenv import load_dotenv
 from app.constants.tier_config import TIER_CONFIGS
@@ -26,8 +26,11 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour=4, minute=0),
     },
     'periodic-stats-processing': {
-        'task': 'tasks.run_stats_pipeline',
+        'task': 'tasks.process_item_stats',
         'schedule': 1800.0,
+        'options': {
+            'link': ['tasks.process_champion_stats'] 
+        }
     },
     'bi-weekly-db-cleanup': {
         'task': 'tasks.cleanup_old_patch_data',

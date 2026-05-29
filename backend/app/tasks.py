@@ -8,7 +8,7 @@ from app.scripts.populate_champion_item_stats_table import run as sync_item_stat
 from app.scripts.populate_champion_stats_table import populate_champion_stats
 from app.scripts.db_cleanup import cleanup_old_data
 
-@app.task(name="tasks.patch_sync")
+@app.task(name="tasks.patch_sync", ignore_result=False)
 def patch_sync():
     """
     Updates champion/item names, stats, and roles based on the latest 
@@ -19,7 +19,7 @@ def patch_sync():
     ingest_data(fresh_start=False)
     return "Patch sync complete."
 
-@app.task(name="tasks.new_set_wipe")
+@app.task(name="tasks.new_set_wipe", ignore_result=False)
 def new_set_wipe():
     """
     NUCLEAR OPTION: Wipes all tables and re-populates for a brand new TFT Set.
@@ -30,7 +30,7 @@ def new_set_wipe():
     return "New set sync complete."
 
 
-@app.task(name="tasks.ingest_matches")
+@app.task(name="tasks.ingest_matches", ignore_result=False)
 def ingest_matches(tier, division=None):
     """
     Fetches raw match JSONs from Riot API for a specific rank tier.
@@ -41,7 +41,7 @@ def ingest_matches(tier, division=None):
     return f"Finished ingestion for {tier}"
 
 
-@app.task(name="tasks.process_item_stats")
+@app.task(name="tasks.process_item_stats", ignore_result=False)
 def task_process_item_stats():
     """
     Parses raw match data to populate champion_item_stats_table.
@@ -51,7 +51,7 @@ def task_process_item_stats():
     sync_item_stats()
     return "Item stats processed."
 
-@app.task(name="tasks.process_champion_stats")
+@app.task(name="tasks.process_champion_stats", ignore_result=False)
 def task_process_champion_stats(arg=None): 
     """
     Parses raw match data to populate champion_stats_table.
@@ -61,18 +61,7 @@ def task_process_champion_stats(arg=None):
     populate_champion_stats()
     return "Champion stats processed."
 
-@app.task(name="tasks.run_stats_pipeline")
-def run_stats_pipeline():
-    """
-    Orchestrates the stats extraction sequence.
-    Ensures item stats are processed before champion stats to maintain data integrity.
-    """
-    print("Initiating full stats extraction pipeline (Items -> Champions)...")
-    pipeline = chain(task_process_item_stats.s(), task_process_champion_stats.s())
-    return pipeline.apply_async()
-
-
-@app.task(name="tasks.cleanup_old_patch_data")
+@app.task(name="tasks.cleanup_old_patch_data", ignore_result=False)
 def task_cleanup_old_data():
     """
     Purges matches and stats from the database that do not match the current patch.
