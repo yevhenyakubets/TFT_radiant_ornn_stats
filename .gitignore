@@ -5,6 +5,7 @@ node_modules/
 .vscode
 run_pipeline.bat
 pre-commit
+.ruff_cache
 
 celerybeat-schedule
 celerybeat-schedule-shm
