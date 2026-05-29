@@ -11,6 +11,7 @@ from app.services.patch_service import (
 
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from pathlib import Path
 
 from app.database import SessionLocal
@@ -95,14 +96,19 @@ def get_match(match_id):
 
 
 def insert_match(db: Session, match_id: str, data: dict):
-    existing = db.query(Match).filter(Match.match_id == match_id).first()
-    if existing:
-        return False
-
-    match = Match(match_id=match_id, data=data)
-    db.add(match)
+    stmt = pg_insert(Match).values(
+        match_id=match_id, 
+        data=data,
+        processed_item_stats=False,       # Explicitly matching your model fields
+        processed_champion_stats=False    # Explicitly matching your model fields
+    )
+    
+    stmt = stmt.on_conflict_do_nothing(index_elements=['match_id'])
+    
+    result = db.execute(stmt)
     db.commit()
-    return True
+    
+    return result.rowcount > 0
 
 
 def parse_args():
