@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/Common.css";
+import "../styles/common.css";
 import "../styles/ChampionListPage.css";
 import { getRarityColor } from "../utils/helper";
 import { ChampionTooltip } from "../components/ChampionTooltip";
