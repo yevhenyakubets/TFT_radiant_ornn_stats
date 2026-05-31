@@ -22,7 +22,7 @@ useEffect(() => {
           name: champ.name.trim(),
           type: 'champion',
           route: `/champions/${champ.id}`,
-          icon: `/assets/champ_logos/${champ.id}.png`
+          icon: `/assets/champ_logos/${champ.id.toLowerCase()}.png`
         })),
         ...Object.entries(artifacts).map(([id, info]) => ({
           id,

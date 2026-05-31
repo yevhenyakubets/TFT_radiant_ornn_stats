@@ -117,7 +117,7 @@ useEffect(() => {
               {data.traits && data.traits.map((trait, idx) => (
                 <div key={idx} className="shop-trait-item">
                   <img
-                    src={`/assets/traits/${trait.name.toLowerCase()}.png`}
+                    src={`/assets/traits/${trait.name}.png`}
                     className="shop-trait-icon"
                     alt=""
                     onError={(e) => e.target.style.display = 'none'}

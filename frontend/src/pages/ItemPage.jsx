@@ -29,7 +29,7 @@ function ChampionRow({ champId, info }) {
           onMouseLeave={handleMouseLeave}
         >
           <img
-            src={`/assets/champ_logos/${champId}.png`}
+            src={`/assets/champ_logos/${champId.toLowerCase()}.png`}
             style={{ borderColor: borderColor, borderStyle: 'solid' }}
             className="table-icon champion-cost-border"
             alt={info.name}

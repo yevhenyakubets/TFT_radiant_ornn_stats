@@ -37,16 +37,16 @@ useEffect(() => {
       <div className="shop-card" style={{ "--rarity-color": rarityColor, cursor: "default", width: "100%" }}>
         <div className="shop-splash-container">
           <img
-            src={`/assets/champ_splashes/${championId}.png`}
+            src={`/assets/champ_splashes/${championId.toLowerCase()}.png`}
             alt={data.name}
             className="shop-splash-img"
-            onError={(e) => { e.target.src = `/assets/champ_logos/${championId}.png`; }}
+            onError={(e) => { e.target.src = `/assets/champ_logos/${championId.toLowerCase()}.png`; }}
           />
           <div className="shop-traits-overlay">
             {data.traits && data.traits.map((trait, idx) => (
               <div key={idx} className="shop-trait-item">
                 <img
-                  src={`/assets/traits/${trait.name.toLowerCase()}.png`}
+                  src={`/assets/traits/${trait.name}.png`}
                   className="shop-trait-icon"
                   alt=""
                   onError={(e) => e.target.style.display = "none"}
