@@ -111,7 +111,7 @@ useEffect(() => {
               src={`/assets/champ_splashes/${championId}.png`}
               alt={data.name}
               className="shop-splash-img"
-              onError={(e) => { e.target.src = `/assets/champ_logos/${championId}.png`; }}
+              onError={(e) => { e.target.src = `/assets/champ_logos/${championId.toLowerCase()}.png`; }}
             />
             <div className="shop-traits-overlay">
               {data.traits && data.traits.map((trait, idx) => (

@@ -35,7 +35,7 @@ function ChampionCard({ champ }) {
           src={`/assets/champ_splashes/${champ.id}.png`}
           alt={champ.name}
           className="shop-splash-img"
-          onError={(e) => { e.target.src = `/assets/champ_logos/${champ.id}.png`; }}
+          onError={(e) => { e.target.src = `/assets/champ_logos/${champ.id.toLowerCase()}.png`; }}
         />
         <div className="shop-traits-overlay">
           {sortedTraits.map((trait, idx) => (
