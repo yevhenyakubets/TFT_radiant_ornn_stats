@@ -10,7 +10,7 @@ router = APIRouter(
     tags=["champions"]
 )
 
-@router.get("/")
+@router.get("")
 def get_champions():
     db = SessionLocal()
     champions = db.query(Champion).options(joinedload(Champion.traits)).all()
