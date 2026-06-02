@@ -34,7 +34,7 @@ app.conf.beat_schedule = {
     },
     'bi-weekly-db-cleanup': {
         'task': 'tasks.cleanup_old_patch_data',
-        'schedule': crontab(hour=3, minute=0, day_of_week='sun', day_of_month='1-7,15-21'),
+        'schedule': crontab(minute=0, hour='*/2'),
     },
 }
 
