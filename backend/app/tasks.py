@@ -1,7 +1,6 @@
 from celery_app import app
 from celery import chain
 
-# Script Imports
 from app.scripts.db_sync import ingest_data
 from app.scripts.riot_ingest import run as run_match_ingestion
 from app.scripts.populate_champion_item_stats_table import run as sync_item_stats
@@ -52,7 +51,7 @@ def task_process_item_stats():
     return "Item stats processed."
 
 @app.task(name="tasks.process_champion_stats", ignore_result=False)
-def task_process_champion_stats(arg=None): 
+def task_process_champion_stats(*args, **kwargs): 
     """
     Parses raw match data to populate champion_stats_table.
     Requires 'processed_item_stats' to be True for targeted matches.
@@ -62,7 +61,7 @@ def task_process_champion_stats(arg=None):
     return "Champion stats processed."
 
 @app.task(name="tasks.cleanup_old_patch_data", ignore_result=False)
-def task_cleanup_old_data():
+def task_cleanup_old_da(*args, **kwargs):
     """
     Purges matches and stats from the database that do not match the current patch.
     Keeps the database lean and prevents 'meta-drift' in frontend stats.
