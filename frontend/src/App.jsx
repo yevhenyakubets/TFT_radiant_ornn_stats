@@ -7,7 +7,7 @@ import ChampionsListPage from "./pages/ChampionListPage";
 import ItemPage from "./pages/ItemPage";
 import ItemListPage from "./pages/ItemListPage";
 import ScrollToTop from "./components/scrollToTop";
-import "./styles/App.css"
+import "./styles/App.css";
 
 function PageLayout() {
   return (
@@ -25,7 +25,15 @@ function App() {
       <ScrollToTop /> 
       
       <Routes>
-        <Route path="/" element={<><HomePage /><Footer /></>} />
+        <Route 
+          path="/" 
+          element={
+            <div className="home-layout-wrapper">
+              <HomePage />
+              <Footer />
+            </div>
+          } 
+        />
 
         <Route element={<PageLayout />}>
           <Route path="/champions" element={<ChampionsListPage />} />
@@ -36,7 +44,15 @@ function App() {
           <Route path="/artifacts" element={<ItemListPage />} />
         </Route>
 
-        <Route path="*" element={<><HomePage /><Footer /></>} />
+        <Route 
+          path="*" 
+          element={
+            <div className="home-layout-wrapper">
+              <HomePage />
+              <Footer />
+            </div>
+          } 
+        />
       </Routes>
     </>
   );

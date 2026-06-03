@@ -122,3 +122,11 @@ TFTShadowItemBonus {
   color: #d156ff;
   text-shadow: 0 0 5px rgba(209, 86, 255, 0.4);
 }
+
+.home-layout-wrapper {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: rgb(1, 10, 19);
+}
