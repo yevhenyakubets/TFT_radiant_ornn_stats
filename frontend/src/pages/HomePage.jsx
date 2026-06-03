@@ -35,7 +35,7 @@ function HomePage() {
     <div className="home-container">
       <div className="header-section">
         <h1 className="header-title">
-          TFT <span className="highlight">ARTIFACTS AND RADIANT ITEMS</span>
+          TFT <span className="highlight">BORIS</span>
         </h1>
         <p className="header-subtitle">Analyze placements and optimize your itemization.</p>
         <p className="header-subtitle">Find the best items for champions, as well as best users for specific items</p>
