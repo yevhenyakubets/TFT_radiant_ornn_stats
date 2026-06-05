@@ -31,7 +31,7 @@ function Header() {
       </div>
 
       <div className="header-search-wrapper">
-        <SearchBar customStyles={{ width: "280px" }} />
+        <SearchBar className="header-search-input-field" />
       </div>
     </header>
   );
