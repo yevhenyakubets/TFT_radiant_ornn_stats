@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/common.css";
+import "../styles/ItemListPage.css";
 import { ItemTooltip } from "../components/ItemTooltip";
 import { useTooltip } from "../hooks/useTooltip";
 import { apiClient } from '../api';
