@@ -126,3 +126,126 @@
 .tab-button.active {
   color: white;
 }
+
+@media (max-width: 768px) {
+  .champion-page-wrapper {
+    padding: 12px;
+  }
+
+  .champion-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 0 !important;
+    background: transparent !important;
+    width: 100%;
+  }
+
+  .champion-header .shop-card {
+    max-width: 100% !important;
+    border-radius: 8px;
+  }
+
+  .champ-info-main {
+    width: 100%;
+  }
+
+  .ability-container {
+    background: #121317 !important;
+    border: 1px solid #1a2c3d;
+    padding: 16px !important;
+    margin-top: -8px;
+  }
+
+  .ability-header {
+    margin-bottom: 12px;
+    gap: 10px;
+  }
+
+  .ability-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .ability-title {
+    font-size: 1.4rem;
+  }
+
+  .main-ability-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .keywords-container {
+    margin-top: 12px;
+    gap: 8px;
+  }
+
+  .keyword-item {
+    font-size: 0.85rem;
+  }
+
+  .champion-page-wrapper .filter-bar {
+    background: #0f1014 !important;
+    border: 1px solid #2d2d31;
+    padding: 8px !important;
+  }
+
+  .tab-switcher {
+    display: flex;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 4px;
+    border-radius: 6px;
+    gap: 4px;
+  }
+
+  .tab-button {
+    padding: 10px 0 !important;
+    font-size: 0.85rem !important;
+    border-radius: 4px !important;
+    transition: background-color 0.15s ease;
+  }
+
+  .champion-page-wrapper .filter-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .champion-page-wrapper .filter-label {
+    font-size: 1rem;
+    width: 100%;
+  }
+
+  .stats-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+  }
+
+  .stats-table th, 
+  .stats-table td {
+    padding: 10px 4px;
+  }
+
+  .champ-cell {
+    padding: 6px 8px;
+    gap: 8px;
+  }
+
+  .table-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .champ-name-text {
+    font-size: 0.9rem;
+  }
+
+  .col-count, 
+  .col-avg, 
+  .col-delta {
+    font-size: 0.95rem;
+  }
+}
