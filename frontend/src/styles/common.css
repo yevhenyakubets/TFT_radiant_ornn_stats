@@ -36,15 +36,6 @@
   margin: 0 auto;
 }
 
-.page-wrapper {
-  padding: 30px;
-  background-color: var(--bg-dark);
-  min-height: 100vh;
-  color: var(--text-white);
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
 .list-header-row {
   display: flex;
   justify-content: space-between;

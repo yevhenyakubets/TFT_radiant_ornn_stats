@@ -17,44 +17,6 @@
   background: black;
 }
 
-.splash-container {
-  position: relative;
-  min-width: 220px;
-}
-
-.champ-splash {
-  width: 300px;
-  height: auto;
-  border-radius: 8px;
-  border: 3px solid transparent;
-}
-
-.traits-overlay {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.trait-badge {
-  background-color: rgba(0,0,0,0.8);
-  padding: 4px 8px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid rgba(255,255,255,0.1);
-  font-size: 0.8rem;
-  color: #eee;
-}
-
-.trait-badge img {
-  width: 20px;
-  height: 20px;
-}
-
 .champ-info-main {
   flex: 1;
 }
@@ -90,10 +52,6 @@
   font-size: 1rem;
   color: #ccc;
   text-align: left;
-}
-
-.ability-stat-value {
-  font-weight: bold;
 }
 
 .description-stat-icon {
