@@ -85,6 +85,30 @@
   color: white;
 }
 
+.keywords-container {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.keyword-item {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #a0a0a8;
+  font-style: italic;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.keyword-item::before {
+  content: "• ";
+  color: var(--magic-damage);
+  margin-right: 4px;
+}
+
 @media (max-width: 768px) {
   .champion-page-wrapper {
     padding: 12px;
@@ -174,36 +198,5 @@
   .champion-page-wrapper .filter-label {
     font-size: 1rem;
     width: 100%;
-  }
-
-  .stats-table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 8px;
-  }
-
-  .stats-table th, 
-  .stats-table td {
-    padding: 10px 4px;
-  }
-
-  .champ-cell {
-    padding: 6px 8px;
-    gap: 8px;
-  }
-
-  .table-icon {
-    width: 32px;
-    height: 32px;
-  }
-
-  .champ-name-text {
-    font-size: 0.9rem;
-  }
-
-  .col-count, 
-  .col-avg, 
-  .col-delta {
-    font-size: 0.95rem;
   }
 }

@@ -217,58 +217,6 @@
   opacity: 0.8;
   filter: grayscale(0.3);
 }
-/* ==========================================================================
-   5. ITEM GRID & CARDS (RESTORED)
-   ========================================================================== */
-.item-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
-}
-
-.item-card-link {
-  border: 1px solid var(--border-muted);
-  padding: 15px;
-  border-radius: 10px;
-  cursor: pointer;
-  background-color: var(--bg-black);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  transition: all 0.2s ease-in-out;
-  z-index: 1;
-}
-
-.item-card-link:hover {
-  transform: translateY(-5px);
-  border-color: var(--hover-color);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-  z-index: 1;
-}
-
-.image-container {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 12px;
-}
-
-.list-item-icon {
-  width: 100%;
-  height: 100%;
-  border-radius: 6px;
-  border: 1px solid transparent;
-  background-color: #000;
-  display: block;
-}
-
-.list-item-name {
-  color: var(--text-main);
-  font-size: 1rem;
-  line-height: 1.2;
-  padding: 4px;
-}
-
 .table-icon-wrapper {
   position: relative;
   display: inline-block;
@@ -291,7 +239,7 @@
 }
 
 /* ==========================================================================
-   6. SHOP CARDS (CHAMPION PAGE)
+   5. SHOP CARDS (CHAMPION LIST & DETAIL)
    ========================================================================== */
 .shop-card {
   background-color: #0c1218;
@@ -375,34 +323,7 @@
 }
 
 /* ==========================================================================
-   7. KEYWORDS & ABILITIES
-   ========================================================================== */
-.keywords-container {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.keyword-item {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #a0a0a8;
-  font-style: italic;
-  text-align: left;
-  line-height: 1.4;
-}
-
-.keyword-item::before {
-  content: "• ";
-  color: var(--magic-damage);
-  margin-right: 4px;
-}
-
-/* ==========================================================================
-   8. TOOLTIPS & INFO WRAPPERS
+   6. TOOLTIPS & INFO WRAPPERS
    ========================================================================== */
 .info-icon-wrapper {
   position: absolute;
@@ -497,6 +418,16 @@
   left: 50%;
   transform: translateX(-50%);
   border-color: var(--border-muted) transparent transparent transparent;
+}
+
+@media (max-width: 360px) {
+  .item-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .champions-shop-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .warning-icon-trigger {
   position: relative;
@@ -607,7 +538,7 @@
   outline-offset: 2px;
 }
 /* ==========================================================================
-   9. STATUS STATES & MEDIA QUERIES
+   7. STATUS STATES & MEDIA QUERIES
    ========================================================================== */
 .loading-state, 
 .list-loading-container {
@@ -631,11 +562,74 @@
   padding: 40px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .list-page-wrapper {
+    padding: 16px 12px !important;
+  }
+
   .list-header-row {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
+    align-items: stretch !important;
+    gap: 12px;
+    margin-bottom: 20px;
   }
-  .list-search-input { width: 100%; }
+
+  .list-page-title {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+
+  .search-container {
+    width: 100%;
+  }
+
+  .list-search-input {
+    width: 100% !important;
+    box-sizing: border-box;
+    font-size: 1.1rem;
+    padding: 10px 40px 10px 12px;
+  }
+
+  .info-icon-wrapper {
+    right: 12px;
+    height: 100%;
+  }
+
+  .info-icon-wrapper .search-tooltip {
+    bottom: 140%;
+    right: -12px;
+    width: calc(100vw - 48px);
+    max-width: 280px;
+  }
+
+  .stats-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+  }
+
+  .stats-table th, 
+  .stats-table td {
+    padding: 10px 4px;
+  }
+
+  .champ-cell {
+    padding: 6px 8px;
+    gap: 8px;
+  }
+
+  .table-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .champ-name-text {
+    font-size: 0.9rem;
+  }
+
+  .col-count, 
+  .col-avg, 
+  .col-delta {
+    font-size: 0.95rem;
+  }
 }

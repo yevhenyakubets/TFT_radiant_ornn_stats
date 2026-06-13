@@ -158,35 +158,4 @@
     font-size: 1rem;
     width: 100%;
   }
-
-  .stats-table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 8px;
-  }
-
-  .stats-table th, 
-  .stats-table td {
-    padding: 10px 3px;
-  }
-
-  .champ-cell {
-    padding: 6px 8px;
-    gap: 8px;
-  }
-
-  .table-icon {
-    width: 32px;
-    height: 32px;
-  }
-
-  .champ-name-text {
-    font-size: 0.9rem;
-  }
-
-  .col-count, 
-  .col-avg, 
-  .col-delta {
-    font-size: 0.95rem;
-  }
 }

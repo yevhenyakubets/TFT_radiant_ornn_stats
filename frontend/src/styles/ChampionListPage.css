@@ -5,45 +5,6 @@
 }
 
 @media (max-width: 768px) {
-  .list-page-wrapper {
-    padding: 16px 12px !important;
-  }
-
-  .list-header-row {
-    flex-direction: column;
-    align-items: stretch !important;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .list-page-title {
-    font-size: 1.8rem;
-    text-align: center;
-  }
-
-  .search-container {
-    width: 100%;
-  }
-
-  .list-search-input {
-    width: 100% !important;
-    box-sizing: border-box;
-    font-size: 1.1rem;
-    padding: 10px 40px 10px 12px;
-  }
-
-  .info-icon-wrapper {
-    right: 12px;
-    height: 100%;
-  }
-
-  .info-icon-wrapper .search-tooltip {
-    bottom: 140%;
-    right: -12px;
-    width: calc(100vw - 48px);
-    max-width: 280px;
-  }
-
   .champions-shop-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
@@ -68,11 +29,5 @@
   .shop-trait-icon {
     width: 10px;
     height: 10px;
-  }
-}
-
-@media (max-width: 360px) {
-  .champions-shop-grid {
-    grid-template-columns: 1fr;
   }
 }
