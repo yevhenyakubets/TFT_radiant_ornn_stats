@@ -10,20 +10,19 @@
 
 <br />
 <div align="center">
-  <a href="https://github.com/github_username/tft-radiant-ornn-stats">
+  <a href="https://github.com/yevhenyakubets/TFT_radiant_ornn_stats">
     <!-- TODO: Add a logo/screenshot here -->
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">TFT Radiant & Artifact Stats</h3>
+  <h3 align="center">TFT Boris</h3>
 
   <p align="center">
-    A statistics tracker for Teamfight Tactics that shows which radiant items and artifacts perform best on which champions — relative to each champion's baseline performance across high-ELO EUW games.
+    A personal web project focused analyzing statistics for the game Teamfight Tactics in order to find the best items for a champion, or find the best users of a specific item 
     <br />
-    <br />
-    <a href="https://github.com/github_username/tft-radiant-ornn-stats/issues/new?labels=bug">Report Bug</a>
+    <a href="https://github.com/yevhenyakubets/TFT_radiant_ornn_stats/issues/new?labels=bug">Report Bug</a>
     &middot;
-    <a href="https://github.com/github_username/tft-radiant-ornn-stats/issues/new?labels=enhancement">Request Feature</a>
+    <a href="https://github.com/yevhenyakubets/TFT_radiant_ornn_stats/issues/new?labels=enhancement">Request Feature</a>
   </p>
 </div>
 
@@ -55,14 +54,21 @@
 <!-- TODO: Replace with a real screenshot or GIF once hosted -->
 [![Product Screenshot][product-screenshot]](https://example.com)
 
-Most TFT stat sites show average placement, but that metric alone favors lower-cost champions who naturally place better. This project introduces **delta** — the difference between a champion's average placement with a specific item versus their overall average placement. A negative delta means the item improves the champion's performance relative to their baseline.
+This project delivers the core functionality of a TFT stats website, specializing specifically in Artifacts and Radiant items. Every champion and item has a dedicated page displaying average placements alongside relative average placement (delta). The underlying data is constantly updated and processed by tapping directly into the Riot API.
+
+While the primary goal of this project was to gain hands-on experience with APIs, FastAPI, databases, React, and full-stack web development, I also aimed to build a highly practical, clean, and visually appealing website.
 
 **Key features:**
-- Per-item stats: average placement and delta for every champion that uses it
-- Per-champion stats: average placement and delta for every artifact and radiant item
-- Hover tooltips showing champion ability descriptions and item stats
-- Searchable champion and item list pages (search by name or `#trait`)
-- Data sourced from high-ELO EUW games and updated automatically via a scheduled pipeline
+
+**-Automated Data Pipeline**: Background tasks powered by Celery and Redis continuously fetch, process, and update champion statistics directly from the Riot API without blocking user traffic.
+
+**-Per-Item Stats**: Average placement and delta metrics for every champion that utilizes the item.
+
+**-Per-Champion Stats**: Detailed breakdown of average placement and delta for all eligible Artifacts and Radiant items.
+
+**-Interactive UI**: Hover tooltips for quick item/champion references and fully parsed, readable descriptions of all items and abilities with all of the numbers.
+
+**-Mobile-Friendly Layout**: Features custom responsive overrides so you can easily check item and champion stats on your phone.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -74,7 +80,8 @@ Most TFT stat sites show average placement, but that metric alone favors lower-c
 * [![Vite][Vite-badge]][Vite-url]
 * [![FastAPI][FastAPI-badge]][FastAPI-url]
 * [![PostgreSQL][Postgres-badge]][Postgres-url]
-* [![Docker][Docker-badge]][Docker-url]
+* [![Redis][Docker-badge]][Docker-url]
+* [![Docker Compose][Docker-badge]][Docker-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -84,69 +91,59 @@ Most TFT stat sites show average placement, but that metric alone favors lower-c
 
 ### Prerequisites
 
-- Python 3.11+
-- Node.js 18+
 - Docker + Docker Compose
-- A Riot Games API key (set in `.env`)
+- Node.js 18+
+- Python 3.14+ (only if running the backend outside Docker)
+- A Riot Games API key(you can get one for free)
+- Git
+- GNU Make
 
 ### Installation
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/github_username/tft-radiant-ornn-stats.git
-   cd tft-radiant-ornn-stats
+   git clone https://github.com/yevhenyakubets/TFT_radiant_ornn_stats.git
+   cd TFT_radiant_ornn_stats
    ```
 
-2. Set up environment variables
+2. Copy the environment file and fill in values
    ```sh
    cp .env.example .env
-   # Fill in DATABASE_URL, RIOT_API_KEY, DB_USER, DB_PASSWORD, DB_NAME
+   ```
+   Then update `.env` with:
+   - `RIOT_API_KEY` (you can get one for free [here](https://developer.riotgames.com/), but it expires after 24 hours)
+   - `DB_USER`, `DB_PASSWORD` and `DB_NAME` with whatever you like
+
+   To edit the .env file, use
+    ```sh
+   nano .env
    ```
 
-3. Start the database
+3. Start services with Docker Compose
    ```sh
    docker compose up -d
    ```
 
-4. Set up the backend
+4. Database migrations
    ```sh
-   cd backend
-   python -m venv .venv
-   .venv\Scripts\activate   # Windows
-   # source .venv/bin/activate  # Linux/Mac
-   pip install -r requirements.txt
-   uvicorn app.main:app --reload
+    docker compose exec api uv run alembic upgrade head
    ```
 
-5. Set up the frontend
+5. Run database sync once manually
+  (to populate the database with initial info (items, champions, traits), we need to run this script manually once.)
    ```sh
-   cd frontend
-   npm install
-   npm run dev
+    docker compose exec api uv run python -m app.scripts.db_sync
    ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+6. Run the frontend container using Make
+   ```sh
+    make frontend
+   ```
 
----
-
-## Data Pipeline
-
-Match data is fetched from the Riot Games API and processed in stages. Run the full pipeline with:
-
-```sh
-python -m app.scripts.riot_ingest --tier diamond --division I
-python -m app.scripts.riot_ingest --tier diamond --division II
-python -m app.scripts.riot_ingest --tier diamond --division III
-python -m app.scripts.riot_ingest --tier diamond --division IV
-python -m app.scripts.riot_ingest --tier master
-python -m app.scripts.riot_ingest --tier grandmaster
-python -m app.scripts.riot_ingest --tier challenger
-python -m app.scripts.populate_champion_stats_table
-python -m app.scripts.populate_champion_item_stats_table
-python -m app.scripts.db_cleanup
-```
-
-The pipeline is scheduled to run automatically via Windows Task Scheduler. Raw match data is stored temporarily and cleaned up after processing — only the aggregated stats tables are kept long-term.
+7. Open the app
+   - Frontend: `http://127.0.0.1:5173`
+   - Backend API: `http://127.0.0.1:8000`
+   - Flower: `http://127.0.0.1:5555`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -167,21 +164,21 @@ Data powered by the Riot Games API.
 <!-- TODO: Fill in your details -->
 Yevhen Yakubets - [LinkedIn](https://linkedin.com/in/linkedin_username) - yevhen.yakubets@gmail.com
 
-Project Link: [https://github.com/github_username/tft-radiant-ornn-stats](https://github.com/github_username/tft-radiant-ornn-stats)
+Project Link: [https://github.com/yevhenyakubets/TFT_radiant_ornn_stats](https://github.com/yevhenyakubets/TFT_radiant_ornn_stats)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ---
 
 <!-- MARKDOWN LINKS & IMAGES -->
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/tft-radiant-ornn-stats.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/tft-radiant-ornn-stats/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/tft-radiant-ornn-stats.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/tft-radiant-ornn-stats/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/tft-radiant-ornn-stats.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/tft-radiant-ornn-stats/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/tft-radiant-ornn-stats.svg?style=for-the-badge
-[issues-url]: https://github.com/github_username/tft-radiant-ornn-stats/issues
+[contributors-shield]: https://img.shields.io/github/contributors/yevhenyakubets/TFT_radiant_ornn_stats.svg?style=for-the-badge
+[contributors-url]: https://github.com/yevhenyakubets/TFT_radiant_ornn_stats/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/yevhenyakubets/TFT_radiant_ornn_stats.svg?style=for-the-badge
+[forks-url]: https://github.com/yevhenyakubets/TFT_radiant_ornn_stats/network/members
+[stars-shield]: https://img.shields.io/github/stars/yevhenyakubets/TFT_radiant_ornn_stats.svg?style=for-the-badge
+[stars-url]: https://github.com/yevhenyakubets/TFT_radiant_ornn_stats/stargazers
+[issues-shield]: https://img.shields.io/github/issues/yevhenyakubets/TFT_radiant_ornn_stats.svg?style=for-the-badge
+[issues-url]: https://github.com/yevhenyakubets/TFT_radiant_ornn_stats/issues
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/linkedin_username
 [product-screenshot]: images/screenshot.png
