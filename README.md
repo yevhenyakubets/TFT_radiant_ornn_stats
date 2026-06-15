@@ -89,6 +89,8 @@ While the primary goal of this project was to gain hands-on experience with APIs
 
 ## Getting Started
 
+> 💡 **Important:** This project and its installation commands are designed to be run in a **Linux** or **Windows Subsystem for Linux (WSL)** terminal environment.
+
 ### Prerequisites
 
 - Docker + Docker Compose
