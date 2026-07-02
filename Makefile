@@ -5,3 +5,7 @@ build-frontend:
 run-frontend:
 	docker run -d -p 5173:5173 --name tft-frontend-container tft-frontend-test
 frontend: build-frontend run-frontend
+
+stop-frontend:
+	docker stop tft-frontend-container || true
+	docker rm tft-frontend-container || true
